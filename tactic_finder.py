@@ -5,21 +5,24 @@ from anytree import Node
 from stockfish import Stockfish
 
 from analysis import calculate_material_balance
+from configuration import load_configuration
 from evaluation import Evaluation
 from position import PositionOccurred, Position
 from outcome import Outcome
 from tactic import Tactic
 
-CENTIPAWN_THRESHOLD = 2.50
-CENTIPAWN_LIMIT = 10.00
-CENTIPAWN_TOLERANCE = 0.4
-CHECKMATE_PROGRESS_THRESHOLD = 0.5
-REPETITION_THRESHOLD = 2
+configuration = load_configuration()
 
-MIN_RELATIVE_MATERIAL_BALANCE = 3
-HARD_EVALUATION = False
+CENTIPAWN_THRESHOLD = configuration['algorithm']['centipawn_threshold']
+CENTIPAWN_LIMIT = configuration['algorithm']['centipawn_limit']
+CENTIPAWN_TOLERANCE = configuration['algorithm']['centipawn_tolerance']
+CHECKMATE_PROGRESS_THRESHOLD = configuration['algorithm']['checkmate_progress_threshold']
+REPETITION_THRESHOLD = configuration['algorithm']['repetition_threshold']
 
-STOCKFISH_TOP_MOVES = 5
+MIN_RELATIVE_MATERIAL_BALANCE = configuration['algorithm']['min_relative_material_balance']
+HARD_EVALUATION = configuration['algorithm']['hard_evaluation']
+
+STOCKFISH_TOP_MOVES = configuration['stockfish']['top_moves']
 
 
 class TacticFinder:
