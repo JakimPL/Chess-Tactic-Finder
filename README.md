@@ -10,11 +10,23 @@ A puzzle needs to satisfy certain conditions:
 
 The algorithm tries to retrieve such puzzles from actual games and uses Stockfish to evaluate positions.
 
+### Usage
+
+To scan the PGN file, use the following:
+
+```bash
+python main.py game.pgn
+```
+
+The output tactics should be in the folder `tactics` in a directory corresponding to the PGN data. For example `Player 1 vs Player 2 (2022.02.22) [aa519caa19c5d254aee5d63d626a94bd]`. A PGN file may contain multiple games, and each game will have its own directory.
+
 ### Dependencies
 
 It relies on the following packages:
+* `anytree` 
 * `chess`
 * `stockfish` which needs Stockfish installed on your computer
+* `tqdm`
 
 It also uses `pgn-extract` tool to extract UCI moves from PGN files.
 
