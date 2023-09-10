@@ -12,6 +12,7 @@ from configuration import load_configuration
 from converter import convert, get_moves
 from evaluation import Evaluation
 from position import Position
+from tactic import Tactic
 from tactic_finder import TacticFinder
 
 configuration = load_configuration()
@@ -76,14 +77,18 @@ def find_tactics(moves, starting_position: str):
 
 
 def save_tactics(
-        tactics: list[Position],
+        tactics: list[Tactic],
         directory: str,
-        headers: dict,
+        headers: chess.pgn.Headers,
         ignore_first_move: bool = IGNORE_FIRST_MOVE,
         save_last_opponent_move: bool = SAVE_LAST_OPPONENT_MOVE
 ):
     for index, tactic in enumerate(tactics):
-        game = tactic.to_pgn(headers, ignore_first_move=ignore_first_move)
+        game = tactic.to_pgn(
+            headers,
+            ignore_first_move=ignore_first_move,
+            save_last_opponent_move=save_last_opponent_move
+        )
 
         prefix = f'tactic_{index:04}'
         tactic_filename = f'{prefix}.tactic'
@@ -105,7 +110,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     pgn_path = args.pgn
 
-    print(configuration)
     print(f'Reading PGN file {pgn_path}...')
     with open(pgn_path, 'r') as file:
         pgn = file.read()
@@ -140,7 +144,7 @@ if __name__ == '__main__':
             break
 
         if tactics:
-            save_tactics(tactics, directory)
+            save_tactics(tactics, directory, headers)
             print(f'Saved {len(tactics)} tactics.')
         else:
             print(f'No tactics found.')
