@@ -25,6 +25,7 @@
         }
     },
     "paths": {
+        "temp_file": "./temp/temp.pgn",
         "processed": "games",
         "output": "tactics",
         "pgn-extract": "/usr/bin/pgn-extract"

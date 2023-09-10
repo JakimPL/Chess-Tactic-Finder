@@ -5,18 +5,27 @@ import subprocess
 from configuration import load_configuration
 
 UCI_MOVE_PATTERN = re.compile(r"[a-h][1-8][a-h][1-8]")
+FILENAME_PATTERN = re.compile(r"\d+\.pgn")
 SPLIT = True
 
 configuration = load_configuration()
+
+INPUT_DIRECTORY = configuration['paths']['processed']
 PGN_EXTRACT_PATH = configuration['paths']['pgn-extract']
+TEMP_FILE = configuration['paths']['temp_file']
 
 
-def convert(pgn: str, output_path: str, temp_file: str = "temp.pgn"):
+def convert(pgn: str, output_path: str, temp_file: str = TEMP_FILE):
     absolute_path = os.path.abspath(temp_file)
     with open(absolute_path, "w") as file:
         file.write(pgn)
 
-    for filename in os.listdir(output_path):
+    filenames = [
+        filename for filename in os.listdir(output_path)
+        if re.findall(FILENAME_PATTERN, filename)
+    ]
+
+    for filename in filenames:
         os.remove(os.path.join(output_path, filename))
 
     subprocess.run(
