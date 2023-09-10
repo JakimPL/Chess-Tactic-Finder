@@ -10,7 +10,7 @@
     },
     "stockfish": {
         "path": "/usr/games/stockfish",
-        "depth": 18,
+        "depth": 20,
         "top_moves": 5,
         "parameters": {
             "Debug Log File": "",
@@ -25,9 +25,9 @@
         }
     },
     "paths": {
-        "input": "games",
+        "processed": "games",
         "output": "tactics",
-        "pgn-extract": "/usr/bin/pgn-extract",
+        "pgn-extract": "/usr/bin/pgn-extract"
     },
     "export": {
         "ignore_first_move": false,
