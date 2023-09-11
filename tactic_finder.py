@@ -2,14 +2,16 @@ from typing import Optional
 
 import chess
 from anytree import Node
+from chess.pgn import Headers
 from stockfish import Stockfish
 
 from analysis import calculate_material_balance
 from configuration import load_configuration
 from evaluation import Evaluation
-from position import PositionOccurred, Position
 from outcome import Outcome
+from position import PositionOccurred, Position
 from tactic import Tactic
+from variations import Variations, get_node_history
 
 configuration = load_configuration()
 
@@ -115,30 +117,18 @@ class TacticFinder:
                     if not evaluation.mate and abs(best_evaluation - evaluation) < self.centipawn_tolerance
                 ]
 
-    @staticmethod
-    def get_node_history(node: Node) -> list[Position]:
-        history = [node.name for node in node.ancestors] + [node.name]
-        return history
-
     def get_board_from_history(self, node: Optional[Node]) -> chess.Board:
         board = chess.Board(self.starting_position.fen)
         if node is None:
             return board
         else:
-            history = self.get_node_history(node)
+            history = get_node_history(node)
 
         for position in history:
             if position.move:
                 board.push_san(position.move)
 
         return board
-
-    @staticmethod
-    def get_resolved_leaves(leaves: list[Node]) -> list[Node]:
-        return sorted([
-            leaf for leaf in leaves
-            if leaf.name.outcome.type != 'not resolved'
-        ], key=lambda leaf: leaf.depth, reverse=True)
 
     def create_tree(self) -> Optional[Node]:
         try:
@@ -243,18 +233,12 @@ class TacticFinder:
 
         return Outcome('not resolved')
 
-    def find_tactic(self) -> Optional[Tactic]:
+    def get_variations(self, headers: Optional[Headers] = None) -> tuple[Optional[Variations], Optional[Tactic]]:
         root = self.create_tree()
         if root and root.children:
-            leaves = root.leaves
-            resolved_leaves = self.get_resolved_leaves(leaves)
-            if resolved_leaves:
-                leaf = resolved_leaves[0]
-                tactic = Tactic(
-                    self.get_node_history(leaf),
-                    type=leaf.name.outcome.description
-                )
+            variations = Variations(root, headers=headers)
+            tactic = variations.get_tactic()
+            if tactic:
+                return variations, tactic
 
-                return tactic
-
-        return None
+        return None, None

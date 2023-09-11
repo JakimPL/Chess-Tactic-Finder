@@ -6,5 +6,5 @@ __pycache__/
 
 *.pgn
 *.tactic
+*.vars
 *.progress
-

@@ -1,15 +1,18 @@
-import pickle
 from dataclasses import dataclass
+from typing import Optional
 
 import chess
 import chess.pgn
+from chess.pgn import Headers
 
+from picklable import Picklable
 from position import Position
 
 
 @dataclass
-class Tactic:
+class Tactic(Picklable):
     positions: list[Position]
+    headers: Optional[Headers] = None
     type: str = ''
 
     def __iter__(self):
@@ -21,10 +24,9 @@ class Tactic:
     def __getitem__(self, item):
         return self.positions.__getitem__(item)
 
-    @staticmethod
-    def create_game_from_board(board: chess.Board, headers: dict) -> chess.pgn.Game:
+    def create_game_from_board(self, board: chess.Board) -> chess.pgn.Game:
         game = chess.pgn.Game.from_board(board)
-        for key, value in headers.items():
+        for key, value in self.headers.items():
             if key != 'FEN':
                 game.headers[key] = value
 
@@ -32,11 +34,11 @@ class Tactic:
 
     def to_pgn(
             self,
-            headers: dict,
             ignore_first_move: bool = False,
             save_last_opponent_move: bool = True
     ) -> chess.pgn.Game:
         board = None
+        turn = None
         for index, position in enumerate(self.positions):
             if index == 0 and ignore_first_move:
                 continue
@@ -50,13 +52,4 @@ class Tactic:
                     board.push_san(position.move)
 
         assert board is not None, "board is empty"
-        return self.create_game_from_board(board, headers)
-
-    def to_file(self, path: str):
-        with open(path, 'wb') as file:
-            pickle.dump(self, file)
-
-    @staticmethod
-    def from_file(path: str):
-        with open(path, 'rb') as file:
-            return pickle.load(file)
+        return self.create_game_from_board(board)

@@ -14,6 +14,7 @@ from evaluation import Evaluation
 from position import Position
 from tactic import Tactic
 from tactic_finder import TacticFinder
+from variations import Variations
 
 configuration = load_configuration()
 
@@ -28,7 +29,7 @@ IGNORE_FIRST_MOVE = configuration['export']['ignore_first_move']
 SAVE_LAST_OPPONENT_MOVE = configuration['export']['save_last_opponent_move']
 
 
-def find_tactics(moves, starting_position: str):
+def find_variations(moves, starting_position: str) -> tuple[list[Variations], [Tactic]]:
     stockfish = Stockfish(
         path=STOCKFISH_PATH,
         depth=STOCKFISH_DEPTH,
@@ -41,7 +42,8 @@ def find_tactics(moves, starting_position: str):
     else:
         board = Board()
 
-    tactics = []
+    variations_list = []
+    tactic_list = []
     fens = set()
 
     for idx, move in enumerate(moves):
@@ -66,31 +68,36 @@ def find_tactics(moves, starting_position: str):
         print(f'{move_number}{"." if white else "..."} {board_move} {"   " if white else " "}\t{evaluation}')
 
         tactic_finder = TacticFinder(stockfish, not white, starting_position=position, fens=fens, hard_evaluation=False)
-        tactic = tactic_finder.find_tactic()
+        variations, tactic = tactic_finder.get_variations(headers=headers)
         fens = fens.union(tactic_finder.visited_fens)
 
         if tactic:
-            tactics.append(tactic)
+            tactic_list.append(tactic)
+            variations_list.append(variations)
             print(f'Tactic:\n{tactic}')
 
-    return tactics
+    return variations_list, tactic_list
 
 
-def save_tactics(
-        tactics: list[Tactic],
+def save_variations(
+        variations_list: list[Variations],
+        tactic_list: list[Tactic],
         directory: str,
-        headers: chess.pgn.Headers,
         ignore_first_move: bool = IGNORE_FIRST_MOVE,
         save_last_opponent_move: bool = SAVE_LAST_OPPONENT_MOVE
 ):
-    for index, tactic in enumerate(tactics):
+    for index, (variations, tactic) in enumerate(list(zip(variations_list, tactic_list))):
         game = tactic.to_pgn(
-            headers,
             ignore_first_move=ignore_first_move,
             save_last_opponent_move=save_last_opponent_move
         )
 
         prefix = f'tactic_{index:04}'
+
+        variations_filename = f'{prefix}.vars'
+        variations_path = os.path.join(directory, variations_filename)
+        variations.to_file(variations_path)
+
         tactic_filename = f'{prefix}.tactic'
         tactic_path = os.path.join(directory, tactic_filename)
         tactic.to_file(tactic_path)
@@ -136,16 +143,17 @@ if __name__ == '__main__':
         open(in_progress_file, 'a').close()
         print(f'Finding tactics for: {output_filename}')
 
-        tactics = None
+        variations_list = None
+        tactic_list = None
         try:
-            tactics = find_tactics(moves, starting_position)
+            variations_list, tactic_list = find_variations(moves, starting_position)
         except KeyboardInterrupt:
             print('Interrupted.')
             break
 
-        if tactics:
-            save_tactics(tactics, directory, headers)
-            print(f'Saved {len(tactics)} tactics.')
+        if tactic_list:
+            save_variations(variations_list, tactic_list, directory)
+            print(f'Saved {len(tactic_list)} tactics.')
         else:
             print(f'No tactics found.')
 
