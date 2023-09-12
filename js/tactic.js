@@ -1,9 +1,9 @@
 class Tactic {
-    get_next_move() {
-        if (this.move_index < this.moves.length - 1) {
-            this.move_index++
-            var move = this.moves[this.move_index]
-            this.next_move = move
+    getNextMove() {
+        if (this.moveIndex < this.moves.length - 1) {
+            this.moveIndex++
+            var move = this.moves[this.moveIndex]
+            this.nextMove = move
             return move
         } else {
             this.solved = true
@@ -14,13 +14,13 @@ class Tactic {
 
     constructor(pgn) {
         this.pgn = pgn
-        this.game_json = JSON.parse(parser.pgn2json(pgn))
-        this.fen = this.game_json['str']['FEN']
-        this.moves = this.game_json['moves']
-        this.first_move = this.moves[0]
+        this.gameJSON = JSON.parse(parser.pgn2json(pgn))
+        this.fen = this.gameJSON['str']['FEN']
+        this.moves = this.gameJSON['moves']
+        this.firstMove = this.moves[0]
 
-        this.move_index = 0
-        this.next_move = this.get_next_move()
+        this.moveIndex = 0
+        this.nextMove = this.getNextMove()
 
         this.solved = false
     }
