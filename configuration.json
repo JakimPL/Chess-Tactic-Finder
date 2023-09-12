@@ -1,7 +1,7 @@
 {
     "algorithm": {
-        "centipawn_threshold": 2.5,
-        "centipawn_limit": 10.0,
+        "centipawn_threshold": 1.5,
+        "centipawn_limit": 7.5,
         "centipawn_tolerance": 0.4,
         "checkmate_progress_threshold": 0.5,
         "repetition_threshold": 2,
