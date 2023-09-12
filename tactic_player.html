@@ -5,18 +5,36 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <title>Tactic player</title>
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css" integrity="sha384-q94+BZtLrkL1/ohfjR8c6L+A6qzNH9R2hBLwyoAfu3i/WCvQjzL2RQJ3uNHDISdU" crossorigin="anonymous">
+    <style>.column {
+        float: left;
+        width: 50%;
+    }
+
+    .row:after {
+        content: "";
+        display: table;
+        clear: both;
+    }
+</style>
 </head>
 <body>
 
-<div id="myBoard" style="width: 400px"></div>
-<div id="buttons">
-    <button id="reset" type="button">Reset puzzle</button>
-    <button id="hint" type="button">Hint</button>
-</div>
+<div class="row">
+    <div class="column">
+        <div id="myBoard" style="margin:0 auto; width: 400px"></div>
+        <div id="buttons" style="text-align:center; display: block">
+            <button id="reset" type="button">Reset puzzle</button>
+            <button id="hint" type="button">Hint</button>
+        </div>
 
-<div id="progress">&nbsp</div>
-<div id="status"></div>
-<div id="pgn"></div>
+        <div id="progress">&nbsp</div>
+        <div id="status"></div>
+        <div id="moves"></div>
+    </div>
+    <div class="column">
+        <div id="puzzles"></div>
+    </div>
+</div>
 
 <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js" integrity="sha384-8Vi8VHwn3vjQ9eUHUxex3JSN/NFqUg3QbPyX8kWyb93+8AC/pPWTzj+nHtbC5bxD" crossorigin="anonymous"></script>
@@ -25,31 +43,14 @@
 <script src="js/tactic.js"></script>
 
 <script>
-var pgn = `
-[Event "Live Chess"]
-[Site "Chess.com"]
-[Date "2011.08.04"]
-[Round "-"]
-[White "dmonev"]
-[Black "JakimPL"]
-[Result "1-0"]
-[FEN "4k3/5p2/5P2/2p3K1/P7/1PBP3P/2P5/8 b - - 2 43"]
-[SetUp "1"]
-[WhiteElo "1539"]
-[BlackElo "1483"]
-[TimeControl "900+10"]
-[Termination "dmonev won by checkmate"]
-[EndTime "7:51:40 PDT"]
-
-43... Kf8 44. a5 Ke8 45. a6 Kd8 46. a7 Kc8 47. a8=Q+ Kc7 1-0
-`
-
+var puzzles = null
+var path = null
 var board = null
-var tactic = new Tactic(pgn)
-var game = new Chess(tactic.fen)
+var tactic = null
+var game = null
 var $status = $('#status')
 var $fen = $('#fen')
-var $pgn = $('#pgn')
+var $moves = $('#moves')
 var $progress = $('#progress')
 
 var wait = false
@@ -60,15 +61,73 @@ $('#reset').on('click', function() {
 })
 
 $('#hint').on('click', function() {
-    board.highlight('e2')
+    // not implemented yet
 })
 
-function make_move(move) {
+function loadPuzzles(path) {
+    fetch(path)
+    .then(response => response.text())
+    .then(text => {
+        puzzles = JSON.parse(text)
+        createPuzzleTable(puzzles)
+    })
+}
+
+// create table with puzzles
+function createPuzzleTable(puzzles) {
+    var table = '<table class="sortable">'
+    table += `
+    <thead>
+        <tr>
+            <th>Play</th>
+            <th>White</th>
+            <th>Black</th>
+            <th>Date</th>
+            <th>Puzzle type</th>
+            <th>Moves</th>
+            <th>Initial evaluation
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+    `
+    for (var i = 0; i < puzzles.length; i++) {
+        var puzzle = puzzles[i]
+        table += '<tr>'
+        table += `<td><a href="javascript:loadPGN('` + puzzle.path + `')" style="text-decoration:none">&#9654;</a>`
+        table += '<td>' + puzzle.white + '</td>'
+        table += '<td>' + puzzle.black + '</td>'
+        table += '<td>' + puzzle.date + '</td>'
+        table += '<td>' + puzzle.puzzleType + '</td>'
+        table += '<td>' + puzzle.moves + '</td>'
+        table += '<td>' + puzzle.initialEvaluation + '</td>'
+        table += '</tr>'
+    }
+    table += '</tbody></table>'
+    $('#puzzles').html(table)
+}
+
+function loadPGN(path) {
+    fetch(path)
+    .then(response => response.text())
+    .then(text => {
+        pgn = text
+        reset()
+    })
+}
+
+function makeMove(move) {
 	if (move !== null) {
 		move = game.move(move)
 		uci = move.from + '-' + move.to
 		board.move(uci)
 	}
+}
+
+function getMoves() {
+    moves = game.moves({verbose: true})
+    console.log(moves)
+    return game.pgn().split(/\d+\./).slice(1).join('')
 }
 
 function delay(callback) {
@@ -83,8 +142,6 @@ function delay(callback) {
 function checkIfSolved() {
     if (tactic.solved) {
         $progress.html('Puzzle solved!')
-    } else{
-        //$progress.html('&nbsp')
     }
 }
 
@@ -123,7 +180,7 @@ function onDrop(source, target) {
 			move = tactic.get_next_move()
 			if (move !== null) {
 				delay(() => {
-                    make_move(move)
+                    makeMove(move)
                     tactic.get_next_move()
                 })
 			}
@@ -163,30 +220,39 @@ function updateStatus () {
 	}
 
 	$status.html(status)
-	$pgn.html(game.pgn())
+	$moves.html(getMoves())
     checkIfSolved()
 }
 
-var config = {
-	draggable: true,
-	position: tactic.fen,
-	onDragStart: onDragStart,
-	onDrop: onDrop,
-	onSnapEnd: onSnapEnd
+function getConfig(tactic) {
+    return {
+        draggable: true,
+        position: tactic.fen,
+        onDragStart: onDragStart,
+        onDrop: onDrop,
+        onSnapEnd: onSnapEnd
+    }
 }
 
 function reset() {
+    $progress.html('&nbsp')
+
     tactic = new Tactic(pgn)
     game = new Chess(tactic.fen)
-    board = Chessboard('myBoard', config)
+    board = Chessboard('myBoard', getConfig(tactic))
+
+    if (game.turn() == 'w') {
+        board.flip()
+    }
 
     updateStatus()
     delay(() => {
-        make_move(tactic.first_move)
+        makeMove(tactic.first_move)
     })
 }
 
-reset()
+board = Chessboard('myBoard')
+loadPuzzles('games.json')
 
 </script>
 </body>

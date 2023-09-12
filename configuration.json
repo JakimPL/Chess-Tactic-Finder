@@ -28,10 +28,14 @@
         "temp_file": "./temp/temp.pgn",
         "processed": "games",
         "output": "tactics",
-        "pgn-extract": "/usr/bin/pgn-extract"
+        "pgn-extract": "/usr/bin/pgn-extract",
+        "gathered_games": "games.json"
     },
     "export": {
         "ignore_first_move": false,
         "save_last_opponent_move": true
+    },
+    "tactic_player": {
+        "port": 8000
     }
 }

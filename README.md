@@ -33,3 +33,17 @@ It also uses `pgn-extract` tool to extract UCI moves from PGN files.
 Make sure you set the proper paths (see `configuration.json`) to:
 * Stockfish engine
 * `pgn-extract` tool
+
+### Playing tactics
+
+After scanning your PGN files, you can play the tactics in the browser. To do so, run the following:
+
+```bash
+python play.py
+```
+
+The server will be running on `http://localhost:8000/tactic_player.html`. You can change the port in `configuration.json`.
+
+The module is solely based on two JavaScript libraries:
+* [chessboard.js](https://chessboardjs.com/) for the board
+* [chess.js](https://github.com/jhlywa/chess.js/blob/master/README.md) for the game logic
