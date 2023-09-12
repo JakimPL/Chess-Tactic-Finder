@@ -11,6 +11,7 @@ class Position:
     color: bool
     evaluation: Evaluation
     fen: str
+    forced: bool = False
     material_balance: int = 0
     outcome: Optional[Outcome] = None
 

@@ -5,6 +5,7 @@ import chess
 import chess.pgn
 from chess.pgn import Headers
 
+from evaluation import Evaluation
 from picklable import Picklable
 from position import Position
 
@@ -53,3 +54,23 @@ class Tactic(Picklable):
 
         assert board is not None, "board is empty"
         return self.create_game_from_board(board)
+
+    @property
+    def fen(self) -> str:
+        return self.positions[0].fen
+
+    @property
+    def moves(self) -> int:
+        return len(self.positions) // 2
+
+    @property
+    def initial_evaluation(self) -> Evaluation:
+        return self.positions[0].evaluation
+
+    @property
+    def starting_evaluation(self) -> Evaluation:
+        return self.positions[1].evaluation
+
+    @property
+    def final_evaluation(self) -> Evaluation:
+        return self.positions[-1].evaluation

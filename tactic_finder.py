@@ -157,21 +157,27 @@ class TacticFinder:
         best_moves = self.stockfish.get_top_moves(self.stockfish_top_moves)
         material_balance = self.get_relative_material_balance(fen)
         color = self.white ^ defender
+        forced = len(best_moves) == 1 and self.stockfish_top_moves > 1
 
         evaluation = None
         if best_moves:
             evaluation = Evaluation.from_stockfish(best_moves[0])
             if not defender and evaluation.mate:
-                self.checkmate_counter = evaluation.value
+                if self.checkmate_counter is not None:
+                    self.checkmate_counter = max(self.checkmate_counter, abs(evaluation.value))
+                else:
+                    self.checkmate_counter = abs(evaluation.value)
 
         if move is None:
             position = self.starting_position
+            position.forced = forced
         else:
             position = Position(
                 move=move,
                 color=color,
                 evaluation=evaluation,
                 fen=previous_fen,
+                forced=forced,
                 material_balance=material_balance
             )
 
@@ -224,7 +230,7 @@ class TacticFinder:
             if board.is_game_over():
                 return Outcome('checkmate', 'checkmate')
             elif evaluation is not None and evaluation.mate:
-                if evaluation.value - 1 < self.checkmate_counter * self.checkmate_progress_threshold:
+                if abs(evaluation.value) - 1 < self.checkmate_counter * self.checkmate_progress_threshold:
                     return Outcome('checkmate', 'mating net')
 
         material_advantage = material_balance >= MIN_RELATIVE_MATERIAL_BALANCE
@@ -238,7 +244,7 @@ class TacticFinder:
         if root and root.children:
             variations = Variations(root, headers=headers)
             tactic = variations.get_tactic()
-            if tactic:
+            if tactic and not tactic[0].forced:
                 return variations, tactic
 
         return None, None

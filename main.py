@@ -24,6 +24,7 @@ OUTPUT_DIRECTORY = configuration['paths']['output']
 STOCKFISH_PATH = configuration['stockfish']['path']
 STOCKFISH_DEPTH = configuration['stockfish']['depth']
 STOCKFISH_PARAMETERS = configuration['stockfish']['parameters']
+STOCKFISH_TOP_MOVES = configuration['stockfish']['top_moves']
 
 IGNORE_FIRST_MOVE = configuration['export']['ignore_first_move']
 SAVE_LAST_OPPONENT_MOVE = configuration['export']['save_last_opponent_move']
@@ -49,7 +50,7 @@ def find_variations(moves, starting_position: str) -> tuple[list[Variations], [T
     for idx, move in enumerate(moves):
         move_number = idx // 2 + 1
         white = idx % 2 == 0
-        best_moves = stockfish.get_top_moves()
+        best_moves = stockfish.get_top_moves(STOCKFISH_TOP_MOVES)
         evaluation = Evaluation.from_stockfish(best_moves[0])
 
         fen = stockfish.get_fen_position()
@@ -147,6 +148,8 @@ if __name__ == '__main__':
         tactic_list = None
         try:
             variations_list, tactic_list = find_variations(moves, starting_position)
+        except ValueError as error:
+            print(f'Stockfish error: {error}')
         except KeyboardInterrupt:
             print('Interrupted.')
             break
