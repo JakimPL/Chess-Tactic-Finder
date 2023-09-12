@@ -47,3 +47,5 @@ The server will be running on `http://localhost:8000/tactic_player.html`. You ca
 The module is solely based on two JavaScript libraries:
 * [chessboard.js](https://chessboardjs.com/) for the board
 * [chess.js](https://github.com/jhlywa/chess.js/blob/master/README.md) for the game logic
+
+with a help of a [`sorttable`](https://www.kryogenix.org/code/browser/sorttable/) library for sorting tables.
