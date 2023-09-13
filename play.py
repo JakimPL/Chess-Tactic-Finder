@@ -4,7 +4,7 @@ import subprocess
 import webbrowser
 
 from configuration import load_configuration
-from variations import Variations
+from tactic import Tactic
 
 configuration = load_configuration()
 
@@ -18,7 +18,7 @@ def gather_variations(directory: str = INPUT_DIRECTORY) -> list[str]:
     for root, dirs, files in os.walk(directory):
         filenames = [
             os.path.join(root, filename)
-            for filename in files if filename.endswith('.vars')
+            for filename in files if filename.endswith('.tactic')
         ]
 
         paths.extend(filenames)
@@ -29,15 +29,15 @@ def gather_variations(directory: str = INPUT_DIRECTORY) -> list[str]:
 def gather_games(paths: list[str]) -> list[dict]:
     games = []
     for path in paths:
-        variations = Variations.from_file(path)
-        white = (variations.headers.get('White', '?'), variations.headers.get('WhiteElo', '?'))
-        black = (variations.headers.get('Black', '?'), variations.headers.get('BlackElo', '?'))
-        date = variations.headers.get('Date', '????.??.??')
-        actual_result = variations.headers.get('Result', '*')
+        tactic = Tactic.from_file(path)
+        white = (tactic.headers.get('White', '?'), tactic.headers.get('WhiteElo', '?'))
+        black = (tactic.headers.get('Black', '?'), tactic.headers.get('BlackElo', '?'))
+        date = tactic.headers.get('Date', '????.??.??')
+        actual_result = tactic.headers.get('Result', '*')
 
         name = f'{white[0]} vs. {black[0]} ({date})'
-        tactic = variations.get_tactic()
         moves = tactic.moves
+        hardness = tactic.hardness
         puzzle_type = tactic.type
         pgn = str(tactic.to_pgn())
         initial_evaluation = tactic[0].evaluation
@@ -49,6 +49,7 @@ def gather_games(paths: list[str]) -> list[dict]:
             'name': name,
             'puzzleType': puzzle_type,
             'moves': moves,
+            'hardness': hardness,
             'initialEvaluation': str(initial_evaluation) if initial_evaluation else '',
             'startingEvaluation': str(starting_evaluation) if starting_evaluation else '',
             'final_evaluation': str(final_evaluation) if final_evaluation else '',
@@ -60,7 +61,7 @@ def gather_games(paths: list[str]) -> list[dict]:
             'date': date,
             'actualResult': actual_result,
             'whiteToMove': white_to_move,
-            'path': path.replace('.vars', '.pgn')
+            'path': path.replace('.tactic', '.pgn')
         })
 
     return games
@@ -75,6 +76,14 @@ if __name__ == '__main__':
     paths = gather_variations()
     games = gather_games(paths)
     save_games(games)
-    webbrowser.open('localhost:8000/tactic_player.html')
-    subprocess.run(['python', '-m', 'http.server', str(PORT)])
+
+    process = None
+    try:
+        process = subprocess.Popen(['python', '-m', 'http.server', str(PORT)])
+        webbrowser.open('localhost:8000/tactic_player.html')
+        process.communicate()
+    except KeyboardInterrupt:
+        print('Exit.')
+    finally:
+        process.kill()
 
