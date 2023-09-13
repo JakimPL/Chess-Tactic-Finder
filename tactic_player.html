@@ -21,7 +21,7 @@
 <body>
 
 <div class="row">
-    <div class="column" style="position: fixed; height: 100%">
+    <div class="column" style="position: fixed; width: 500px; height: 100%">
         <div id="myBoard" style="margin:0 auto; width: 400px"></div>
         <div id="buttons" style="text-align:center; display: block">
             <button id="reset" type="button">Reset puzzle</button>
@@ -35,7 +35,7 @@
         <div id="status"></div>
         <div id="moves"></div>
     </div>
-    <div class="column" style="height: 100%; overflow: auto; margin-left: 50%">
+    <div class="column" style="height: 100%; overflow: auto; margin-left: 500px; font-size: 10px;">
         <div id="puzzles">
         </div>
     </div>
@@ -130,6 +130,7 @@ function createPuzzleTable(puzzles) {
             <th>Date</th>
             <th>Puzzle type</th>
             <th>Moves</th>
+            <th>Hardness</th>
             <th>Initial evaluation
             </th>
         </tr>
@@ -145,6 +146,7 @@ function createPuzzleTable(puzzles) {
         table += '<td>' + puzzle.date + '</td>'
         table += '<td>' + puzzle.puzzleType + '</td>'
         table += '<td>' + puzzle.moves + '</td>'
+        table += '<td>' + puzzle.hardness.toFixed(2) + '</td>'
         table += '<td>' + puzzle.initialEvaluation + '</td>'
         table += '</tr>'
     }
