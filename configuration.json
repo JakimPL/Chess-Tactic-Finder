@@ -9,7 +9,7 @@
     },
     "stockfish": {
         "path": "/usr/games/stockfish",
-        "depth": 15,
+        "depth": 20,
         "top_moves": 5,
         "parameters": {
             "Debug Log File": "",

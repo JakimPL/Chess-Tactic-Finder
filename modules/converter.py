@@ -2,7 +2,7 @@ import os
 import re
 import subprocess
 
-from configuration import load_configuration
+from modules.configuration import load_configuration
 
 UCI_MOVE_PATTERN = re.compile(r"[a-h][1-8][a-h][1-8]")
 FILENAME_PATTERN = re.compile(r"\d+\.pgn")
