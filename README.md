@@ -35,10 +35,11 @@ or you can edit `configuration.json` file manually and adjust the path (`/usr/bi
 
 #### Usage
 
-You can run the analysis by:
+Use `run.bat` from your command line to activate the virtual environment. Then you can run the analysis by:
 ```batch
 python main.py game.pgn  
 ```
+
 assuming `game.pgn` is a PGN file of a game (or multiple games). The output tactics should be in the folder `tactics` in a directory corresponding to the PGN data. For example `Player 1 vs Player 2 (2022.02.22) [aa519caa19c5d254aee5d63d626a94bd]`. A PGN file may contain multiple games, and each game will have its own directory.
 
 To run the tactic player, run:
