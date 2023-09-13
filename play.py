@@ -3,8 +3,8 @@ import os
 import subprocess
 import webbrowser
 
-from configuration import load_configuration
-from tactic import Tactic
+from modules.configuration import load_configuration
+from modules.tactic import Tactic
 
 configuration = load_configuration()
 
@@ -84,6 +84,8 @@ if __name__ == '__main__':
         process.communicate()
     except KeyboardInterrupt:
         print('Exit.')
+    except OSError:
+        print("Server already running.")
     finally:
         process.kill()
 

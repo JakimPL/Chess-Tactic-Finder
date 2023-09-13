@@ -8,13 +8,13 @@ from chess import Board
 from stockfish import Stockfish
 from tqdm import tqdm
 
-from configuration import load_configuration
-from converter import convert, get_moves
-from evaluation import Evaluation
-from position import Position
-from tactic import Tactic
-from tactic_finder import TacticFinder
-from variations import Variations
+from modules.configuration import load_configuration
+from modules.converter import convert, get_moves
+from modules.evaluation import Evaluation
+from modules.position import Position
+from modules.tactic import Tactic
+from modules.tactic_finder import TacticFinder
+from modules.variations import Variations
 
 configuration = load_configuration()
 
@@ -30,10 +30,14 @@ IGNORE_FIRST_MOVE = configuration['export']['ignore_first_move']
 SAVE_LAST_OPPONENT_MOVE = configuration['export']['save_last_opponent_move']
 
 
-def find_variations(moves, starting_position: str) -> tuple[list[Variations], [Tactic]]:
+def find_variations(
+        moves,
+        starting_position: str,
+        stockfish_depth: int = STOCKFISH_DEPTH,
+) -> tuple[list[Variations], [Tactic]]:
     stockfish = Stockfish(
         path=STOCKFISH_PATH,
-        depth=STOCKFISH_DEPTH,
+        depth=stockfish_depth,
         parameters=STOCKFISH_PARAMETERS
     )
 
@@ -115,8 +119,10 @@ if __name__ == '__main__':
     )
 
     parser.add_argument('pgn', type=str, help='Path to the PGN file.')
+    parser.add_argument('--depth', '-d', type=int, help='Stockfish depth', default=STOCKFISH_DEPTH)
     args = parser.parse_args()
     pgn_path = args.pgn
+    stockfish_depth = args.depth
 
     print(f'Reading PGN file {pgn_path}...')
     with open(pgn_path, 'r') as file:

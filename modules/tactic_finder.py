@@ -193,6 +193,7 @@ class TacticFinder:
         if move is None:
             position = self.starting_position
             position.forced = forced
+            position.hard = hard
         else:
             position = Position(
                 move=move,
