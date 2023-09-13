@@ -1,0 +1,4 @@
+anytree==2.9.0
+chess==1.10.0
+stockfish==3.28.0
+tqdm==4.65.0
