@@ -1,7 +1,7 @@
 import http.server
-import json
 import os
 import socketserver
+import threading
 import urllib.parse
 import webbrowser
 from hashlib import md5
@@ -117,18 +117,23 @@ class RefreshHandler(http.server.SimpleHTTPRequestHandler):
             super().do_GET()
 
 
+def run(httpd):
+    httpd.allow_reuse_address = True
+    httpd.server_bind()
+    httpd.server_activate()
+    print(f'Server started at http://localhost:{PORT}')
+    httpd.serve_forever()
+
+
 if __name__ == '__main__':
     refresh()
     save()
     try:
         with socketserver.TCPServer(('', PORT), RefreshHandler, bind_and_activate=False) as httpd:
-            httpd.allow_reuse_address = True
-            httpd.server_bind()
-            httpd.server_activate()
-            print(f'Server started at http://localhost:{PORT}')
-            httpd.serve_forever()
-
-        webbrowser.open(f'localhost:{PORT}/tactic_player.html')
+            thread = threading.Thread(target=lambda: run(httpd), daemon=True)
+            thread.start()
+            webbrowser.open(f'localhost:{PORT}/tactic_player.html')
+            thread.join()
     except KeyboardInterrupt:
         print('Exit.')
     except OSError:
