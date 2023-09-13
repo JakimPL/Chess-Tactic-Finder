@@ -1,16 +1,15 @@
 {
     "algorithm": {
         "centipawn_threshold": 1.5,
-        "centipawn_limit": 7.5,
+        "centipawn_limit": 10.0,
         "centipawn_tolerance": 0.4,
         "checkmate_progress_threshold": 0.5,
         "repetition_threshold": 2,
-        "min_relative_material_balance": 3,
-        "hard_evaluation": false
+        "min_relative_material_balance": 3
     },
     "stockfish": {
         "path": "/usr/games/stockfish",
-        "depth": 20,
+        "depth": 15,
         "top_moves": 5,
         "parameters": {
             "Debug Log File": "",

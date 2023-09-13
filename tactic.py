@@ -25,6 +25,9 @@ class Tactic(Picklable):
     def __getitem__(self, item):
         return self.positions.__getitem__(item)
 
+    def __len__(self):
+        return self.positions.__len__()
+
     def create_game_from_board(self, board: chess.Board) -> chess.pgn.Game:
         game = chess.pgn.Game.from_board(board)
         for key, value in self.headers.items():
@@ -60,8 +63,20 @@ class Tactic(Picklable):
         return self.positions[0].fen
 
     @property
+    def hard(self) -> bool:
+        return all(position.hard for position in self.positions)
+
+    @property
+    def hard_moves(self) -> int:
+        return sum([position.hard for position in self.positions[0::2]])
+
+    @property
     def moves(self) -> int:
         return len(self.positions) // 2
+
+    @property
+    def hardness(self) -> float:
+        return self.hard_moves / self.moves
 
     @property
     def initial_evaluation(self) -> Evaluation:

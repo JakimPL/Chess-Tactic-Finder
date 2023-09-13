@@ -56,7 +56,7 @@ def find_variations(moves, starting_position: str) -> tuple[list[Variations], [T
         fen = stockfish.get_fen_position()
         position = Position(
             move=move,
-            color=white,
+            color=not white,
             evaluation=evaluation,
             fen=fen
         )
@@ -68,7 +68,7 @@ def find_variations(moves, starting_position: str) -> tuple[list[Variations], [T
 
         print(f'{move_number}{"." if white else "..."} {board_move} {"   " if white else " "}\t{evaluation}')
 
-        tactic_finder = TacticFinder(stockfish, not white, starting_position=position, fens=fens, hard_evaluation=False)
+        tactic_finder = TacticFinder(stockfish, not white, starting_position=position, fens=fens)
         variations, tactic = tactic_finder.get_variations(headers=headers)
         fens = fens.union(tactic_finder.visited_fens)
 

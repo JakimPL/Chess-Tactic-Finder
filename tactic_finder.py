@@ -22,7 +22,6 @@ CHECKMATE_PROGRESS_THRESHOLD = configuration['algorithm']['checkmate_progress_th
 REPETITION_THRESHOLD = configuration['algorithm']['repetition_threshold']
 
 MIN_RELATIVE_MATERIAL_BALANCE = configuration['algorithm']['min_relative_material_balance']
-HARD_EVALUATION = configuration['algorithm']['hard_evaluation']
 
 STOCKFISH_TOP_MOVES = configuration['stockfish']['top_moves']
 
@@ -39,7 +38,6 @@ class TacticFinder:
             checkmate_progress_threshold: float = CHECKMATE_PROGRESS_THRESHOLD,
             repetition_threshold: int = REPETITION_THRESHOLD,
             stockfish_top_moves: int = STOCKFISH_TOP_MOVES,
-            hard_evaluation: bool = HARD_EVALUATION,
             fens: set[str] = None
     ):
         self.stockfish: Stockfish = stockfish
@@ -58,11 +56,37 @@ class TacticFinder:
         self.checkmate_progress_threshold: float = checkmate_progress_threshold
         self.repetition_threshold: int = repetition_threshold
         self.stockfish_top_moves: int = stockfish_top_moves
-        self.hard_evaluation: bool = hard_evaluation
+
+    def get_evaluations_from_best_moves(self, best_moves: list[dict] = None) -> list[Evaluation]:
+        best_moves = self.stockfish.get_top_moves(self.stockfish_top_moves) if best_moves is None else best_moves
+        return [Evaluation.from_stockfish(move) for move in best_moves]
+
+    def is_position_hard(self, best_moves: list[dict] = None) -> bool:
+        evaluations = self.get_evaluations_from_best_moves(best_moves)
+        if len(best_moves) <= 1:
+            return False
+        elif len(best_moves) >= 2:
+            evaluation = evaluations[0] if self.white else -evaluations[0]
+            next_evaluation = evaluations[1] if self.white else -evaluations[1]
+            if evaluation.mate and next_evaluation.mate:
+                return (
+                        evaluation.value > 0 > next_evaluation.value
+                        or (
+                                evaluation.value > 0 and next_evaluation.value > 0
+                                and abs(evaluation.value - next_evaluation.value) > 5
+                        )
+                )
+            elif evaluation.mate and not next_evaluation.mate:
+                return evaluation.value > 0
+            elif not evaluation.mate and next_evaluation.mate:
+                return evaluation.value >= 0.0
+            else:
+                return evaluation.value > 0 > next_evaluation.value
+        else:
+            raise ValueError("unexpected number of moves")
 
     def is_only_one_good_move(self, best_moves: list[dict] = None) -> bool:
-        best_moves = self.stockfish.get_top_moves(self.stockfish_top_moves) if best_moves is None else best_moves
-        evaluations = [Evaluation.from_stockfish(move) for move in best_moves]
+        evaluations = self.get_evaluations_from_best_moves(best_moves)
         if len(best_moves) == 0:
             return False
         elif len(best_moves) == 1:
@@ -72,10 +96,7 @@ class TacticFinder:
             evaluation = evaluations[0] if self.white else -evaluations[0]
             next_evaluation = evaluations[1] if self.white else -evaluations[1]
             if evaluation.mate and next_evaluation.mate:
-                if self.hard_evaluation:
-                    return evaluation.value > 0 > next_evaluation.value
-                else:
-                    return evaluation.value > 0 and evaluation > next_evaluation
+                return evaluation.value > 0 and evaluation > next_evaluation
             elif evaluation.mate and not next_evaluation.mate:
                 return evaluation.value > 0
             elif not evaluation.mate and next_evaluation.mate:
@@ -158,6 +179,7 @@ class TacticFinder:
         material_balance = self.get_relative_material_balance(fen)
         color = self.white ^ defender
         forced = len(best_moves) == 1 and self.stockfish_top_moves > 1
+        hard = defender or self.is_position_hard(best_moves)
 
         evaluation = None
         if best_moves:
@@ -178,6 +200,7 @@ class TacticFinder:
                 evaluation=evaluation,
                 fen=previous_fen,
                 forced=forced,
+                hard=hard,
                 material_balance=material_balance
             )
 
