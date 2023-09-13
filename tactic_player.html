@@ -175,15 +175,13 @@ function createPuzzleTable(puzzles) {
     </thead>
     <tbody>
     `
-    console.log('progress')
-    console.log(progress)
+
     for (var i = 0; i < puzzles.length; i++) {
         var puzzle = puzzles[i]
         table += '<tr>'
         table += `<td><a href="javascript:loadPGN('` + puzzle.path + `', '` + puzzle.hash + `')">&#9654;</a>`
         table += '<td id=puzzle' + puzzle.hash + '>'
 
-        console.log(progress[puzzle.hash])
         if (progress[puzzle.hash]) {
             table += '&#10003;'
         }
@@ -236,8 +234,7 @@ function getFullPieceName(piece) {
 function makeMove(move) {
 	if (move !== null) {
 		move = game.move(move)
-		uci = move.from + '-' + move.to
-		board.move(uci)
+		board.position(game.fen())
 	}
 }
 
