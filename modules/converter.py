@@ -28,11 +28,15 @@ def convert(pgn: str, output_path: str, temp_file: str = TEMP_FILE):
     for filename in filenames:
         os.remove(os.path.join(output_path, filename))
 
-    subprocess.run(
-        [PGN_EXTRACT_PATH, "-#1,0", "-Wuci", absolute_path],
-        stdout=subprocess.PIPE,
-        cwd=output_path
-    )
+    try:
+        subprocess.run(
+            [PGN_EXTRACT_PATH, "-#1,0", "-Wuci", absolute_path],
+            stdout=subprocess.PIPE,
+            cwd=output_path
+        )
+    except FileNotFoundError:
+        print(f"pgn-extract not found in: {PGN_EXTRACT_PATH}. Please set the path in configuration.json")
+        exit(1)
 
 
 def get_moves(path: str):

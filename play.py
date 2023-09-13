@@ -78,12 +78,14 @@ def save_puzzles(puzzles: list[dict], path: str = GATHERED_PUZZLES_PATH) -> None
     json_save(puzzles, path)
 
 
-def save(puzzle_id: str):
+def save(puzzle_id: str = None):
     progress = {}
     if os.path.exists(PROGRESS_PATH):
         progress = json_load(PROGRESS_PATH)
 
-    progress[puzzle_id] = True
+    if puzzle_id:
+        progress[puzzle_id] = True
+
     json_save(progress, PROGRESS_PATH)
 
 
@@ -116,6 +118,8 @@ class RefreshHandler(http.server.SimpleHTTPRequestHandler):
 
 
 if __name__ == '__main__':
+    refresh()
+    save()
     try:
         with socketserver.TCPServer(('', PORT), RefreshHandler, bind_and_activate=False) as httpd:
             httpd.allow_reuse_address = True
