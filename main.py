@@ -20,8 +20,8 @@ configuration = load_configuration()
 
 INPUT_DIRECTORY = configuration['paths']['processed']
 OUTPUT_DIRECTORY = configuration['paths']['output']
+STOCKFISH_PATH = configuration['paths']['stockfish']
 
-STOCKFISH_PATH = configuration['stockfish']['path']
 STOCKFISH_DEPTH = configuration['stockfish']['depth']
 STOCKFISH_PARAMETERS = configuration['stockfish']['parameters']
 STOCKFISH_TOP_MOVES = configuration['stockfish']['top_moves']

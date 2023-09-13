@@ -8,7 +8,6 @@
         "min_relative_material_balance": 3
     },
     "stockfish": {
-        "path": "/usr/games/stockfish",
         "depth": 20,
         "top_moves": 5,
         "parameters": {
@@ -24,10 +23,11 @@
         }
     },
     "paths": {
-        "temp_file": "./temp/temp.pgn",
+        "stockfish": "/usr/games/stockfish",
+        "pgn_extract": "/usr/bin/pgn-extract",
         "processed": "games",
         "output": "tactics",
-        "pgn_extract": "/usr/bin/pgn-extract",
+        "temp_file": "./temp/temp.pgn",
         "gathered_puzzles": "puzzles.json",
         "progress": "progress.json"
     },

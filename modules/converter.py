@@ -22,7 +22,7 @@ def convert(pgn: str, output_path: str, temp_file: str = TEMP_FILE):
 
     filenames = [
         filename for filename in os.listdir(output_path)
-        if re.findall(FILENAME_PATTERN, filename)
+        if re.findall(FILENAME_PATTERN, filename) or filename == ".gitkeep"
     ]
 
     for filename in filenames:
