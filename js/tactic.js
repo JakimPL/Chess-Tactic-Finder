@@ -1,5 +1,5 @@
 class Tactic {
-    getNextMove() {
+    forward() {
         if (this.moveIndex < this.moves.length - 1) {
             this.moveIndex++
             var move = this.moves[this.moveIndex]
@@ -7,6 +7,18 @@ class Tactic {
             return move
         } else {
             this.solved = true
+        }
+
+        return null
+    }
+
+    backward() {
+        if (this.moveIndex > 0) {
+            this.solved = false
+            this.moveIndex--
+            var move = this.moves[this.moveIndex]
+            this.nextMove = move
+            return move
         }
 
         return null
@@ -20,7 +32,7 @@ class Tactic {
         this.firstMove = this.moves[0]
 
         this.moveIndex = 0
-        this.nextMove = this.getNextMove()
+        this.nextMove = this.forward()
 
         this.solved = false
     }

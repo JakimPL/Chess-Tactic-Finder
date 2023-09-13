@@ -64,6 +64,18 @@ var $status = $('#status')
 var $moveHistory = $('#moveHistory')
 var $panel = $('#panel')
 
+$('#backward').on('click', function() {
+    if (tactic !== null) {
+        backward()
+    }
+})
+
+$('#forward').on('click', function() {
+    if (tactic !== null) {
+        forward()
+    }
+})
+
 $('#refresh').on('click', function() {
     refresh()
 })
@@ -75,7 +87,7 @@ $('#reset').on('click', function() {
 
 $('#hint').on('click', function() {
     if (tactic !== null) {
-        if (!tactic.solved) {
+        if (!tactic.solved && tactic.nextMove != null) {
             move = game.move(tactic.nextMove)
             game.undo()
             setPanel('Hint: ' + getFullPieceName(move.piece))
@@ -86,7 +98,7 @@ $('#hint').on('click', function() {
 
 $('#solution').on('click', function() {
     if (tactic !== null) {
-        if (!tactic.solved) {
+        if (!tactic.solved && tactic.nextMove != null) {
             setPanel('Hint: ' + tactic.nextMove)
             delay(() => {setPanel()})
         }
@@ -104,6 +116,20 @@ $('#copyPGN').on('click', function() {
         navigator.clipboard.writeText(pgn)
     }
 })
+
+function backward() {
+    game.undo()
+    tactic.backward()
+    board.position(game.fen())
+    updateStatus()
+}
+
+function forward() {
+    game.move(tactic.nextMove)
+    tactic.forward()
+    board.position(game.fen())
+    updateStatus()
+}
 
 function setPanel(text) {
     if (text == null) {
@@ -150,8 +176,10 @@ function createPuzzleTable(puzzles) {
 
     for (var i = 0; i < puzzles.length; i++) {
         var puzzle = puzzles[i]
+        path = puzzle.path.replace(/[\\/]+/g, '/').replace(/^([a-zA-Z]+:|\.\/)/, '')
+
         table += '<tr>'
-        table += `<td><a href="javascript:loadPGN('` + puzzle.path + `', '` + puzzle.hash + `')">&#9654;</a>`
+        table += `<td><a href="javascript:loadPGN('` + path + `', '` + puzzle.hash + `')">&#9654;</a>`
         table += '<td id=puzzle' + puzzle.hash + '>'
 
         if (progress[puzzle.hash]) {

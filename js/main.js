@@ -7,8 +7,8 @@ var progress = {}
 var path = null
 var board = null
 var tactic = null
+var player = null
 var game = null
-
 var pgn = null
 var fen = null
 
@@ -87,7 +87,7 @@ function getConfig(tactic) {
 }
 
 function onDragStart(source, piece, position, orientation) {
-	if (wait || tactic.solved || game.game_over()) return false
+	if (wait || tactic.solved || game.game_over() || game.turn() != player) return false
 
 	if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
 		(game.turn() === 'b' && piece.search(/^w/) !== -1)) {
@@ -100,6 +100,7 @@ function onSnapEnd() {
 }
 
 function reset() {
+    player = null
     tactic = new Tactic(pgn)
     game = new Chess(tactic.fen)
     board = Chessboard('myBoard', getConfig(tactic))
@@ -113,6 +114,7 @@ function reset() {
     updateStatus()
     delay(() => {
         makeMove(tactic.firstMove)
+        player = game.turn()
     })
 }
 
@@ -136,11 +138,11 @@ function onDrop(source, target) {
 			})
 		}
 		else {
-			move = tactic.getNextMove()
+			move = tactic.forward()
 			if (move !== null) {
 				delay(() => {
                     makeMove(move)
-                    tactic.getNextMove()
+                    tactic.forward()
                 })
 			}
 		}
