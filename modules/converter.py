@@ -11,7 +11,7 @@ SPLIT = True
 configuration = load_configuration()
 
 INPUT_DIRECTORY = configuration['paths']['processed']
-PGN_EXTRACT_PATH = configuration['paths']['pgn-extract']
+PGN_EXTRACT_PATH = configuration['paths']['pgn_extract']
 TEMP_FILE = configuration['paths']['temp_file']
 
 
