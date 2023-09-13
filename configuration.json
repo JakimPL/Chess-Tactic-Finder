@@ -27,7 +27,7 @@
         "temp_file": "./temp/temp.pgn",
         "processed": "games",
         "output": "tactics",
-        "pgn-extract": "/usr/bin/pgn-extract",
+        "pgn_extract": "/usr/bin/pgn-extract",
         "gathered_puzzles": "puzzles.json",
         "progress": "progress.json"
     },
