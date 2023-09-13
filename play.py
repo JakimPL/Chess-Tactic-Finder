@@ -7,12 +7,15 @@ import webbrowser
 from hashlib import md5
 
 from modules.configuration import load_configuration
+from modules.json import json_save, json_load
 from modules.tactic import Tactic
 
 configuration = load_configuration()
 
 INPUT_DIRECTORY = configuration['paths']['output']
 GATHERED_PUZZLES_PATH = configuration['paths']['gathered_puzzles']
+PROGRESS_PATH = configuration['paths']['progress']
+
 PORT = configuration['tactic_player']['port']
 
 
@@ -72,8 +75,16 @@ def gather_puzzles(paths: list[str]) -> list[dict]:
 
 
 def save_puzzles(puzzles: list[dict], path: str = GATHERED_PUZZLES_PATH) -> None:
-    with open(path, 'w') as file:
-        json.dump(puzzles, file, indent=4)
+    json_save(puzzles, path)
+
+
+def save(puzzle_id: str):
+    progress = {}
+    if os.path.exists(PROGRESS_PATH):
+        progress = json_load(PROGRESS_PATH)
+
+    progress[puzzle_id] = True
+    json_save(progress, PROGRESS_PATH)
 
 
 def refresh():
@@ -89,6 +100,13 @@ class RefreshHandler(http.server.SimpleHTTPRequestHandler):
         parsed_url = urllib.parse.urlparse(self.path)
         if parsed_url.path == '/refresh':
             refresh()
+
+            self.send_response(200)
+            self.send_header('Content-type', 'text/html')
+            self.end_headers()
+        elif 'save' in parsed_url.path:
+            puzzle_id = parsed_url.path.split('/')[-1]
+            save(puzzle_id)
 
             self.send_response(200)
             self.send_header('Content-type', 'text/html')

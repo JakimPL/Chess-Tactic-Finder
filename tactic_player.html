@@ -55,8 +55,12 @@
 
 <script>
 
+var puzzlesPath = 'puzzles.json'
+var progressPath = 'progress.json'
+
 var puzzles = null
-var solved = {}
+var progress = {}
+
 var path = null
 var board = null
 var tactic = null
@@ -137,8 +141,14 @@ function delay(callback) {
     }, delayTime);
 }
 
-function loadPuzzles(path) {
-    fetch(path)
+function loadPuzzles() {
+    fetch(progressPath)
+    .then(response => response.text())
+    .then(text => {
+        progress = JSON.parse(text)
+    })
+
+    fetch(puzzlesPath)
     .then(response => response.text())
     .then(text => {
         puzzles = JSON.parse(text)
@@ -165,11 +175,20 @@ function createPuzzleTable(puzzles) {
     </thead>
     <tbody>
     `
+    console.log('progress')
+    console.log(progress)
     for (var i = 0; i < puzzles.length; i++) {
         var puzzle = puzzles[i]
         table += '<tr>'
         table += `<td><a href="javascript:loadPGN('` + puzzle.path + `', '` + puzzle.hash + `')">&#9654;</a>`
-        table += '<td id=puzzle' + puzzle.hash + '></td>'
+        table += '<td id=puzzle' + puzzle.hash + '>'
+
+        console.log(progress[puzzle.hash])
+        if (progress[puzzle.hash]) {
+            table += '&#10003;'
+        }
+
+        table += '</td>'
         table += '<td>' + puzzle.white + '</td>'
         table += '<td>' + puzzle.black + '</td>'
         table += '<td>' + puzzle.date + '</td>'
@@ -230,8 +249,7 @@ function getMoves() {
 function checkIfSolved() {
     if (tactic.solved) {
         $progress.html('Puzzle solved!')
-        $('#puzzle' + currentPuzzleId).html('&#10003;')
-        solved[currentPuzzleId] = true
+        save(currentPuzzleId)
     }
 }
 
@@ -324,12 +342,27 @@ function getConfig(tactic) {
     }
 }
 
+function save(hash) {
+    $('#puzzle' + currentPuzzleId).html('&#10003;')
+    progress[currentPuzzleId] = true
+    $.ajax({
+        url: 'save/' + hash,
+        type: 'GET',
+        success: () => {
+            console.log('Puzzle saved')
+        },
+        error: () => {
+            console.error('No response from server')
+        }
+    })
+}
+
 function refresh() {
     $.ajax({
         url: 'refresh',
         type: 'GET',
         success: () => {
-            loadPuzzles('puzzles.json')
+            loadPuzzles()
         },
         error: () => {
             console.error('Unable to refresh puzzles')
