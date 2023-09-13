@@ -28,7 +28,8 @@
         "processed": "games",
         "output": "tactics",
         "pgn-extract": "/usr/bin/pgn-extract",
-        "gathered_games": "games.json"
+        "gathered_puzzles": "puzzles.json",
+        "progress": "progress.json"
     },
     "export": {
         "ignore_first_move": false,

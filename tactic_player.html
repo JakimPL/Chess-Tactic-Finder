@@ -6,6 +6,10 @@
     <title>Tactic player</title>
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css" integrity="sha384-q94+BZtLrkL1/ohfjR8c6L+A6qzNH9R2hBLwyoAfu3i/WCvQjzL2RQJ3uNHDISdU" crossorigin="anonymous">
     <style>
+    a:link, a:hover, a:visited, a:active {
+       text-decoration: none
+    }
+
     .column {
         float: left;
         width: 50%;
@@ -36,6 +40,7 @@
         <div id="moves"></div>
     </div>
     <div class="column" style="height: 100%; overflow: auto; margin-left: 500px; font-size: 10px;">
+        <div id="refresh"><h2><a href="javascript: refresh()">&#10227;</a> Games</h2> </div>
         <div id="puzzles">
         </div>
     </div>
@@ -51,6 +56,7 @@
 <script>
 
 var puzzles = null
+var solved = {}
 var path = null
 var board = null
 var tactic = null
@@ -63,8 +69,15 @@ var $progress = $('#progress')
 var pgn = null
 var fen = null
 
+var currentPuzzleId = -1
+
+var action = 0
 var wait = false
 var delayTime = 750
+
+$('#refresh').on('click', function() {
+    refresh()
+})
 
 $('#reset').on('click', function() {
     reset()
@@ -110,6 +123,20 @@ $('#copyPGN').on('click', function() {
     }
 })
 
+function delay(callback) {
+    wait = true
+    action += 1
+    var currentAction = action
+    setTimeout(() => {
+        if (action == currentAction) {
+            callback()
+        }
+
+        wait = false
+        updateStatus()
+    }, delayTime);
+}
+
 function loadPuzzles(path) {
     fetch(path)
     .then(response => response.text())
@@ -125,13 +152,14 @@ function createPuzzleTable(puzzles) {
     <thead>
         <tr>
             <th>Play</th>
+            <th>Solved?</th>
             <th>White</th>
             <th>Black</th>
             <th>Date</th>
             <th>Puzzle type</th>
             <th>Moves</th>
             <th>Hardness</th>
-            <th>Initial evaluation
+            <th>Evaluation
             </th>
         </tr>
     </thead>
@@ -140,7 +168,8 @@ function createPuzzleTable(puzzles) {
     for (var i = 0; i < puzzles.length; i++) {
         var puzzle = puzzles[i]
         table += '<tr>'
-        table += `<td><a href="javascript:loadPGN('` + puzzle.path + `')" style="text-decoration:none">&#9654;</a>`
+        table += `<td><a href="javascript:loadPGN('` + puzzle.path + `', '` + puzzle.hash + `')">&#9654;</a>`
+        table += '<td id=puzzle' + puzzle.hash + '></td>'
         table += '<td>' + puzzle.white + '</td>'
         table += '<td>' + puzzle.black + '</td>'
         table += '<td>' + puzzle.date + '</td>'
@@ -155,6 +184,16 @@ function createPuzzleTable(puzzles) {
     $('#puzzles').html(table)
     var tableObject = document.getElementById('puzzleList')
     sorttable.makeSortable(tableObject)
+}
+
+function loadPGN(path, puzzleId) {
+    currentPuzzleId = puzzleId
+    fetch(path)
+    .then(response => response.text())
+    .then(text => {
+        pgn = text
+        reset()
+    })
 }
 
 function getFullPieceName(piece) {
@@ -175,15 +214,6 @@ function getFullPieceName(piece) {
     }
 }
 
-function loadPGN(path) {
-    fetch(path)
-    .then(response => response.text())
-    .then(text => {
-        pgn = text
-        reset()
-    })
-}
-
 function makeMove(move) {
 	if (move !== null) {
 		move = game.move(move)
@@ -197,22 +227,15 @@ function getMoves() {
     return game.pgn().split(/\d+\./).slice(1).join('')
 }
 
-function delay(callback) {
-    wait = true
-    setTimeout(() => {
-        callback()
-        wait = false
-        updateStatus()
-    }, delayTime);
-}
-
 function checkIfSolved() {
     if (tactic.solved) {
         $progress.html('Puzzle solved!')
+        $('#puzzle' + currentPuzzleId).html('&#10003;')
+        solved[currentPuzzleId] = true
     }
 }
 
-function onDragStart (source, piece, position, orientation) {
+function onDragStart(source, piece, position, orientation) {
 	// do not pick up pieces if the game is over
 	if (wait || tactic.solved || game.game_over()) return false
 
@@ -259,11 +282,11 @@ function onDrop(source, target) {
 
 // update the board position after the piece snap
 // for castling, en passant, pawn promotion
-function onSnapEnd () {
+function onSnapEnd() {
 	board.position(game.fen())
 }
 
-function updateStatus () {
+function updateStatus() {
 	var status = ''
 
 	var moveColor = 'White'
@@ -301,6 +324,19 @@ function getConfig(tactic) {
     }
 }
 
+function refresh() {
+    $.ajax({
+        url: 'refresh',
+        type: 'GET',
+        success: () => {
+            loadPuzzles('puzzles.json')
+        },
+        error: () => {
+            console.error('Unable to refresh puzzles')
+        }
+    })
+}
+
 function reset() {
     $progress.html('&nbsp')
 
@@ -321,7 +357,7 @@ function reset() {
 }
 
 board = Chessboard('myBoard')
-loadPuzzles('games.json')
+refresh()
 
 </script>
 </body>

@@ -1,7 +1,10 @@
+import http.server
 import json
 import os
-import subprocess
+import socketserver
+import urllib.parse
 import webbrowser
+from hashlib import md5
 
 from modules.configuration import load_configuration
 from modules.tactic import Tactic
@@ -9,7 +12,7 @@ from modules.tactic import Tactic
 configuration = load_configuration()
 
 INPUT_DIRECTORY = configuration['paths']['output']
-GATHERED_GAMES_PATH = configuration['paths']['gathered_games']
+GATHERED_PUZZLES_PATH = configuration['paths']['gathered_puzzles']
 PORT = configuration['tactic_player']['port']
 
 
@@ -26,8 +29,8 @@ def gather_variations(directory: str = INPUT_DIRECTORY) -> list[str]:
     return paths
 
 
-def gather_games(paths: list[str]) -> list[dict]:
-    games = []
+def gather_puzzles(paths: list[str]) -> list[dict]:
+    puzzles = []
     for path in paths:
         tactic = Tactic.from_file(path)
         white = (tactic.headers.get('White', '?'), tactic.headers.get('WhiteElo', '?'))
@@ -45,7 +48,7 @@ def gather_games(paths: list[str]) -> list[dict]:
         final_evaluation = tactic.final_evaluation
         white_to_move = tactic[1].color
 
-        games.append({
+        puzzles.append({
             'name': name,
             'puzzleType': puzzle_type,
             'moves': moves,
@@ -61,31 +64,50 @@ def gather_games(paths: list[str]) -> list[dict]:
             'date': date,
             'actualResult': actual_result,
             'whiteToMove': white_to_move,
-            'path': path.replace('.tactic', '.pgn')
+            'path': path.replace('.tactic', '.pgn'),
+            'hash': md5(path.encode()).hexdigest()
         })
 
-    return games
+    return puzzles
 
 
-def save_games(games: list[dict], path: str = GATHERED_GAMES_PATH) -> None:
+def save_puzzles(puzzles: list[dict], path: str = GATHERED_PUZZLES_PATH) -> None:
     with open(path, 'w') as file:
-        json.dump(games, file, indent=4)
+        json.dump(puzzles, file, indent=4)
+
+
+def refresh():
+    print('Gathering games...')
+    paths = gather_variations()
+    puzzles = gather_puzzles(paths)
+    save_puzzles(puzzles)
+    print(f'Puzzle saved to {GATHERED_PUZZLES_PATH}')
+
+
+class RefreshHandler(http.server.SimpleHTTPRequestHandler):
+    def do_GET(self):
+        parsed_url = urllib.parse.urlparse(self.path)
+        if parsed_url.path == '/refresh':
+            refresh()
+
+            self.send_response(200)
+            self.send_header('Content-type', 'text/html')
+            self.end_headers()
+        else:
+            super().do_GET()
 
 
 if __name__ == '__main__':
-    paths = gather_variations()
-    games = gather_games(paths)
-    save_games(games)
-
-    process = None
     try:
-        process = subprocess.Popen(['python', '-m', 'http.server', str(PORT)])
-        webbrowser.open('localhost:8000/tactic_player.html')
-        process.communicate()
+        with socketserver.TCPServer(('', PORT), RefreshHandler, bind_and_activate=False) as httpd:
+            httpd.allow_reuse_address = True
+            httpd.server_bind()
+            httpd.server_activate()
+            print(f'Server started at http://localhost:{PORT}')
+            httpd.serve_forever()
+
+        webbrowser.open(f'localhost:{PORT}/tactic_player.html')
     except KeyboardInterrupt:
         print('Exit.')
     except OSError:
-        print("Server already running.")
-    finally:
-        process.kill()
-
+        print('Server already running.')
