@@ -28,11 +28,13 @@
     <div class="column" style="position: fixed; width: 500px; height: 100%">
         <div id="myBoard" style="margin:0 auto; width: 400px"></div>
         <div id="buttons" style="text-align:center; display: block">
+            <button id="backward" type="button">&#9664;</button>
             <button id="reset" type="button">Reset puzzle</button>
             <button id="hint" type="button">Hint</button>
             <button id="solution" type="button">Solution</button>
             <button id="copyFEN" type="button">Copy FEN</button>
             <button id="copyPGN" type="button">Copy PGN</button>
+            <button id="forward" type="button">&#9654;</button>
         </div>
 
         <div id="progress">&nbsp</div>
@@ -52,38 +54,20 @@
 <script src="https://unpkg.com/chess-pgn-parser/dist/parser.js"></script>
 <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
 <script src="js/tactic.js"></script>
+<script src="js/main.js"></script>
 
 <script>
-
-var puzzlesPath = 'puzzles.json'
-var progressPath = 'progress.json'
-
-var puzzles = null
-var progress = {}
-
-var path = null
-var board = null
-var tactic = null
-var game = null
 
 var $status = $('#status')
 var $moves = $('#moves')
 var $progress = $('#progress')
-
-var pgn = null
-var fen = null
-
-var currentPuzzleId = -1
-
-var action = 0
-var wait = false
-var delayTime = 750
 
 $('#refresh').on('click', function() {
     refresh()
 })
 
 $('#reset').on('click', function() {
+    setProgress()
     reset()
 })
 
@@ -96,7 +80,7 @@ $('#hint').on('click', function() {
             hint = true
 
             delay(() => {
-                $progress.html('&nbsp')
+               setProgress()
             })
         }
     }
@@ -109,7 +93,7 @@ $('#solution').on('click', function() {
             hint = false
 
             delay(() => {
-                $progress.html('&nbsp')
+                setProgress()
             })
         }
     }
@@ -127,18 +111,12 @@ $('#copyPGN').on('click', function() {
     }
 })
 
-function delay(callback) {
-    wait = true
-    action += 1
-    var currentAction = action
-    setTimeout(() => {
-        if (action == currentAction) {
-            callback()
-        }
-
-        wait = false
-        updateStatus()
-    }, delayTime);
+function setProgress(progress) {
+    if (progress === null) {
+        $progress.html('&nbsp')
+    } else {
+        $progress.html(progress)
+    }
 }
 
 function loadPuzzles() {
@@ -203,141 +181,6 @@ function createPuzzleTable(puzzles) {
     sorttable.makeSortable(tableObject)
 }
 
-function loadPGN(path, puzzleId) {
-    currentPuzzleId = puzzleId
-    fetch(path)
-    .then(response => response.text())
-    .then(text => {
-        pgn = text
-        reset()
-    })
-}
-
-function getFullPieceName(piece) {
-    piece = piece.toLowerCase()
-    switch (piece) {
-        case 'p':
-            return 'Pawn'
-        case 'n':
-            return 'Knight'
-        case 'b':
-            return 'Bishop'
-        case 'r':
-            return 'Rook'
-        case 'q':
-            return 'Queen'
-        case 'k':
-            return 'King'
-    }
-}
-
-function makeMove(move) {
-	if (move !== null) {
-		move = game.move(move)
-		board.position(game.fen())
-	}
-}
-
-function getMoves() {
-    moves = game.moves({verbose: true})
-    return game.pgn().split(/\d+\./).slice(1).join('')
-}
-
-function checkIfSolved() {
-    if (tactic.solved) {
-        $progress.html('Puzzle solved!')
-        save(currentPuzzleId)
-    }
-}
-
-function onDragStart(source, piece, position, orientation) {
-	// do not pick up pieces if the game is over
-	if (wait || tactic.solved || game.game_over()) return false
-
-	// only pick up pieces for the side to move
-	if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
-		(game.turn() === 'b' && piece.search(/^w/) !== -1)) {
-		return false
-	}
-}
-
-function onDrop(source, target) {
-	// see if the move is legal
-	var move = game.move({
-		from: source,
-		to: target,
-		promotion: 'q' // NOTE: always promote to a queen for example simplicity
-	})
-
-	if (wait || move === null) {
-		return 'snapback'
-	} else {
-		nextMove = tactic.nextMove
-		if (nextMove != move.san) {
-			$progress.html('Incorrect move!')
-			delay(() => {
-				game.undo()
-				board.position(game.fen())
-				$progress.html('&nbsp')
-			})
-		}
-		else {
-			move = tactic.getNextMove()
-			if (move !== null) {
-				delay(() => {
-                    makeMove(move)
-                    tactic.getNextMove()
-                })
-			}
-		}
-	}
-
-	updateStatus()
-}
-
-// update the board position after the piece snap
-// for castling, en passant, pawn promotion
-function onSnapEnd() {
-	board.position(game.fen())
-}
-
-function updateStatus() {
-	var status = ''
-
-	var moveColor = 'White'
-	if (game.turn() === 'b') {
-		moveColor = 'Black'
-	}
-
-	// checkmate?
-	if (game.in_checkmate()) {
-		status = 'Game over, ' + moveColor + ' is in checkmate.'
-	}
-
-	// draw?
-	else if (game.in_draw()) {
-		status = 'Game over, drawn position'
-	}
-
-	// game still on
-	else {
-		status = moveColor + ' to move'
-	}
-
-	$status.html(status)
-	$moves.html(getMoves())
-    checkIfSolved()
-}
-
-function getConfig(tactic) {
-    return {
-        draggable: true,
-        position: tactic.fen,
-        onDragStart: onDragStart,
-        onDrop: onDrop,
-        onSnapEnd: onSnapEnd
-    }
-}
 
 function save(hash) {
     $('#puzzle' + currentPuzzleId).html('&#10003;')
@@ -364,25 +207,6 @@ function refresh() {
         error: () => {
             console.error('Unable to refresh puzzles')
         }
-    })
-}
-
-function reset() {
-    $progress.html('&nbsp')
-
-    tactic = new Tactic(pgn)
-    game = new Chess(tactic.fen)
-    board = Chessboard('myBoard', getConfig(tactic))
-
-    fen = game.fen()
-
-    if (game.turn() == 'w') {
-        board.flip()
-    }
-
-    updateStatus()
-    delay(() => {
-        makeMove(tactic.firstMove)
     })
 }
 
