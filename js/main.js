@@ -18,9 +18,9 @@ var action = 0
 var wait = false
 var delayTime = 750
 
-var panelText = null
-var statusText = ''
-var moveHistoryText = ''
+var panelTextCallback = null
+var statusTextCallback = null
+var moveHistoryText = null
 
 function delay(callback) {
     wait = true
@@ -103,13 +103,13 @@ function reset() {
     tactic = new Tactic(pgn)
     game = new Chess(tactic.fen)
     board = Chessboard('myBoard', getConfig(tactic))
-
     fen = game.fen()
 
     if (game.turn() == 'w') {
         board.flip()
     }
 
+    panelTextCallback()
     updateStatus()
     delay(() => {
         makeMove(tactic.firstMove)
@@ -128,11 +128,11 @@ function onDrop(source, target) {
 	} else {
 		nextMove = tactic.nextMove
 		if (nextMove != move.san) {
-			panelText = 'Incorrect move!'
+			panelTextCallback('Incorrect move!')
 			delay(() => {
 				game.undo()
 				board.position(game.fen())
-				panelText = null
+				panelTextCallback()
 			})
 		}
 		else {
@@ -151,13 +151,13 @@ function onDrop(source, target) {
 
 function checkIfSolved() {
     if (tactic.solved) {
-        panelText = 'Puzzle solved!'
+        panelTextCallback('Puzzle solved!')
         save(currentPuzzleId)
     }
 }
 
 function updateStatus() {
-	statusText = ''
+	var statusText = ''
 
 	var moveColor = 'White'
 	if (game.turn() === 'b') {
@@ -172,6 +172,7 @@ function updateStatus() {
 		statusText = moveColor + ' to move'
 	}
 
+    statusTextCallback(statusText)
     moveHistoryText = getMoves(game)
     checkIfSolved()
 }

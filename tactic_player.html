@@ -37,9 +37,9 @@
             <button id="forward" type="button">&#9654;</button>
         </div>
 
-        <div id="progress">&nbsp</div>
+        <div id="panel">&nbsp</div>
         <div id="status"></div>
-        <div id="moves"></div>
+        <div id="moveHistory"></div>
     </div>
     <div class="column" style="height: 100%; overflow: auto; margin-left: 500px; font-size: 10px;">
         <div id="refresh"><h2><a href="javascript: refresh()">&#10227;</a> Games</h2> </div>
@@ -58,16 +58,18 @@
 
 <script>
 
+board = Chessboard('myBoard')
+
 var $status = $('#status')
-var $moves = $('#moves')
-var $progress = $('#progress')
+var $moveHistory = $('#moveHistory')
+var $panel = $('#panel')
 
 $('#refresh').on('click', function() {
     refresh()
 })
 
 $('#reset').on('click', function() {
-    setProgress()
+    setPanel()
     reset()
 })
 
@@ -76,12 +78,8 @@ $('#hint').on('click', function() {
         if (!tactic.solved) {
             move = game.move(tactic.nextMove)
             game.undo()
-            $progress.html('Hint: ' + getFullPieceName(move.piece))
-            hint = true
-
-            delay(() => {
-               setProgress()
-            })
+            setPanel('Hint: ' + getFullPieceName(move.piece))
+            delay(() => {setPanel()})
         }
     }
 })
@@ -89,12 +87,8 @@ $('#hint').on('click', function() {
 $('#solution').on('click', function() {
     if (tactic !== null) {
         if (!tactic.solved) {
-            $progress.html('Hint: ' + tactic.nextMove)
-            hint = false
-
-            delay(() => {
-                setProgress()
-            })
+            setPanel('Hint: ' + tactic.nextMove)
+            delay(() => {setPanel()})
         }
     }
 })
@@ -111,11 +105,11 @@ $('#copyPGN').on('click', function() {
     }
 })
 
-function setProgress(progress) {
-    if (progress === null) {
-        $progress.html('&nbsp')
+function setPanel(text) {
+    if (text == null) {
+        $panel.html('&nbsp')
     } else {
-        $progress.html(progress)
+        $panel.html(text)
     }
 }
 
@@ -181,16 +175,13 @@ function createPuzzleTable(puzzles) {
     sorttable.makeSortable(tableObject)
 }
 
-
 function save(hash) {
     $('#puzzle' + currentPuzzleId).html('&#10003;')
     progress[currentPuzzleId] = true
     $.ajax({
         url: 'save/' + hash,
         type: 'GET',
-        success: () => {
-            console.log('Puzzle saved')
-        },
+        success: () => {},
         error: () => {
             console.error('No response from server')
         }
@@ -210,7 +201,9 @@ function refresh() {
     })
 }
 
-board = Chessboard('myBoard')
+panelTextCallback = setPanel
+statusTextCallback = (text) => {$status.html(text)}
+moveHistoryTextCallback = (text) => {$moveHistory.html(text)}
 refresh()
 
 </script>
