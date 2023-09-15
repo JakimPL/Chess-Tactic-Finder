@@ -195,16 +195,7 @@ $('.options').change(function() {
 })
 
 $('#random').on('click', function() {
-    var filteredPuzzles = filterPuzzles(puzzles)
-    if (filteredPuzzles == null) {
-        return
-    } else if (!filteredPuzzles.length) {
-        return
-    }
-
-    var puzzle = filteredPuzzles[(Math.floor(Math.random() * (filteredPuzzles.length)))]
-    var path = getPuzzlePath(puzzle)
-    loadPGN(path, puzzle.hash)
+    loadNextPuzzle()
 })
 
 function backward() {
@@ -324,6 +315,19 @@ function createPuzzleTable(puzzles) {
     sorttable.makeSortable(document.getElementById('puzzles'))
 }
 
+function loadNextPuzzle() {
+    var filteredPuzzles = filterPuzzles(puzzles)
+    if (filteredPuzzles == null) {
+        return
+    } else if (!filteredPuzzles.length) {
+        return
+    }
+
+    var puzzle = filteredPuzzles[(Math.floor(Math.random() * (filteredPuzzles.length)))]
+    var path = getPuzzlePath(puzzle)
+    loadPGN(path, puzzle.hash)
+}
+
 function save(hash) {
     $('#puzzle' + currentPuzzleId).html('&#10003;')
     progress[currentPuzzleId] = true
@@ -353,6 +357,7 @@ function refresh() {
 panelTextCallback = setPanel
 statusTextCallback = (text) => {$status.html(text)}
 moveHistoryTextCallback = (text) => {$moveHistory.html(text)}
+loadNextPuzzleCallback = loadNextPuzzle
 refresh()
 
 </script>

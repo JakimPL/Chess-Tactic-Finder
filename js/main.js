@@ -21,6 +21,7 @@ var delayTime = 750
 var panelTextCallback = null
 var statusTextCallback = null
 var moveHistoryText = null
+var loadNextPuzzleCallback = null
 
 var hideFirstMove = true
 var keepPlaying = true
@@ -180,6 +181,10 @@ function checkIfSolved() {
     if (tactic.solved) {
         panelTextCallback('Puzzle solved!')
         save(currentPuzzleId)
+        if (keepPlaying) {
+            tactic = null
+            delay(loadNextPuzzleCallback)
+        }
     }
 }
 
