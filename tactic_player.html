@@ -20,6 +20,10 @@
         display: table;
         clear: both;
     }
+
+    input {
+        font-size: 10px
+    }
 </style>
 </head>
 <body>
@@ -42,10 +46,44 @@
         <div id="moveHistory"></div>
     </div>
     <div class="column" style="height: 100%; overflow: auto; margin-left: 500px; font-size: 10px;">
-        <div id="refresh"><h2><a href="javascript: refresh()">&#10227;</a> Games</h2> </div>
+        <h2><a href="javascript: refresh()">&#10227;</a> Games</h2>
+        <p>All <code>checkmate</code> and <code>mating net</code> puzzles require to find the shortest route. Sometimes, there may be more one way to checkmate but only one should be the shortest. Unfortunately, in some cases Stockfish misevaluated the checkmate counters in a puzzle, yielding a puzzle that is not well posed.</p>
+        <div class="row">
+            <div><p>Select puzzle options:</p>
+                <div class="column">Theme:
+                    <div>
+                        <div><input id="checkmate" class="theme" type="checkbox" checked><label for="checkmate">checkmate</label></div>
+                        <div><input id="mating_net" class="theme" type="checkbox" checked><label for="mating_net">mating net</label></div>
+                        <div><input id="material_advantage" class="theme" type="checkbox" checked><label for="material_advantage">material advantage</label></div>
+                        <div><input id="repetition" class="theme" type="checkbox" checked><label for="repetition">repetition</label></div>
+                        <div><input id="stalemate" class="theme" type="checkbox" checked><label for="stalemate">stalemate</label></div>
+                    </div>
+                </div>
+                <div class="column">
+                    <div><input id="unsolved" class="options" type="checkbox" checked><label for="unsolved">Only unsolved?</label></div>
+                    <table>
+                        <tr>
+                            <td><label for="min_moves">Minimum moves:</label></td>
+                            <td><input type="number" id="min_moves" min="1" max="100" value="1"></td>
+                        </tr>
+                        <tr>
+                            <td><label for="max_moves">Maximum moves:</label></td>
+                            <td><input type="number" id="max_moves" min="1" max="100" value="100"></td>
+                        </tr>
+                        <tr>
+                            <td><label for="min_hardness">Minimum hardness:</label></td>
+                            <td><input type="number" id="min_hardness" min="0" max="1" step="0.05" value="0.0"></td>
+                        </tr>
+                        <tr>
+                            <td><label for="max_hardness">Maximum hardness:</label></td>
+                            <td><input type="number" id="max_hardness" min="0" max="1" step="0.05" value="1.0"></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
         <div>
-            <p>All <code>checkmate</code> and <code>mating net</code> puzzles require to find the shortest route. Sometimes, there may be more one way to checkmate but only one should be the shortest. Unfortunately, in some cases Stockfish misevaluated the checkmate counters in a puzzle, yielding a puzzle that is not well posed.</p>
-            <p></p>Attention! The <b>Hardness</b> parameter does not mean the degree of difficulty of the puzzle, but the frequency of situations in which all but one of the player's moves fails. Counterintuitively, more often than not, puzzles with higher level of <b>Hardness</b> are easier to solve, as there is a very limited number of ways to not lose in a given situation.</p>
+            <p>Attention! The <b>Hardness</b> parameter does not mean the degree of difficulty of the puzzle, but the frequency of situations in which all but one of the player's moves fails. Counterintuitively, more often than not, puzzles with higher level of <b>Hardness</b> are easier to solve, as there is a very limited number of ways to not lose in a given situation.</p>
             <table id="puzzles" class="sortable" style="text-align: center; white-space: nowrap">
                 <thead>
                     <tr>
@@ -61,7 +99,6 @@
                     </tr>
                 </thead>
                 <tbody id="puzzleList"></tbody>
-                <tfoot></tfoot>
             </table>
         </div>
     </div>
@@ -136,26 +173,19 @@ $('#copyPGN').on('click', function() {
     }
 })
 
+$('.theme').change(function() {
+    filterPuzzles(puzzles)
+})
+
+$('.options').change(function() {
+    filterPuzzles(puzzles)
+})
+
 function backward() {
     game.undo()
     tactic.backward()
     board.position(game.fen())
     updateStatus()
-}
-
-function forward() {
-    game.move(tactic.nextMove)
-    tactic.forward()
-    board.position(game.fen())
-    updateStatus()
-}
-
-function setPanel(text) {
-    if (text == null) {
-        $panel.html('&nbsp')
-    } else {
-        $panel.html(text)
-    }
 }
 
 function loadPuzzles() {
@@ -169,8 +199,36 @@ function loadPuzzles() {
     .then(response => response.text())
     .then(text => {
         puzzles = JSON.parse(text)
-        createPuzzleTable(puzzles)
+        filterPuzzles(puzzles)
     })
+}
+
+function gatherPuzzleTypes() {
+    var puzzleTypes = []
+    for (const element of $('.theme')) {
+        if (element.checked) {
+            var theme = element.id.replace('_', ' ')
+            puzzleTypes.push(theme)
+        }
+    }
+
+    return puzzleTypes
+}
+
+function filterPuzzles(puzzles) {
+    if (puzzles == null) {
+        return undefined
+    }
+
+    filteredPuzzles = []
+    puzzleTypes = gatherPuzzleTypes()
+    for (const puzzle of puzzles) {
+        if (puzzleTypes.includes(puzzle.puzzleType)) {
+            filteredPuzzles.push(puzzle)
+        }
+    }
+
+    createPuzzleTable(filteredPuzzles)
 }
 
 function clearPuzzleTable() {
@@ -198,9 +256,8 @@ function createPuzzleTableRowEntry(tr, text, link) {
 function createPuzzleTable(puzzles) {
     clearPuzzleTable()
     const tableObject = document.getElementById('puzzleList')
-    for (var i = 0; i < puzzles.length; i++) {
+    for (const puzzle of puzzles) {
         var tr = document.createElement('tr');
-        var puzzle = puzzles[i]
 
         var path = puzzle.path.replace(/[\\/]+/g, '/').replace(/^([a-zA-Z]+:|\.\/)/, '')
         var link = `javascript:loadPGN('${path}', '${puzzle.hash}')`
