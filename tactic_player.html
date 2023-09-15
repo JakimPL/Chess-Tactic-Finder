@@ -43,7 +43,26 @@
     </div>
     <div class="column" style="height: 100%; overflow: auto; margin-left: 500px; font-size: 10px;">
         <div id="refresh"><h2><a href="javascript: refresh()">&#10227;</a> Games</h2> </div>
-        <div id="puzzles">
+        <div>
+            <p>All <code>checkmate</code> and <code>mating net</code> puzzles require to find the shortest route. Sometimes, there may be more one way to checkmate but only one should be the shortest. Unfortunately, in some cases Stockfish misevaluated the checkmate counters in a puzzle, yielding a puzzle that is not well posed.</p>
+            <p></p>Attention! The <b>Hardness</b> parameter does not mean the degree of difficulty of the puzzle, but the frequency of situations in which all but one of the player's moves fails. Counterintuitively, more often than not, puzzles with higher level of <b>Hardness</b> are easier to solve, as there is a very limited number of ways to not lose in a given situation.</p>
+            <table id="puzzles" class="sortable" style="text-align: center; white-space: nowrap">
+                <thead>
+                    <tr>
+                        <th>Play</th>
+                        <th>Solved?</th>
+                        <th>White</th>
+                        <th>Black</th>
+                        <th>Date</th>
+                        <th>Puzzle type</th>
+                        <th>Moves</th>
+                        <th>Hardness</th>
+                        <th>Evaluation</th>
+                    </tr>
+                </thead>
+                <tbody id="puzzleList"></tbody>
+                <tfoot></tfoot>
+            </table>
         </div>
     </div>
 </div>
@@ -60,9 +79,9 @@
 
 board = Chessboard('myBoard')
 
-var $status = $('#status')
-var $moveHistory = $('#moveHistory')
-var $panel = $('#panel')
+const $status = $('#status')
+const $moveHistory = $('#moveHistory')
+const $panel = $('#panel')
 
 $('#backward').on('click', function() {
     if (tactic !== null) {
@@ -154,53 +173,52 @@ function loadPuzzles() {
     })
 }
 
-function createPuzzleTable(puzzles) {
-    var table = '<table class="sortable" id="puzzleList">'
-    table += `
-    <thead>
-        <tr>
-            <th>Play</th>
-            <th>Solved?</th>
-            <th>White</th>
-            <th>Black</th>
-            <th>Date</th>
-            <th>Puzzle type</th>
-            <th>Moves</th>
-            <th>Hardness</th>
-            <th>Evaluation
-            </th>
-        </tr>
-    </thead>
-    <tbody>
-    `
-
-    for (var i = 0; i < puzzles.length; i++) {
-        var puzzle = puzzles[i]
-        path = puzzle.path.replace(/[\\/]+/g, '/').replace(/^([a-zA-Z]+:|\.\/)/, '')
-
-        table += '<tr>'
-        table += `<td><a href="javascript:loadPGN('` + path + `', '` + puzzle.hash + `')">&#9654;</a>`
-        table += '<td id=puzzle' + puzzle.hash + '>'
-
-        if (progress[puzzle.hash]) {
-            table += '&#10003;'
-        }
-
-        table += '</td>'
-        table += '<td>' + puzzle.white + '</td>'
-        table += '<td>' + puzzle.black + '</td>'
-        table += '<td>' + puzzle.date + '</td>'
-        table += '<td>' + puzzle.puzzleType + '</td>'
-        table += '<td>' + puzzle.moves + '</td>'
-        table += '<td>' + puzzle.hardness.toFixed(2) + '</td>'
-        table += '<td>' + puzzle.initialEvaluation + '</td>'
-        table += '</tr>'
+function clearPuzzleTable() {
+    const node = document.getElementById('puzzleList')
+    while (node.firstChild) {
+        node.removeChild(node.lastChild)
     }
-    table += '</tbody></table>'
+}
 
-    $('#puzzles').html(table)
-    var tableObject = document.getElementById('puzzleList')
-    sorttable.makeSortable(tableObject)
+function createPuzzleTableRowEntry(tr, text, link) {
+    var td = document.createElement('td')
+    var textNode = document.createTextNode(text)
+    if (link != null) {
+        var a = document.createElement('a')
+        a.href = link
+        a.appendChild(textNode)
+        td.appendChild(a)
+    } else {
+        td.appendChild(textNode)
+    }
+
+    tr.appendChild(td)
+}
+
+function createPuzzleTable(puzzles) {
+    clearPuzzleTable()
+    const tableObject = document.getElementById('puzzleList')
+    for (var i = 0; i < puzzles.length; i++) {
+        var tr = document.createElement('tr');
+        var puzzle = puzzles[i]
+
+        var path = puzzle.path.replace(/[\\/]+/g, '/').replace(/^([a-zA-Z]+:|\.\/)/, '')
+        var link = `javascript:loadPGN('${path}', '${puzzle.hash}')`
+        var solved = progress[puzzle.hash] ? '✓' : ''
+
+        createPuzzleTableRowEntry(tr, '▶', link)
+        createPuzzleTableRowEntry(tr, solved)
+        createPuzzleTableRowEntry(tr, puzzle.white)
+        createPuzzleTableRowEntry(tr, puzzle.black)
+        createPuzzleTableRowEntry(tr, puzzle.date)
+        createPuzzleTableRowEntry(tr, puzzle.puzzleType)
+        createPuzzleTableRowEntry(tr, puzzle.moves)
+        createPuzzleTableRowEntry(tr, puzzle.hardness.toFixed(2))
+        createPuzzleTableRowEntry(tr, puzzle.initialEvaluation)
+        tableObject.appendChild(tr)
+    }
+
+    sorttable.makeSortable(document.getElementById('puzzles'))
 }
 
 function save(hash) {
