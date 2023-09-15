@@ -30,6 +30,14 @@
 
 <div class="row">
     <div class="column" style="position: fixed; width: 500px; height: 100%">
+        <div><h3>Board</h3></div>
+        <div>
+            <table>
+                <tr><td><input id="hide_first_move" type="checkbox" checked><label for="hide_first_move">Hide the first move?</label></td></tr>
+                <tr><td><input id="keep_playing" type="checkbox" checked><label for="keep_playing">Keep playing random puzzles?</label></td></tr>
+            </table>
+        </div>
+        <p></p>
         <div id="myBoard" style="margin: 0 auto; width: 400px"></div>
         <div id="buttons" style="text-align: center; display: block">
             <button id="backward" type="button">&#9664;</button>
@@ -121,6 +129,10 @@ const $status = $('#status')
 const $moveHistory = $('#moveHistory')
 const $panel = $('#panel')
 
+$('#hide_first_move').on('click', function() {
+    hideFirstMove = document.getElementById('hide_first_move').checked
+})
+
 $('#backward').on('click', function() {
     if (tactic !== null) {
         backward()
@@ -183,7 +195,7 @@ $('.options').change(function() {
 })
 
 $('#random').on('click', function() {
-    filterPuzzles(puzzles)
+    var filteredPuzzles = filterPuzzles(puzzles)
     if (filteredPuzzles == null) {
         return
     } else if (!filteredPuzzles.length) {
@@ -262,6 +274,7 @@ function filterPuzzles(puzzles) {
     }
 
     createPuzzleTable(filteredPuzzles)
+    return filteredPuzzles
 }
 
 function clearPuzzleTable() {

@@ -22,6 +22,9 @@ var panelTextCallback = null
 var statusTextCallback = null
 var moveHistoryText = null
 
+var hideFirstMove = true
+var keepPlaying = true
+
 function delay(callback) {
     wait = true
     action += 1
@@ -64,10 +67,11 @@ function getFullPieceName(piece) {
     }
 }
 
-function makeMove(move) {
+function makeMove(move, instant) {
+    animation = instant == null || instant
 	if (move !== null) {
 		move = game.move(move)
-		board.position(game.fen())
+		board.position(game.fen(), !instant)
 	}
 }
 
@@ -125,12 +129,18 @@ function reset() {
         board.flip()
     }
 
+    if (hideFirstMove) {
+        makeMove(tactic.firstMove, true)
+        player = game.turn()
+    } else {
+        delay(() => {
+            makeMove(tactic.firstMove)
+            player = game.turn()
+        })
+    }
+
     panelTextCallback()
     updateStatus()
-    delay(() => {
-        makeMove(tactic.firstMove)
-        player = game.turn()
-    })
 }
 
 function onDrop(source, target) {
