@@ -99,6 +99,21 @@ function onSnapEnd() {
 	board.position(game.fen())
 }
 
+function forward() {
+    game.move(tactic.nextMove)
+    tactic.forward()
+    board.position(game.fen())
+    updateStatus()
+}
+
+function setPanel(text) {
+    if (text == null) {
+        $panel.html('&nbsp')
+    } else {
+        $panel.html(text)
+    }
+}
+
 function reset() {
     player = null
     tactic = new Tactic(pgn)

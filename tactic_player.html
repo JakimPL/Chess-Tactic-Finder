@@ -30,8 +30,8 @@
 
 <div class="row">
     <div class="column" style="position: fixed; width: 500px; height: 100%">
-        <div id="myBoard" style="margin:0 auto; width: 400px"></div>
-        <div id="buttons" style="text-align:center; display: block">
+        <div id="myBoard" style="margin: 0 auto; width: 400px"></div>
+        <div id="buttons" style="text-align: center; display: block">
             <button id="backward" type="button">&#9664;</button>
             <button id="reset" type="button">Reset puzzle</button>
             <button id="hint" type="button">Hint</button>
@@ -64,19 +64,19 @@
                     <table>
                         <tr>
                             <td><label for="min_moves">Minimum moves:</label></td>
-                            <td><input type="number" id="min_moves" min="1" max="100" value="1"></td>
+                            <td><input type="number" class="options" id="min_moves" min="1" max="100" value="2"></td>
                         </tr>
                         <tr>
                             <td><label for="max_moves">Maximum moves:</label></td>
-                            <td><input type="number" id="max_moves" min="1" max="100" value="100"></td>
+                            <td><input type="number" class="options" id="max_moves" min="1" max="100" value="100"></td>
                         </tr>
                         <tr>
                             <td><label for="min_hardness">Minimum hardness:</label></td>
-                            <td><input type="number" id="min_hardness" min="0" max="1" step="0.05" value="0.0"></td>
+                            <td><input type="number" class="options" id="min_hardness" min="0" max="1" step="0.05" value="0.0"></td>
                         </tr>
                         <tr>
                             <td><label for="max_hardness">Maximum hardness:</label></td>
-                            <td><input type="number" id="max_hardness" min="0" max="1" step="0.05" value="1.0"></td>
+                            <td><input type="number" class="options" id="max_hardness" min="0" max="1" step="0.05" value="1.0"></td>
                         </tr>
                     </table>
                 </div>
@@ -84,6 +84,7 @@
         </div>
         <div>
             <p>Attention! The <b>Hardness</b> parameter does not mean the degree of difficulty of the puzzle, but the frequency of situations in which all but one of the player's moves fails. Counterintuitively, more often than not, puzzles with higher level of <b>Hardness</b> are easier to solve, as there is a very limited number of ways to not lose in a given situation.</p>
+            <div style="text-align: center"><p><button id="random">&#9654; Play a random puzzle</button></p></div>
             <table id="puzzles" class="sortable" style="text-align: center; white-space: nowrap">
                 <thead>
                     <tr>
@@ -181,6 +182,19 @@ $('.options').change(function() {
     filterPuzzles(puzzles)
 })
 
+$('#random').on('click', function() {
+    filterPuzzles(puzzles)
+    if (filteredPuzzles == null) {
+        return
+    } else if (!filteredPuzzles.length) {
+        return
+    }
+
+    var puzzle = filteredPuzzles[(Math.floor(Math.random() * (filteredPuzzles.length)))]
+    var path = getPuzzlePath(puzzle)
+    loadPGN(path, puzzle.hash)
+})
+
 function backward() {
     game.undo()
     tactic.backward()
@@ -203,6 +217,10 @@ function loadPuzzles() {
     })
 }
 
+function getPuzzlePath(puzzle) {
+    return puzzle.path.replace(/[\\/]+/g, '/').replace(/^([a-zA-Z]+:|\.\/)/, '')
+}
+
 function gatherPuzzleTypes() {
     var puzzleTypes = []
     for (const element of $('.theme')) {
@@ -220,10 +238,25 @@ function filterPuzzles(puzzles) {
         return undefined
     }
 
-    filteredPuzzles = []
-    puzzleTypes = gatherPuzzleTypes()
+    var filteredPuzzles = []
+
+    var puzzleTypes = gatherPuzzleTypes()
+    var onlyUnsolved = document.getElementById('unsolved').checked
+    var minMoves = $('#min_moves').val()
+    var maxMoves = $('#max_moves').val()
+    var minHardness = parseFloat($('#min_hardness').val())
+    var maxHardness = parseFloat($('#max_hardness').val())
+
     for (const puzzle of puzzles) {
-        if (puzzleTypes.includes(puzzle.puzzleType)) {
+        var hardness = parseFloat(puzzle.hardness)
+        if (
+            puzzleTypes.includes(puzzle.puzzleType)
+            && (!onlyUnsolved || !progress[puzzle.hash])
+            && puzzle.moves >= minMoves
+            && puzzle.moves <= maxMoves
+            && hardness >= minHardness
+            && hardness <= maxHardness
+        ) {
             filteredPuzzles.push(puzzle)
         }
     }
@@ -259,7 +292,7 @@ function createPuzzleTable(puzzles) {
     for (const puzzle of puzzles) {
         var tr = document.createElement('tr');
 
-        var path = puzzle.path.replace(/[\\/]+/g, '/').replace(/^([a-zA-Z]+:|\.\/)/, '')
+        var path = getPuzzlePath(puzzle)
         var link = `javascript:loadPGN('${path}', '${puzzle.hash}')`
         var solved = progress[puzzle.hash] ? '✓' : ''
 
