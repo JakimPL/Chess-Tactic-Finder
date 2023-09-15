@@ -118,17 +118,19 @@ if __name__ == '__main__':
         description='A tool for finding tactics out of PGN files.'
     )
 
-    parser.add_argument('pgn', type=str, help='Path to the PGN file.')
+    parser.add_argument('pgn', type=str, nargs='?', help='Path to the PGN file.')
     parser.add_argument('--depth', '-d', type=int, help='Stockfish depth', default=STOCKFISH_DEPTH)
     args = parser.parse_args()
     pgn_path = args.pgn
     stockfish_depth = args.depth
 
-    print(f'Reading PGN file {pgn_path}...')
-    with open(pgn_path, 'r') as file:
-        pgn = file.read()
+    if pgn_path:
+        print(f'Reading PGN file {pgn_path}...')
+        with open(pgn_path, 'r') as file:
+            pgn = file.read()
 
-    convert(pgn, INPUT_DIRECTORY)
+        convert(pgn, INPUT_DIRECTORY)
+
     for filename in tqdm(sorted(os.listdir(INPUT_DIRECTORY), key=lambda x: int(x.split('.')[0]))):
         game_path = os.path.join(INPUT_DIRECTORY, filename)
         moves = get_moves(game_path)
