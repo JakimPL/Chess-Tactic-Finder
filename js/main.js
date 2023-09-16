@@ -22,6 +22,8 @@ var panelTextCallback = null
 var statusTextCallback = null
 var moveHistoryText = null
 var loadNextPuzzleCallback = null
+var progressCallback = null
+var refreshCallback = null
 
 var hideFirstMove = true
 var keepPlaying = true
@@ -157,6 +159,7 @@ function onDrop(source, target) {
 		nextMove = tactic.nextMove
 		if (nextMove != move.san) {
 			panelTextCallback('Incorrect move!')
+            save(currentPuzzleId, false)
 			delay(() => {
 				game.undo()
 				board.position(game.fen())
@@ -178,9 +181,13 @@ function onDrop(source, target) {
 }
 
 function checkIfSolved() {
+    if (tactic == null) {
+        return
+    }
+
     if (tactic.solved) {
         panelTextCallback('Puzzle solved!')
-        save(currentPuzzleId)
+        save(currentPuzzleId, true)
         if (keepPlaying) {
             tactic = null
             delay(loadNextPuzzleCallback)
@@ -207,4 +214,20 @@ function updateStatus() {
     statusTextCallback(statusText)
     moveHistoryText = getMoves(game)
     checkIfSolved()
+}
+
+function save(hash, value) {
+    $.ajax({
+        url: `save/${hash}/${value}`,
+        contentType: 'text/plain',
+        dataType: 'text',
+        type: 'GET',
+        success: () => {
+            progressCallback(currentPuzzleId, value)
+        },
+        error: () => {
+            console.error('Invalid response from server')
+            refreshCallback()
+        }
+    })
 }

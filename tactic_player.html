@@ -92,6 +92,7 @@
         </div>
         <div>
             <p>Attention! The <b>Hardness</b> parameter does not mean the degree of difficulty of the puzzle, but the frequency of situations in which all but one of the player's moves fails. Counterintuitively, more often than not, puzzles with higher level of <b>Hardness</b> are easier to solve, as there is a very limited number of ways to not lose in a given situation.</p>
+            <p><b><span id="success_rate"></span></b></p>
             <div style="text-align: center"><p><button id="random">&#9654; Play a random puzzle</button></p></div>
             <table id="puzzles" class="sortable" style="text-align: center; white-space: nowrap">
                 <thead>
@@ -205,19 +206,46 @@ function backward() {
     updateStatus()
 }
 
-function loadPuzzles() {
+function calculateSuccessRate(progress) {
+    var correct = 0
+    var total = 0
+    for (const [hash, success] of Object.entries(progress)) {
+        total += 1
+        if (success) {
+            correct += 1
+        }
+    }
+
+    return [correct, total, total > 0 ? correct / total : 0.0]
+}
+
+function loadProgress() {
     fetch(progressPath)
     .then(response => response.text())
     .then(text => {
         progress = JSON.parse(text)
+        var [correct, total, rate] = calculateSuccessRate(progress)
+        rate = parseFloat(100 * rate).toFixed(2)
+        var text = `Success rate: ${correct}/${total} (${rate}%).`
+        $('#success_rate').html(text)
     })
+}
 
+function loadPuzzles() {
     fetch(puzzlesPath)
     .then(response => response.text())
     .then(text => {
         puzzles = JSON.parse(text)
         filterPuzzles(puzzles)
     })
+}
+
+function getSolvedSymbol(value) {
+    if (value == null) {
+        return ''
+    }
+
+    return value ? '✔' : '✘'
 }
 
 function getPuzzlePath(puzzle) {
@@ -275,8 +303,12 @@ function clearPuzzleTable() {
     }
 }
 
-function createPuzzleTableRowEntry(tr, text, link) {
+function createPuzzleTableRowEntry(tr, text, link, id) {
     var td = document.createElement('td')
+    if (id != null) {
+        td.id = id
+    }
+
     var textNode = document.createTextNode(text)
     if (link != null) {
         var a = document.createElement('a')
@@ -298,10 +330,11 @@ function createPuzzleTable(puzzles) {
 
         var path = getPuzzlePath(puzzle)
         var link = `javascript:loadPGN('${path}', '${puzzle.hash}')`
-        var solved = progress[puzzle.hash] ? '✓' : ''
+        var solved = getSolvedSymbol(progress[puzzle.hash])
+        var puzzleId = `puzzle${puzzle.hash}`
 
         createPuzzleTableRowEntry(tr, '▶', link)
-        createPuzzleTableRowEntry(tr, solved)
+        createPuzzleTableRowEntry(tr, solved, null, puzzleId)
         createPuzzleTableRowEntry(tr, puzzle.white)
         createPuzzleTableRowEntry(tr, puzzle.black)
         createPuzzleTableRowEntry(tr, puzzle.date)
@@ -328,17 +361,12 @@ function loadNextPuzzle() {
     loadPGN(path, puzzle.hash)
 }
 
-function save(hash) {
-    $('#puzzle' + currentPuzzleId).html('&#10003;')
-    progress[currentPuzzleId] = true
-    $.ajax({
-        url: 'save/' + hash,
-        type: 'GET',
-        success: () => {},
-        error: () => {
-            console.error('No response from server')
-        }
-    })
+function updateSolvedStatus(currentPuzzleId, value) {
+    var statusSymbol = getSolvedSymbol(value)
+    var $element = $('#puzzle' + currentPuzzleId)
+    if ($element != null && progress[currentPuzzleId] == null) {
+        $element.html(statusSymbol)
+    }
 }
 
 function refresh() {
@@ -347,6 +375,7 @@ function refresh() {
         type: 'GET',
         success: () => {
             loadPuzzles()
+            loadProgress()
         },
         error: () => {
             console.error('Unable to refresh puzzles')
@@ -358,6 +387,9 @@ panelTextCallback = setPanel
 statusTextCallback = (text) => {$status.html(text)}
 moveHistoryTextCallback = (text) => {$moveHistory.html(text)}
 loadNextPuzzleCallback = loadNextPuzzle
+progressCallback = updateSolvedStatus
+refreshCallback = refresh
+
 refresh()
 
 </script>

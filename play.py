@@ -5,6 +5,7 @@ import threading
 import urllib.parse
 import webbrowser
 from hashlib import md5
+from typing import Optional
 
 from modules.configuration import load_configuration
 from modules.json import json_save, json_load
@@ -17,7 +18,9 @@ GATHERED_PUZZLES_PATH = configuration['paths']['gathered_puzzles']
 PROGRESS_PATH = configuration['paths']['progress']
 
 PORT = configuration['tactic_player']['port']
+HARD_PROGRESS = configuration['tactic_player']['hard_progress']
 
+TEMP_PATH = 'temp/.temp'
 
 def gather_variations(directory: str = INPUT_DIRECTORY) -> list[str]:
     paths = []
@@ -78,15 +81,25 @@ def save_puzzles(puzzles: list[dict], path: str = GATHERED_PUZZLES_PATH) -> None
     json_save(puzzles, path)
 
 
-def save(puzzle_id: str = None):
+def save(puzzle_id: str = None, value: bool = True):
     progress = {}
     if os.path.exists(PROGRESS_PATH):
         progress = json_load(PROGRESS_PATH)
 
-    if puzzle_id:
-        progress[puzzle_id] = True
+    if puzzle_id and (not HARD_PROGRESS or puzzle_id not in progress):
+        progress[puzzle_id] = value
 
     json_save(progress, PROGRESS_PATH)
+    return progress.get(puzzle_id)
+
+
+def get_value(value: str) -> Optional[bool]:
+    if value == 'true':
+        return True
+    elif value == 'false':
+        return False
+    else:
+        return None
 
 
 def refresh():
@@ -103,16 +116,22 @@ class RefreshHandler(http.server.SimpleHTTPRequestHandler):
         if parsed_url.path == '/refresh':
             refresh()
 
-            self.send_response(200)
             self.send_header('Content-type', 'text/html')
             self.end_headers()
+            self.send_response(200)
         elif 'save' in parsed_url.path:
-            puzzle_id = parsed_url.path.split('/')[-1]
-            save(puzzle_id)
+            puzzle_id, value = parsed_url.path.split('/')[-2:]
+            value = get_value(value)
+            result = save(puzzle_id, value)
+
+            with open(TEMP_PATH, 'w') as file:
+                file.write(str(result))
 
             self.send_response(200)
-            self.send_header('Content-type', 'text/html')
+            self.send_header('Content-type', 'text/plain; charset=UTF-8')
             self.end_headers()
+
+            self.wfile.write(open(TEMP_PATH, 'rb').read())
         else:
             super().do_GET()
 

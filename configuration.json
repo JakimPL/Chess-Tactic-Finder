@@ -8,7 +8,7 @@
         "min_relative_material_balance": 3
     },
     "stockfish": {
-        "depth": 20,
+        "depth": 18,
         "top_moves": 5,
         "parameters": {
             "Debug Log File": "",
@@ -36,6 +36,7 @@
         "save_last_opponent_move": true
     },
     "tactic_player": {
-        "port": 8000
+        "port": 8000,
+        "hard_progress": true
     }
 }
