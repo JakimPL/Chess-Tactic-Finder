@@ -94,6 +94,7 @@
             <p>Attention! The <b>Hardness</b> parameter does not mean the degree of difficulty of the puzzle, but the frequency of situations in which all but one of the player's moves fails. Counterintuitively, more often than not, puzzles with higher level of <b>Hardness</b> are easier to solve, as there is a very limited number of ways to not lose in a given situation.</p>
             <p><b><span id="success_rate"></span></b></p>
             <div style="text-align: center"><p><button id="random">&#9654; Play a random puzzle</button></p></div>
+            <div id="number_of_puzzles"><p>0 puzzles in total.</p></div>
             <table id="puzzles" class="sortable" style="text-align: center; white-space: nowrap">
                 <thead>
                     <tr>
@@ -206,6 +207,14 @@ function backward() {
     updateStatus()
 }
 
+function updateNumberOfPuzzles(puzzles) {
+    if (puzzles != null) {
+        var numberOfPuzzles = Object.keys(puzzles).length
+        var numberOfPuzzlesText = `${numberOfPuzzles} puzzles in total.`
+        $('#number_of_puzzles').html(numberOfPuzzlesText)
+    }
+}
+
 function calculateSuccessRate(progress) {
     var correct = 0
     var total = 0
@@ -221,22 +230,23 @@ function calculateSuccessRate(progress) {
 
 function loadProgress() {
     fetch(progressPath)
-    .then(response => response.text())
-    .then(text => {
-        progress = JSON.parse(text)
+    .then(response => response.json())
+    .then(json => {
+        progress = json
+        
         var [correct, total, rate] = calculateSuccessRate(progress)
         rate = parseFloat(100 * rate).toFixed(2)
-        var text = `Success rate: ${correct}/${total} (${rate}%).`
-        $('#success_rate').html(text)
+        var successRateText = `Success rate: ${correct}/${total} (${rate}%).`
+        $('#success_rate').html(successRateText)
     })
 }
 
 function loadPuzzles() {
     fetch(puzzlesPath)
-    .then(response => response.text())
-    .then(text => {
-        puzzles = JSON.parse(text)
-        filterPuzzles(puzzles)
+    .then(response => response.json())
+    .then(json => {
+        puzzles = json
+        filterPuzzles(json)
     })
 }
 
@@ -269,7 +279,7 @@ function filterPuzzles(puzzles) {
         return undefined
     }
 
-    var filteredPuzzles = []
+    filteredPuzzles = []
 
     var puzzleTypes = gatherPuzzleTypes()
     var onlyUnsolved = document.getElementById('unsolved').checked
@@ -282,7 +292,7 @@ function filterPuzzles(puzzles) {
         var hardness = parseFloat(puzzle.hardness)
         if (
             puzzleTypes.includes(puzzle.puzzleType)
-            && (!onlyUnsolved || !progress[puzzle.hash])
+            && (!onlyUnsolved || !(puzzle.hash in progress))
             && puzzle.moves >= minMoves
             && puzzle.moves <= maxMoves
             && hardness >= minHardness
@@ -293,7 +303,7 @@ function filterPuzzles(puzzles) {
     }
 
     createPuzzleTable(filteredPuzzles)
-    return filteredPuzzles
+    updateNumberOfPuzzles(filteredPuzzles)
 }
 
 function clearPuzzleTable() {
@@ -349,7 +359,7 @@ function createPuzzleTable(puzzles) {
 }
 
 function loadNextPuzzle() {
-    var filteredPuzzles = filterPuzzles(puzzles)
+    filterPuzzles(puzzles)
     if (filteredPuzzles == null) {
         return
     } else if (!filteredPuzzles.length) {

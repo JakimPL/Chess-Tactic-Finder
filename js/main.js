@@ -2,6 +2,7 @@ var puzzlesPath = 'puzzles.json'
 var progressPath = 'progress.json'
 
 var puzzles = null
+var filteredPuzzles = null
 var progress = {}
 
 var path = null
