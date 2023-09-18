@@ -24,6 +24,12 @@
     input {
         font-size: 10px
     }
+
+    @media screen and (max-width: 1200px) {
+        .features-table {
+            height: auto;
+        }
+    }
 </style>
 </head>
 <body>
@@ -229,11 +235,11 @@ function calculateSuccessRate(progress) {
 }
 
 function loadProgress() {
-    fetch(progressPath)
+    fetch(progressPath, {cache: 'no-cache'})
     .then(response => response.json())
     .then(json => {
         progress = json
-        
+
         var [correct, total, rate] = calculateSuccessRate(progress)
         rate = parseFloat(100 * rate).toFixed(2)
         var successRateText = `Success rate: ${correct}/${total} (${rate}%).`
