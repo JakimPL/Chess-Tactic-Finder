@@ -4,7 +4,7 @@ if [ -d "venv" ]; then
     echo "Virtual environment found."
     source venv/bin/activate
 
-    printf "\nTo analyze a game run:\n\tpython main.py [pgn file]\n\nTo run Tactic Player:\n\tpython play.py\n"
+    printf "\nTo analyze a game run:\n\tpython analyze.py [pgn file]\n\nTo run Tactic Player:\n\tpython play.py\n"
 else
     # create a virtual environment
     echo "Installing a virtual environment."
@@ -30,5 +30,5 @@ else
     wget -P js/import/ "https://unpkg.com/chess-pgn-parser/dist/parser.js"
     wget -P js/import/ "https://www.kryogenix.org/code/browser/sorttable/sorttable.js"
 
-    printf "\nTo analyze a game run:\n\tpython main.py [pgn file]\n\nTo run Tactic Player:\n\tpython play.py\n"
+    printf "\nTo analyze a game run:\n\tpython analyze.py [pgn file]\n\nTo run Tactic Player:\n\tpython play.py\n"
 fi

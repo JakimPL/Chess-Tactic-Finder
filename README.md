@@ -37,7 +37,7 @@ or you can edit `configuration.json` file manually and adjust the path (`/usr/bi
 
 Use `run.bat` from your command line to activate the virtual environment. Then you can run the analysis by:
 ```batch
-python main.py game.pgn  
+python analyze.py game.pgn  
 ```
 
 assuming `game.pgn` is a PGN file of a game (or multiple games). The output tactics should be in the folder `tactics` in a directory corresponding to the PGN data. For example `Player 1 vs Player 2 (2022.02.22) [aa519caa19c5d254aee5d63d626a94bd]`. A PGN file may contain multiple games, and each game will have its own directory.
@@ -94,7 +94,7 @@ and open `http://localhost:8000/tactic_player.html` in your browser. You can cha
 
 To run the analysis, run:
 ```bash  
-python main.py games.pgn
+python analyze.py games.pgn
 ```  
 
 assuming `game.pgn` is a PGN file of a game (or multiple games). The output tactics should be in the folder `tactics` in a directory corresponding to the PGN data. For example `Player 1 vs Player 2 (2022.02.22) [aa519caa19c5d254aee5d63d626a94bd]`. A PGN file may contain multiple games, and each game will have its own directory.
