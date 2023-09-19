@@ -62,7 +62,7 @@ def gather_puzzles(paths: list[str]) -> list[dict]:
             'hardness': hardness,
             'initialEvaluation': str(initial_evaluation) if initial_evaluation else '',
             'startingEvaluation': str(starting_evaluation) if starting_evaluation else '',
-            'final_evaluation': str(final_evaluation) if final_evaluation else '',
+            'finalEvaluation': str(final_evaluation) if final_evaluation else '',
             'pgn': pgn,
             'white': white[0],
             'whiteElo': white[1],

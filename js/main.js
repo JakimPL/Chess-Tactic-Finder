@@ -238,11 +238,7 @@ function checkIfSolved() {
 function updateStatus() {
 	var statusText = ''
 
-	var moveColor = 'White'
-	if (game.turn() === 'b') {
-		moveColor = 'Black'
-	}
-
+	var moveColor = game.turn() === 'b' ? 'Black' : 'White'
 	if (game.in_checkmate()) {
 		statusText = 'Game over, ' + moveColor + ' is checkmated.'
 	} else if (game.in_draw()) {

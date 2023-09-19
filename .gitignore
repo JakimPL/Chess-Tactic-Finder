@@ -12,3 +12,10 @@ __pycache__/
 *.vars
 *.progress
 *.temp
+
+chess.js
+chessboard-1.0.0.min.js
+jquery-3.4.1.min.js
+parser.js
+sorttable.js
+chessboard-1.0.0.min.css

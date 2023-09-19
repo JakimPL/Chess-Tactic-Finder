@@ -79,9 +79,13 @@ and open `http://localhost:8000/tactic_player.html` in your browser. You can cha
 4. Create a virtual environment by running:
     ```bash
     # chmod +x run.sh in case of permission error
-    ./run.sh
+    source run.sh
     ``` 
 5. Run the virtual environment:
+    ```bash
+    source run.sh   
+    ```   
+   or, directly, by running:
     ```bash
     source venv/bin/activate
     ```
