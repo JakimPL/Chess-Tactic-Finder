@@ -1,0 +1,90 @@
+a:link, a:hover, a:visited, a:active {
+   text-decoration: none;
+}
+
+.column {
+    float: left;
+    width: 50%;
+}
+
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+input {
+    font-size: 10px;
+}
+
+#board {
+    margin: 0 auto;
+    width: 400px;
+}
+
+#board_panel {
+    min-width: 450px;
+}
+
+#buttons {
+    display: inline-block;
+    text-align: center;
+    display: block;
+}
+
+#games_panel {
+    height: 100%;
+    overflow: auto;
+    font-size: 11px;
+}
+
+#puzzlesList {
+    display: inline-block;
+}
+
+#puzzles {
+    text-align: center;
+    white-space: nowrap;
+    font-size: 9px;
+}
+
+table#puzzles th:nth-child(4),
+table#puzzles th:nth-child(5),
+table#puzzles th:nth-child(6),
+table#puzzles td:nth-child(4),
+table#puzzles td:nth-child(5),
+table#puzzles td:nth-child(6) {
+    /* display: none; */
+    width: 100px;
+    max-width: 100px;
+}
+
+table#puzzles td:nth-child(1),
+table#puzzles td:nth-child(2),
+table#puzzles td:nth-child(3),
+table#puzzles td:nth-child(8),
+table#puzzles td:nth-child(9),
+table#puzzles th:nth-child(1),
+table#puzzles th:nth-child(2),
+table#puzzles th:nth-child(3),
+table#puzzles th:nth-child(8),
+table#puzzles th:nth-child(9) {
+    width: 40px;
+}
+
+table#puzzles td:nth-child(10),
+table#puzzles th:nth-child(10) {
+    width: 80px;
+    text-align: left;
+}
+
+table#puzzles td:nth-child(7),
+table#puzzles th:nth-child(7) {
+    width: 130px;
+}
+
+@media screen and (orientation: portrait) {
+    .column {
+        width: 100%;
+    }
+}
