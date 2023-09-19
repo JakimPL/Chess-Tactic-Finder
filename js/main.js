@@ -25,6 +25,8 @@ var moveHistoryText = null
 var loadNextPuzzleCallback = null
 var progressCallback = null
 var refreshCallback = null
+var loadPuzzlesCallback = null
+var loadProgressCallback = null
 
 var hideFirstMove = true
 var keepPlaying = true
@@ -43,6 +45,23 @@ function delay(callback) {
     }, delayTime);
 }
 
+function getPuzzlePath(puzzle) {
+    return puzzle.path.replace(/[\\/]+/g, '/').replace(/^([a-zA-Z]+:|\.\/)/, '')
+}
+
+function loadNextPuzzle() {
+    filterPuzzles(puzzles)
+    if (filteredPuzzles == null) {
+        return
+    } else if (!filteredPuzzles.length) {
+        return
+    }
+
+    var puzzle = filteredPuzzles[(Math.floor(Math.random() * (filteredPuzzles.length)))]
+    var path = getPuzzlePath(puzzle)
+    loadPGN(path, puzzle.hash)
+}
+
 function loadPGN(path, puzzleId) {
     currentPuzzleId = puzzleId
     fetch(path)
@@ -51,6 +70,19 @@ function loadPGN(path, puzzleId) {
         pgn = text
         reset()
     })
+}
+
+function calculateSuccessRate(progress) {
+    var correct = 0
+    var total = 0
+    for (const [hash, success] of Object.entries(progress)) {
+        total += 1
+        if (success) {
+            correct += 1
+        }
+    }
+
+    return [correct, total, total > 0 ? correct / total : 0.0]
 }
 
 function getFullPieceName(piece) {
@@ -114,6 +146,13 @@ function forward() {
     updateStatus()
 }
 
+function backward() {
+    game.undo()
+    tactic.backward()
+    board.position(game.fen())
+    updateStatus()
+}
+
 function setPanel(text) {
     if (text == null) {
         $panel.html('&nbsp')
@@ -126,7 +165,7 @@ function reset() {
     player = null
     tactic = new Tactic(pgn)
     game = new Chess(tactic.fen)
-    board = Chessboard('myBoard', getConfig(tactic))
+    board = Chessboard('board', getConfig(tactic))
     fen = game.fen()
 
     if (game.turn() == 'w') {
@@ -234,6 +273,20 @@ function save(hash, value) {
         error: () => {
             console.error('Invalid response from server')
             refreshCallback()
+        }
+    })
+}
+
+function refresh() {
+    $.ajax({
+        url: 'refresh',
+        type: 'GET',
+        success: () => {
+            loadPuzzlesCallback()
+            loadProgressCallback()
+        },
+        error: () => {
+            console.error('Unable to refresh puzzles')
         }
     })
 }

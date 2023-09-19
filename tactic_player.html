@@ -51,7 +51,7 @@
             </table>
         </div>
         <p></p>
-        <div id="myBoard" style="margin: 0 auto; width: 400px"></div>
+        <div id="board" style="margin: 0 auto; width: 400px"></div>
         <div id="buttons" style="display: inline-block; text-align: center; display: block">
             <button id="backward" type="button">&#9664;</button>
             <button id="reset" type="button">Reset puzzle</button>
@@ -140,7 +140,7 @@
 
 <script>
 
-board = Chessboard('myBoard')
+board = Chessboard('board')
 
 const $status = $('#status')
 const $moveHistory = $('#moveHistory')
@@ -215,32 +215,12 @@ $('#random').on('click', function() {
     loadNextPuzzle()
 })
 
-function backward() {
-    game.undo()
-    tactic.backward()
-    board.position(game.fen())
-    updateStatus()
-}
-
 function updateNumberOfPuzzles(puzzles) {
     if (puzzles != null) {
         var numberOfPuzzles = Object.keys(puzzles).length
         var numberOfPuzzlesText = `${numberOfPuzzles} puzzles in total.`
         $('#number_of_puzzles').html(numberOfPuzzlesText)
     }
-}
-
-function calculateSuccessRate(progress) {
-    var correct = 0
-    var total = 0
-    for (const [hash, success] of Object.entries(progress)) {
-        total += 1
-        if (success) {
-            correct += 1
-        }
-    }
-
-    return [correct, total, total > 0 ? correct / total : 0.0]
 }
 
 function loadProgress() {
@@ -271,10 +251,6 @@ function getSolvedSymbol(value) {
     }
 
     return value ? '✔' : '✘'
-}
-
-function getPuzzlePath(puzzle) {
-    return puzzle.path.replace(/[\\/]+/g, '/').replace(/^([a-zA-Z]+:|\.\/)/, '')
 }
 
 function gatherPuzzleTypes() {
@@ -373,19 +349,6 @@ function createPuzzleTable(puzzles) {
     sorttable.makeSortable(document.getElementById('puzzles'))
 }
 
-function loadNextPuzzle() {
-    filterPuzzles(puzzles)
-    if (filteredPuzzles == null) {
-        return
-    } else if (!filteredPuzzles.length) {
-        return
-    }
-
-    var puzzle = filteredPuzzles[(Math.floor(Math.random() * (filteredPuzzles.length)))]
-    var path = getPuzzlePath(puzzle)
-    loadPGN(path, puzzle.hash)
-}
-
 function updateSolvedStatus(currentPuzzleId, value) {
     var statusSymbol = getSolvedSymbol(value)
     var $element = $('#puzzle' + currentPuzzleId)
@@ -394,26 +357,14 @@ function updateSolvedStatus(currentPuzzleId, value) {
     }
 }
 
-function refresh() {
-    $.ajax({
-        url: 'refresh',
-        type: 'GET',
-        success: () => {
-            loadPuzzles()
-            loadProgress()
-        },
-        error: () => {
-            console.error('Unable to refresh puzzles')
-        }
-    })
-}
-
 panelTextCallback = setPanel
 statusTextCallback = (text) => {$status.html(text)}
 moveHistoryTextCallback = (text) => {$moveHistory.html(text)}
 loadNextPuzzleCallback = loadNextPuzzle
 progressCallback = updateSolvedStatus
 refreshCallback = refresh
+loadPuzzlesCallback = loadPuzzles
+loadProgressCallback = loadProgress
 
 refresh()
 
