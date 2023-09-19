@@ -224,7 +224,7 @@ function save(hash, value) {
         dataType: 'text',
         type: 'GET',
         success: () => {
-            progressCallback(currentPuzzleId, value)
+            progressCallback(hash, value)
         },
         error: () => {
             console.error('Invalid response from server')

@@ -22,6 +22,7 @@ HARD_PROGRESS = configuration['tactic_player']['hard_progress']
 
 TEMP_PATH = 'temp/.temp'
 
+
 def gather_variations(directory: str = INPUT_DIRECTORY) -> list[str]:
     paths = []
     for root, dirs, files in os.walk(directory):
@@ -81,13 +82,18 @@ def save_puzzles(puzzles: list[dict], path: str = GATHERED_PUZZLES_PATH) -> None
     json_save(puzzles, path)
 
 
-def save(puzzle_id: str = None, value: bool = True):
+def save(
+        logger: Optional[callable] = lambda message: None,
+        puzzle_id: str = None,
+        value: Optional[bool] = None
+):
     progress = {}
     if os.path.exists(PROGRESS_PATH):
         progress = json_load(PROGRESS_PATH)
 
-    if puzzle_id and (not HARD_PROGRESS or puzzle_id not in progress):
+    if puzzle_id and value is not None and (not HARD_PROGRESS or puzzle_id not in progress):
         progress[puzzle_id] = value
+        logger(f'Key {puzzle_id} stored as {value}.')
 
     json_save(progress, PROGRESS_PATH)
     return progress.get(puzzle_id)
@@ -102,33 +108,36 @@ def get_value(value: str) -> Optional[bool]:
         return None
 
 
-def refresh():
-    print('Gathering games...')
+def refresh(logger: Optional[callable] = lambda message: None):
+    logger('Gathering games...')
     paths = gather_variations()
     puzzles = gather_puzzles(paths)
     save_puzzles(puzzles)
-    print(f'Puzzle saved to {GATHERED_PUZZLES_PATH}')
+    logger(f'Puzzle saved to {GATHERED_PUZZLES_PATH}')
 
 
 class RefreshHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         parsed_url = urllib.parse.urlparse(self.path)
         if parsed_url.path == '/refresh':
-            refresh()
-
-            self.send_header('Content-type', 'text/html')
-            self.end_headers()
+            refresh(self.log_message)
             self.send_response(200)
+            self.send_header('Content-type', 'text/html')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.send_header('Access-Control-Allow-Methods', 'GET')
+            self.end_headers()
         elif 'save' in parsed_url.path:
             puzzle_id, value = parsed_url.path.split('/')[-2:]
             value = get_value(value)
-            result = save(puzzle_id, value)
+            result = save(self.log_message, puzzle_id, value)
 
             with open(TEMP_PATH, 'w') as file:
                 file.write(str(result))
 
             self.send_response(200)
             self.send_header('Content-type', 'text/plain; charset=UTF-8')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.send_header('Access-Control-Allow-Methods', 'GET')
             self.end_headers()
 
             self.wfile.write(open(TEMP_PATH, 'rb').read())
@@ -148,7 +157,7 @@ if __name__ == '__main__':
     refresh()
     save()
     try:
-        with socketserver.TCPServer(('', PORT), RefreshHandler, bind_and_activate=False) as httpd:
+        with socketserver.TCPServer(('0.0.0.0', PORT), RefreshHandler, bind_and_activate=False) as httpd:
             thread = threading.Thread(target=lambda: run(httpd), daemon=True)
             thread.start()
             webbrowser.open(f'localhost:{PORT}/tactic_player.html')
