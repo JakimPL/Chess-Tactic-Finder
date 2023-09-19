@@ -223,8 +223,13 @@ function save(hash, value) {
         contentType: 'text/plain',
         dataType: 'text',
         type: 'GET',
-        success: () => {
-            progressCallback(hash, value)
+        success: (data) => {
+            if (data != 'None') {
+                progressCallback(hash, value)
+                progress[hash] = data == 'True'
+            }
+
+            refreshCallback()
         },
         error: () => {
             console.error('Invalid response from server')
