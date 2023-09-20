@@ -1,3 +1,14 @@
+body {
+    font-size: 10pt;
+    font-family: "Noto Mono", sans-serif;
+    color: black;
+    line-height: 12pt;
+    padding-left: 5pt;
+    padding-right: 5pt;
+    padding-top: 5pt;
+    margin: 50px 50px 50px 50px;
+}
+
 a:link, a:hover, a:visited, a:active {
    text-decoration: none;
 }
