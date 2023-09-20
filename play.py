@@ -16,11 +16,12 @@ configuration = load_configuration()
 INPUT_DIRECTORY = configuration['paths']['output']
 GATHERED_PUZZLES_PATH = configuration['paths']['gathered_puzzles']
 PROGRESS_PATH = configuration['paths']['progress']
+SOCKET_PATH = configuration['paths']['unix_socket']
 
 PORT = configuration['tactic_player']['port']
 HARD_PROGRESS = configuration['tactic_player']['hard_progress']
-
-TEMP_PATH = 'temp/.temp'
+OPEN_BROWSER = configuration['tactic_player']['open_browser']
+SOCKET = configuration['tactic_player']['socket']
 
 
 def gather_variations(directory: str = INPUT_DIRECTORY) -> list[str]:
@@ -150,6 +151,12 @@ class RefreshHandler(http.server.SimpleHTTPRequestHandler):
             super().do_GET()
 
 
+class UnixSocketHttpServer(socketserver.UnixStreamServer):
+    def get_request(self):
+        request, client_address = super(UnixSocketHttpServer, self).get_request()
+        return request, ["local", 0]
+
+
 def run(httpd):
     httpd.allow_reuse_address = True
     httpd.server_bind()
@@ -161,13 +168,24 @@ def run(httpd):
 if __name__ == '__main__':
     refresh()
     save()
-    try:
-        with socketserver.TCPServer(('0.0.0.0', PORT), RefreshHandler, bind_and_activate=False) as httpd:
-            thread = threading.Thread(target=lambda: run(httpd), daemon=True)
-            thread.start()
-            webbrowser.open(f'localhost:{PORT}/tactic_player.html')
-            thread.join()
-    except KeyboardInterrupt:
-        print('Exit.')
-    except OSError:
-        print('Server already running.')
+    if SOCKET:
+        try:
+            if os.path.exists(SOCKET_PATH):
+                os.remove(SOCKET_PATH)
+
+            server = UnixSocketHttpServer(SOCKET_PATH, RefreshHandler)
+            print(f'Server started at {SOCKET_PATH}')
+            server.serve_forever()
+        except KeyboardInterrupt:
+            print('Exit.')
+    else:
+        try:
+            with socketserver.TCPServer(('0.0.0.0', PORT), RefreshHandler, bind_and_activate=False) as httpd:
+                thread = threading.Thread(target=lambda: run(httpd), daemon=True)
+                thread.start()
+                if OPEN_BROWSER:
+                    webbrowser.open(f'localhost:{PORT}/tactic_player.html')
+
+                thread.join()
+        except KeyboardInterrupt:
+            print('Exit.')

@@ -29,7 +29,8 @@
         "output": "tactics",
         "temp_file": "./temp/temp.pgn",
         "gathered_puzzles": "puzzles.json",
-        "progress": "progress.json"
+        "progress": "progress.json",
+        "unix_socket": "./temp/http.socket"
     },
     "export": {
         "ignore_first_move": false,
@@ -37,6 +38,8 @@
     },
     "tactic_player": {
         "port": 8000,
-        "hard_progress": true
+        "hard_progress": true,
+        "open_browser": true,
+        "socket": true
     }
 }
