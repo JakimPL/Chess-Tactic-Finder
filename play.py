@@ -117,7 +117,7 @@ def refresh(logger: Optional[callable] = lambda message: None):
     logger(f'Puzzle saved to {GATHERED_PUZZLES_PATH}')
 
 
-class RefreshHandler(http.server.SimpleHTTPRequestHandler):
+class TacticPlayerHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         parsed_url = urllib.parse.urlparse(self.path)
         if parsed_url.path == '/refresh':
@@ -151,12 +151,6 @@ class RefreshHandler(http.server.SimpleHTTPRequestHandler):
             super().do_GET()
 
 
-class UnixSocketHttpServer(socketserver.UnixStreamServer):
-    def get_request(self):
-        request, client_address = super(UnixSocketHttpServer, self).get_request()
-        return request, ["local", 0]
-
-
 def run(httpd):
     httpd.allow_reuse_address = True
     httpd.server_bind()
@@ -169,18 +163,27 @@ if __name__ == '__main__':
     refresh()
     save()
     if SOCKET:
+        from socketserver import UnixStreamServer
+
+
+        class UnixSocketHttpServer(UnixStreamServer):
+            def get_request(self):
+                request, client_address = super(UnixSocketHttpServer, self).get_request()
+                return request, ['local', 0]
+
+
         try:
             if os.path.exists(SOCKET_PATH):
                 os.remove(SOCKET_PATH)
 
-            server = UnixSocketHttpServer(SOCKET_PATH, RefreshHandler)
+            server = UnixSocketHttpServer(SOCKET_PATH, TacticPlayerHandler)
             print(f'Server started at {SOCKET_PATH}')
             server.serve_forever()
         except KeyboardInterrupt:
             print('Exit.')
     else:
         try:
-            with socketserver.TCPServer(('0.0.0.0', PORT), RefreshHandler, bind_and_activate=False) as httpd:
+            with socketserver.TCPServer(('0.0.0.0', PORT), TacticPlayerHandler, bind_and_activate=False) as httpd:
                 thread = threading.Thread(target=lambda: run(httpd), daemon=True)
                 thread.start()
                 if OPEN_BROWSER:
