@@ -28,8 +28,8 @@
         "processed": "games",
         "output": "tactics",
         "temp_file": "./temp/temp.pgn",
-        "gathered_puzzles": "puzzles.json",
-        "progress": "progress.json",
+        "gathered_puzzles": "json/puzzles.json",
+        "progress": "json/progress.json",
         "unix_socket": "./temp/http.socket"
     },
     "export": {
@@ -40,6 +40,6 @@
         "port": 8000,
         "hard_progress": true,
         "open_browser": true,
-        "socket": true
+        "socket": false
     }
 }

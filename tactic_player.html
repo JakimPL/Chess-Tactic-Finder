@@ -111,6 +111,8 @@
 </div>
 
 <script>
+
+configuration = loadConfiguration()
 board = Chessboard('board')
 
 const $status = $('#status')
@@ -192,6 +194,16 @@ function updateNumberOfPuzzles(puzzles) {
         var numberOfPuzzlesText = `${numberOfPuzzles} puzzles in total.`
         $('#number_of_puzzles').html(numberOfPuzzlesText)
     }
+}
+
+function loadConfiguration() {
+    fetch('configuration.json', {cache: 'no-cache'})
+    .then(response => response.json())
+    .then(json => {
+        configuration = json
+        progressPath = configuration['paths']['progress']
+        puzzlesPath = configuration['paths']['gathered_puzzles']
+    })
 }
 
 function loadProgress() {
