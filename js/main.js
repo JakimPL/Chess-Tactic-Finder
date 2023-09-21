@@ -25,7 +25,6 @@ var statusTextCallback = null
 var moveHistoryText = null
 var loadNextPuzzleCallback = null
 var progressCallback = null
-var refreshCallback = null
 var loadPuzzlesCallback = null
 var loadProgressCallback = null
 var updateSuccessRateCallback = null
@@ -75,18 +74,19 @@ function loadPGN(path, puzzleId) {
 }
 
 function calculateSuccessRate(progress) {
-    if (puzzles == null || progress == null) {
+    if (puzzles == null || progress == null || hashes == null) {
         return [0, 0, 0.0]
     }
 
     var correct = 0
     var total = 0
     for (const [hash, correctMoves] of Object.entries(progress)) {
+        var puzzle = puzzles[hashes[hash]]
+        if (puzzle != null) {
         total += 1
-
-        var moves = puzzles[hashes[hash]].moves
-        if (correctMoves >= moves) {
-            correct += 1
+            if (correctMoves >= puzzle.moves) {
+                correct += 1
+            }
         }
     }
 
@@ -279,11 +279,11 @@ function save(hash, value) {
                 updateSuccessRateCallback()
             }
 
-            refreshCallback()
+            refresh()
         },
         error: () => {
             console.error('Invalid response from server')
-            refreshCallback()
+            refresh()
         }
     })
 }

@@ -112,6 +112,7 @@ def refresh(logger: Optional[callable] = lambda message: None):
     paths = gather_variations()
     puzzles = gather_puzzles(paths)
     save_puzzles(puzzles)
+    save(logger)
     logger(f'Puzzle saved to {GATHERED_PUZZLES_PATH}')
 
 
@@ -175,8 +176,13 @@ if __name__ == '__main__':
                 os.remove(SOCKET_PATH)
 
             server = UnixSocketHttpServer(SOCKET_PATH, TacticPlayerHandler)
+            thread = threading.Thread(target=lambda: server.serve_forever(), daemon=True)
+            thread.start()
+
             print(f'Server started at {SOCKET_PATH}')
-            server.serve_forever()
+            os.chmod(SOCKET_PATH, 0o777)
+
+            thread.join()
         except KeyboardInterrupt:
             print('Exit.')
     else:

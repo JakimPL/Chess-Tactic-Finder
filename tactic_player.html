@@ -215,8 +215,10 @@ function updateSolvedStates() {
     for (const hash in progress) {
         var value = progress[hash]
         var index = hashes[hash]
-        var moves = puzzles[index].moves
-        updateSolvedStatus(hash, value, moves)
+        if (index in puzzles) {
+            var moves = puzzles[index].moves
+            updateSolvedStatus(hash, value, moves)
+        }
     }
 }
 
@@ -306,6 +308,7 @@ function filterPuzzles(puzzles) {
 
     createPuzzleTable(filteredPuzzles)
     updateNumberOfPuzzles(filteredPuzzles)
+    updateSolvedStates()
 }
 
 function clearPuzzleTable() {
@@ -364,8 +367,8 @@ function createPuzzleTable(puzzles) {
 function updateSolvedStatus(hash, value, moves) {
     var statusSymbol = getSolvedSymbol(value, moves)
     var puzzleId = `puzzle${hash}`
-    if (value != null) {
-        var element = document.getElementById(puzzleId)
+    var element = document.getElementById(puzzleId)
+    if (element != null && value != null) {
         element.innerHTML = statusSymbol
         element.style.color = value >= moves ? 'green' : 'red'
         element.style.fontWeight = 'bold'
@@ -377,7 +380,6 @@ statusTextCallback = (text) => {$status.html(text)}
 moveHistoryTextCallback = (text) => {$moveHistory.html(text)}
 loadNextPuzzleCallback = loadNextPuzzle
 progressCallback = updateSolvedStatus
-refreshCallback = refresh
 loadPuzzlesCallback = loadPuzzles
 loadProgressCallback = loadProgress
 updateSuccessRateCallback = updateSuccessRate
