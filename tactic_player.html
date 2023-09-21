@@ -120,11 +120,12 @@ const $moveHistory = $('#moveHistory')
 const $panel = $('#panel')
 
 var progressLoaded = $.Deferred()
-var puzzlesLoaded = $.Deferred();
+var puzzlesLoaded = $.Deferred()
 
 $.when(progressLoaded, puzzlesLoaded).done(function() {
     updateSuccessRate()
-});
+    updateSolvedStates()
+})
 
 $('#hide_first_move').on('click', function() {
     hideFirstMove = document.getElementById('hide_first_move').checked
@@ -210,6 +211,15 @@ function updateSuccessRate() {
     $('#success_rate').html(successRateText)
 }
 
+function updateSolvedStates() {
+    for (const hash in progress) {
+        var value = progress[hash]
+        var index = hashes[hash]
+        var moves = puzzles[index].moves
+        updateSolvedStatus(hash, value, moves)
+    }
+}
+
 function loadConfiguration() {
     fetch('configuration.json', {cache: 'no-cache'})
     .then(response => response.json())
@@ -250,7 +260,8 @@ function getSolvedSymbol(value, moves) {
         return ''
     }
 
-    return value >= moves ? '✔' : '✘'
+    return `${value}/${moves}`
+    // return value >= moves ? '✔' : '✘'
 }
 
 function gatherPuzzleTypes() {
@@ -327,7 +338,7 @@ function createPuzzleTable(puzzles) {
     clearPuzzleTable()
     const tableObject = document.getElementById('puzzleList')
     for (const puzzle of puzzles) {
-        var tr = document.createElement('tr');
+        var tr = document.createElement('tr')
 
         var path = getPuzzlePath(puzzle)
         var link = `javascript:loadPGN('${path}', '${puzzle.hash}')`
@@ -352,9 +363,12 @@ function createPuzzleTable(puzzles) {
 
 function updateSolvedStatus(hash, value, moves) {
     var statusSymbol = getSolvedSymbol(value, moves)
-    var $element = $('#puzzle' + hash)
-    if ($element != null && progress[hash] == null) {
-        $element.html(statusSymbol)
+    var puzzleId = `puzzle${hash}`
+    if (value != null) {
+        var element = document.getElementById(puzzleId)
+        element.innerHTML = statusSymbol
+        element.style.color = value >= moves ? 'green' : 'red'
+        element.style.fontWeight = 'bold'
     }
 }
 

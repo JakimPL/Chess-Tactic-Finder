@@ -44,7 +44,7 @@ function delay(callback) {
 
         wait = false
         updateStatus()
-    }, delayTime);
+    }, delayTime)
 }
 
 function getPuzzlePath(puzzle) {
@@ -274,8 +274,8 @@ function save(hash, value) {
         type: 'GET',
         success: (data) => {
             if (data != 'None') {
-                progressCallback(hash, targetValue, moves)
                 progress[hash] = parseInt(data)
+                progressCallback(hash, targetValue, moves)
                 updateSuccessRateCallback()
             }
 
