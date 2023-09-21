@@ -119,6 +119,13 @@ const $status = $('#status')
 const $moveHistory = $('#moveHistory')
 const $panel = $('#panel')
 
+var progressLoaded = $.Deferred()
+var puzzlesLoaded = $.Deferred();
+
+$.when(progressLoaded, puzzlesLoaded).done(function() {
+    updateSuccessRate()
+});
+
 $('#hide_first_move').on('click', function() {
     hideFirstMove = document.getElementById('hide_first_move').checked
 })
@@ -196,6 +203,13 @@ function updateNumberOfPuzzles(puzzles) {
     }
 }
 
+function updateSuccessRate() {
+    var [correct, total, rate] = calculateSuccessRate(progress)
+    rate = parseFloat(100 * rate).toFixed(2)
+    var successRateText = `Success rate: ${correct}/${total} (${rate}%).`
+    $('#success_rate').html(successRateText)
+}
+
 function loadConfiguration() {
     fetch('configuration.json', {cache: 'no-cache'})
     .then(response => response.json())
@@ -211,11 +225,7 @@ function loadProgress() {
     .then(response => response.json())
     .then(json => {
         progress = json
-
-        var [correct, total, rate] = calculateSuccessRate(progress)
-        rate = parseFloat(100 * rate).toFixed(2)
-        var successRateText = `Success rate: ${correct}/${total} (${rate}%).`
-        $('#success_rate').html(successRateText)
+        progressLoaded.resolve()
     })
 }
 
@@ -224,16 +234,23 @@ function loadPuzzles() {
     .then(response => response.json())
     .then(json => {
         puzzles = json
-        filterPuzzles(json)
+        filterPuzzles(puzzles)
+
+        for (var i = 0; i < puzzles.length; i++) {
+            var puzzle = puzzles[i]
+            hashes[puzzle.hash] = i
+        }
+
+        puzzlesLoaded.resolve()
     })
 }
 
-function getSolvedSymbol(value) {
+function getSolvedSymbol(value, moves) {
     if (value == null) {
         return ''
     }
 
-    return value ? '✔' : '✘'
+    return value >= moves ? '✔' : '✘'
 }
 
 function gatherPuzzleTypes() {
@@ -314,7 +331,7 @@ function createPuzzleTable(puzzles) {
 
         var path = getPuzzlePath(puzzle)
         var link = `javascript:loadPGN('${path}', '${puzzle.hash}')`
-        var solved = getSolvedSymbol(progress[puzzle.hash])
+        var solved = getSolvedSymbol(progress[puzzle.hash], puzzle.moves)
         var puzzleId = `puzzle${puzzle.hash}`
 
         createPuzzleTableRowEntry(tr, '▶', link)
@@ -333,10 +350,10 @@ function createPuzzleTable(puzzles) {
     sorttable.makeSortable(document.getElementById('puzzles'))
 }
 
-function updateSolvedStatus(currentPuzzleId, value) {
-    var statusSymbol = getSolvedSymbol(value)
-    var $element = $('#puzzle' + currentPuzzleId)
-    if ($element != null && progress[currentPuzzleId] == null) {
+function updateSolvedStatus(hash, value, moves) {
+    var statusSymbol = getSolvedSymbol(value, moves)
+    var $element = $('#puzzle' + hash)
+    if ($element != null && progress[hash] == null) {
         $element.html(statusSymbol)
     }
 }
@@ -349,6 +366,7 @@ progressCallback = updateSolvedStatus
 refreshCallback = refresh
 loadPuzzlesCallback = loadPuzzles
 loadProgressCallback = loadProgress
+updateSuccessRateCallback = updateSuccessRate
 
 refresh()
 </script>

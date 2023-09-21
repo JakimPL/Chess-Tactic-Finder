@@ -86,7 +86,7 @@ def save_puzzles(puzzles: list[dict], path: str = GATHERED_PUZZLES_PATH) -> None
 def save(
         logger: Optional[callable] = lambda message: None,
         puzzle_id: str = None,
-        value: Optional[bool] = None
+        value: Optional[int] = None
 ):
     progress = {}
     if os.path.exists(PROGRESS_PATH):
@@ -100,12 +100,10 @@ def save(
     return progress.get(puzzle_id)
 
 
-def get_value(value: str) -> Optional[bool]:
-    if value == 'true':
-        return True
-    elif value == 'false':
-        return False
-    else:
+def get_value(value: str) -> Optional[int]:
+    try:
+        return int(value)
+    except ValueError:
         return None
 
 

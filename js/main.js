@@ -1,9 +1,10 @@
-var puzzlesPath = 'puzzles.json'
-var progressPath = 'progress.json'
+var puzzlesPath = null
+var progressPath = null
 
 var puzzles = null
 var filteredPuzzles = null
 var progress = {}
+var hashes = {}
 
 var path = null
 var board = null
@@ -27,6 +28,7 @@ var progressCallback = null
 var refreshCallback = null
 var loadPuzzlesCallback = null
 var loadProgressCallback = null
+var updateSuccessRateCallback = null
 
 var hideFirstMove = true
 var keepPlaying = true
@@ -73,11 +75,17 @@ function loadPGN(path, puzzleId) {
 }
 
 function calculateSuccessRate(progress) {
+    if (puzzles == null || progress == null) {
+        return [0, 0, 0.0]
+    }
+
     var correct = 0
     var total = 0
-    for (const [hash, success] of Object.entries(progress)) {
+    for (const [hash, correctMoves] of Object.entries(progress)) {
         total += 1
-        if (success) {
+
+        var moves = puzzles[hashes[hash]].moves
+        if (correctMoves >= moves) {
             correct += 1
         }
     }
@@ -199,7 +207,7 @@ function onDrop(source, target) {
 		nextMove = tactic.nextMove
 		if (nextMove != move.san) {
 			panelTextCallback('Incorrect move!')
-            save(currentPuzzleId, false)
+            save(currentPuzzleId, tactic.moveIndex - 1)
 			delay(() => {
 				game.undo()
 				board.position(game.fen())
@@ -227,7 +235,7 @@ function checkIfSolved() {
 
     if (tactic.solved) {
         panelTextCallback('Puzzle solved!')
-        save(currentPuzzleId, true)
+        save(currentPuzzleId, tactic.moveIndex)
         if (keepPlaying) {
             tactic = null
             delay(loadNextPuzzleCallback)
@@ -252,16 +260,23 @@ function updateStatus() {
     checkIfSolved()
 }
 
+function getMovesCount(number) {
+    return 1 + Math.floor((number - 1) / 2)
+}
+
 function save(hash, value) {
+    var targetValue = getMovesCount(value)
+    var moves = Math.floor(tactic.moves.length / 2)
     $.ajax({
-        url: `save/${hash}/${value}`,
+        url: `save/${hash}/${targetValue}`,
         contentType: 'text/plain',
         dataType: 'text',
         type: 'GET',
         success: (data) => {
             if (data != 'None') {
-                progressCallback(hash, value)
-                progress[hash] = data == 'True'
+                progressCallback(hash, targetValue, moves)
+                progress[hash] = parseInt(data)
+                updateSuccessRateCallback()
             }
 
             refreshCallback()
