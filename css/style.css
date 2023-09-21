@@ -9,6 +9,10 @@ body {
     margin: 50px 50px 50px 50px;
 }
 
+body::-webkit-scrollbar {
+    display: none;
+}
+
 a:link, a:hover, a:visited, a:active {
    text-decoration: none;
 }
@@ -47,6 +51,10 @@ button, input[type=number], input[type=button], input[type=submit] {
     clear: both;
 }
 
+.options {
+    width: 100px;
+}
+
 #board {
     margin: 0 auto;
     width: min(100%, 360px);
@@ -54,6 +62,7 @@ button, input[type=number], input[type=button], input[type=submit] {
 
 #board_panel {
     min-width: min(100%, 360px);
+    overflow-y: hidden;
 }
 
 #games_panel {

@@ -153,7 +153,7 @@ function onDragStart(source, piece, position, orientation) {
 		return false
 	}
 
-	document.getElementsByTagName("body")[0].style.overflow = 'hidden'
+	document.getElementsByTagName('body')[0].style.overflow = 'hidden'
 }
 
 function onSnapEnd() {
@@ -208,7 +208,7 @@ function reset() {
 }
 
 function onDrop(source, target) {
-    document.getElementsByTagName("body")[0].style.overflow = 'scroll'
+    document.getElementsByTagName('body')[0].style.overflow = 'scroll'
 	var move = game.move({
 		from: source,
 		to: target,
