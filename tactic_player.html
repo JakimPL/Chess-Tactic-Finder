@@ -4,7 +4,7 @@
     <title>Tactic player</title>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
 
     <link rel="icon" type="image/png" href="img/chesspieces/wikipedia/wB.png">
     <link rel="stylesheet" href="css/style.css">
@@ -25,20 +25,25 @@
         <div><h3>Board</h3></div>
         <div>
             <table>
-                <tr><td><input id="hide_first_move" type="checkbox" checked><label for="hide_first_move">Hide the first move?</label></td></tr>
+                <tr><td><input id="hide_first_move" type="checkbox"><label for="hide_first_move">Hide the first move?</label></td></tr>
                 <tr><td><input id="keep_playing" type="checkbox" checked><label for="keep_playing">Keep playing random puzzles?</label></td></tr>
             </table>
         </div>
-        <p></p>
+        <div><p><b><span id="success_rate">Success rate:</span></b></p></div>
+        <div class="buttons">
+            <button id="random">Play a random puzzle</button>
+        </div>
         <div id="board"></div>
-        <div id="buttons">
+        <div class="buttons">
             <button id="backward" type="button">&#9664;</button>
             <button id="reset" type="button">Reset puzzle</button>
             <button id="hint" type="button">Hint</button>
             <button id="solution" type="button">Solution</button>
+            <button id="forward" type="button">&#9654;</button>
+        </div>
+        <div class="buttons">
             <button id="copyFEN" type="button">Copy FEN</button>
             <button id="copyPGN" type="button">Copy PGN</button>
-            <button id="forward" type="button">&#9654;</button>
         </div>
 
         <div id="panel">&nbsp</div>
@@ -84,8 +89,6 @@
         </div>
         <div>
             <p>Attention! The <b>Hardness</b> parameter does not mean the degree of difficulty of the puzzle, but the frequency of situations in which all but one of the player's moves fails. Counterintuitively, more often than not, puzzles with higher level of <b>Hardness</b> are easier to solve, as there is a very limited number of ways to not lose in a given situation.</p>
-            <p><b><span id="success_rate"></span></b></p>
-            <div style="text-align: center"><p><button id="random">&#9654; Play a random puzzle</button></p></div>
             <div id="number_of_puzzles"><p>0 puzzles in total.</p></div>
             <div id="puzzlesList">
                 <table id="puzzles" class="sortable">
@@ -125,6 +128,7 @@ var puzzlesLoaded = $.Deferred()
 $.when(progressLoaded, puzzlesLoaded).done(function() {
     updateSuccessRate()
     updateSolvedStates()
+    loadNextPuzzle()
 })
 
 $('#hide_first_move').on('click', function() {
@@ -175,12 +179,14 @@ $('#solution').on('click', function() {
 $('#copyFEN').on('click', function() {
     if (fen !== null) {
         navigator.clipboard.writeText(fen)
+        setPanel('FEN copied to clipboard!')
     }
 })
 
 $('#copyPGN').on('click', function() {
     if (fen !== pgn) {
         navigator.clipboard.writeText(pgn)
+        setPanel('PGN copied to clipboard!')
     }
 })
 
@@ -193,8 +199,17 @@ $('.options').change(function() {
 })
 
 $('#random').on('click', function() {
-    loadNextPuzzle()
+    markButton('random')
+    delay(loadNextPuzzle, 50)
 })
+
+function markButton(button) {
+    document.getElementById(button).style.backgroundColor = '#b58863'
+}
+
+function unmarkButton(button) {
+    document.getElementById(button).style.backgroundColor = '#f0d9b5'
+}
 
 function updateNumberOfPuzzles(puzzles) {
     if (puzzles != null) {
@@ -209,6 +224,17 @@ function updateSuccessRate() {
     rate = parseFloat(100 * rate).toFixed(2)
     var successRateText = `Success rate: ${correct}/${total} (${rate}%).`
     $('#success_rate').html(successRateText)
+}
+
+function updateSolvedStatus(hash, value, moves) {
+    var statusSymbol = getSolvedSymbol(value, moves)
+    var puzzleId = `puzzle${hash}`
+    var element = document.getElementById(puzzleId)
+    if (element != null && value != null) {
+        element.innerHTML = statusSymbol
+        element.style.color = value >= moves ? 'green' : 'red'
+        element.style.fontWeight = 'bold'
+    }
 }
 
 function updateSolvedStates() {
@@ -364,25 +390,20 @@ function createPuzzleTable(puzzles) {
     sorttable.makeSortable(document.getElementById('puzzles'))
 }
 
-function updateSolvedStatus(hash, value, moves) {
-    var statusSymbol = getSolvedSymbol(value, moves)
-    var puzzleId = `puzzle${hash}`
-    var element = document.getElementById(puzzleId)
-    if (element != null && value != null) {
-        element.innerHTML = statusSymbol
-        element.style.color = value >= moves ? 'green' : 'red'
-        element.style.fontWeight = 'bold'
-    }
-}
-
 panelTextCallback = setPanel
 statusTextCallback = (text) => {$status.html(text)}
 moveHistoryTextCallback = (text) => {$moveHistory.html(text)}
-loadNextPuzzleCallback = loadNextPuzzle
 progressCallback = updateSolvedStatus
 loadPuzzlesCallback = loadPuzzles
 loadProgressCallback = loadProgress
 updateSuccessRateCallback = updateSuccessRate
+
+afterLoadCallback = () => {unmarkButton('random')}
+beforeLoadCallback = () => {markButton('random')}
+
+hideFirstMove = document.getElementById('hide_first_move').checked
+keepPlaying = document.getElementById('keep_playing').checked
+markButton('random')
 
 refresh()
 </script>

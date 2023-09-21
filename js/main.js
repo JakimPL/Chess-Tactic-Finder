@@ -23,16 +23,19 @@ var delayTime = 750
 var panelTextCallback = null
 var statusTextCallback = null
 var moveHistoryText = null
-var loadNextPuzzleCallback = null
 var progressCallback = null
 var loadPuzzlesCallback = null
 var loadProgressCallback = null
 var updateSuccessRateCallback = null
 
+var beforeLoadCallback = null
+var afterLoadCallback = null
+
 var hideFirstMove = true
 var keepPlaying = true
 
-function delay(callback) {
+function delay(callback, time) {
+    var time = time == null ? delayTime : time
     wait = true
     action += 1
     var currentAction = action
@@ -43,7 +46,7 @@ function delay(callback) {
 
         wait = false
         updateStatus()
-    }, delayTime)
+    }, time)
 }
 
 function getPuzzlePath(puzzle) {
@@ -64,12 +67,14 @@ function loadNextPuzzle() {
 }
 
 function loadPGN(path, puzzleId) {
+    beforeLoadCallback()
     currentPuzzleId = puzzleId
     fetch(path)
     .then(response => response.text())
     .then(text => {
         pgn = text
         reset()
+        afterLoadCallback()
     })
 }
 
@@ -141,6 +146,8 @@ function onDragStart(source, piece, position, orientation) {
 		(game.turn() === 'b' && piece.search(/^w/) !== -1)) {
 		return false
 	}
+
+	document.getElementsByTagName("body")[0].style.overflow = 'hidden'
 }
 
 function onSnapEnd() {
@@ -195,6 +202,7 @@ function reset() {
 }
 
 function onDrop(source, target) {
+    document.getElementsByTagName("body")[0].style.overflow = 'scroll'
 	var move = game.move({
 		from: source,
 		to: target,
@@ -238,7 +246,7 @@ function checkIfSolved() {
         save(currentPuzzleId, tactic.moveIndex)
         if (keepPlaying) {
             tactic = null
-            delay(loadNextPuzzleCallback)
+            delay(loadNextPuzzle)
         }
     }
 }

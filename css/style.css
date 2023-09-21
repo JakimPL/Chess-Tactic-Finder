@@ -13,6 +13,29 @@ a:link, a:hover, a:visited, a:active {
    text-decoration: none;
 }
 
+input {
+    font-size: 10px;
+}
+
+button, input[type=number], input[type=button], input[type=submit] {
+    font-size: 12px;
+    background-color: #f0d9b5;
+    font-family: "Noto Mono", sans-serif;
+    border: 2px;
+    border-radius: 8px;
+
+    padding: 2px 8px;
+    text-decoration: none;
+    margin: 2px 0px;
+    cursor: pointer;
+}
+
+.buttons {
+    display: inline-block;
+    text-align: center;
+    display: block;
+}
+
 .column {
     float: left;
     width: 50%;
@@ -24,23 +47,13 @@ a:link, a:hover, a:visited, a:active {
     clear: both;
 }
 
-input {
-    font-size: 10px;
-}
-
 #board {
     margin: 0 auto;
-    width: 400px;
+    width: min(100%, 360px);
 }
 
 #board_panel {
-    min-width: 450px;
-}
-
-#buttons {
-    display: inline-block;
-    text-align: center;
-    display: block;
+    min-width: min(100%, 360px);
 }
 
 #games_panel {
@@ -97,5 +110,14 @@ table#puzzles th:nth-child(7) {
 @media screen and (orientation: portrait) {
     .column {
         width: 100%;
+    }
+
+    table#puzzles th:nth-child(4),
+    table#puzzles th:nth-child(5),
+    table#puzzles th:nth-child(6),
+    table#puzzles td:nth-child(4),
+    table#puzzles td:nth-child(5),
+    table#puzzles td:nth-child(6) {
+        display: none;
     }
 }
