@@ -34,6 +34,7 @@ var afterLoadCallback = null
 var hideFirstMove = true
 var keepPlaying = true
 var hardEvaluation = true
+var useLocalStorage = true
 
 function delay(callback, time) {
     var time = time == null ? delayTime : time
@@ -281,25 +282,37 @@ function getMovesCount(number) {
 function save(hash, value) {
     var targetValue = getMovesCount(value)
     var moves = Math.floor(tactic.moves.length / 2)
-    $.ajax({
-        url: `save/${hash}/${targetValue}`,
-        contentType: 'text/plain',
-        dataType: 'text',
-        type: 'GET',
-        success: (data) => {
-            if (data != 'None') {
-                progress[hash] = parseInt(data)
-                progressCallback(hash, targetValue, moves)
-                updateSuccessRateCallback()
-            }
 
-            refresh()
-        },
-        error: () => {
-            console.error('Invalid response from server')
-            refresh()
+    if (useLocalStorage) {
+        if (!(hash in progress)) {
+            progress[hash] = targetValue
+            localStorage.setItem('progress', JSON.stringify(progress))
+            progressCallback(hash, targetValue, moves)
+            updateSuccessRateCallback()
         }
-    })
+
+        refresh()
+    } else {
+        $.ajax({
+            url: `save/${hash}/${targetValue}`,
+            contentType: 'text/plain',
+            dataType: 'text',
+            type: 'GET',
+            success: (data) => {
+                if (data != 'None') {
+                    progress[hash] = parseInt(data)
+                    progressCallback(hash, targetValue, moves)
+                    updateSuccessRateCallback()
+                }
+
+                refresh()
+            },
+            error: () => {
+                console.error('Invalid response from server')
+                refresh()
+            }
+        })
+    }
 }
 
 function refresh() {

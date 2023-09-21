@@ -259,16 +259,28 @@ function loadConfiguration() {
         progressPath = configuration['paths']['progress']
         puzzlesPath = configuration['paths']['gathered_puzzles']
         hardEvaluation = !configuration['tactic_player']['count_moves_instead_of_puzzles']
+        useLocalStorage = configuration['tactic_player']['use_local_storage']
     })
 }
 
 function loadProgress() {
-    fetch(progressPath, {cache: 'no-cache'})
-    .then(response => response.json())
-    .then(json => {
-        progress = json
+    if (useLocalStorage) {
+        if ('progress' in localStorage) {
+            progress = JSON.parse(localStorage.getItem('progress'))
+        } else {
+            progress = {}
+            localStorage.setItem('progress', JSON.stringify(progress))
+        }
+
         progressLoaded.resolve()
-    })
+    } else {
+        fetch(progressPath, {cache: 'no-cache'})
+        .then(response => response.json())
+        .then(json => {
+            progress = json
+            progressLoaded.resolve()
+        })
+    }
 }
 
 function loadPuzzles() {

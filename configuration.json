@@ -41,6 +41,7 @@
         "hard_progress": true,
         "open_browser": true,
         "socket": false,
-        "count_moves_instead_of_puzzles": true
+        "count_moves_instead_of_puzzles": true,
+        "use_local_storage": true
     }
 }
