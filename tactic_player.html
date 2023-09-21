@@ -54,8 +54,8 @@
         <h2><a href="javascript: refresh()">&#10227;</a> Games</h2>
         <p>All <code>checkmate</code> and <code>mating net</code> puzzles require to find the shortest route. Sometimes, there may be more one way to checkmate but only one should be the shortest. Unfortunately, in some cases Stockfish misevaluated the checkmate counters in a puzzle, yielding a puzzle that is not well posed.</p>
         <div class="row">
-            <div><p>Select puzzle options:</p>
-                <div class="column">Theme:
+            <div><h3>Puzzle options</h3>
+                <div class="column"><h4>Theme</h4>
                     <div>
                         <div><input id="checkmate" class="theme" type="checkbox" checked><label for="checkmate">checkmate</label></div>
                         <div><input id="mating_net" class="theme" type="checkbox" checked><label for="mating_net">mating net</label></div>
@@ -64,7 +64,7 @@
                         <div><input id="stalemate" class="theme" type="checkbox" checked><label for="stalemate">stalemate</label></div>
                     </div>
                 </div>
-                <div class="column">
+                <div class="column"><h4>Other options</h4>
                     <div><input id="unsolved" class="options" type="checkbox" checked><label for="unsolved">Only unsolved?</label></div>
                     <table>
                         <tr>
@@ -255,6 +255,7 @@ function loadConfiguration() {
         configuration = json
         progressPath = configuration['paths']['progress']
         puzzlesPath = configuration['paths']['gathered_puzzles']
+        hardEvaluation = !configuration['tactic_player']['count_moves_instead_of_puzzles']
     })
 }
 
@@ -376,7 +377,7 @@ function createPuzzleTable(puzzles) {
 
         createPuzzleTableRowEntry(tr, '▶', link)
         createPuzzleTableRowEntry(tr, solved, null, puzzleId)
-        createPuzzleTableRowEntry(tr, puzzle.whiteToMove ? 'Black' : 'White')
+        createPuzzleTableRowEntry(tr, puzzle.whiteToMove ? '◉' : '○')
         createPuzzleTableRowEntry(tr, puzzle.white)
         createPuzzleTableRowEntry(tr, puzzle.black)
         createPuzzleTableRowEntry(tr, puzzle.date)

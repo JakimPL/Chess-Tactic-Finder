@@ -33,6 +33,7 @@ var afterLoadCallback = null
 
 var hideFirstMove = true
 var keepPlaying = true
+var hardEvaluation = true
 
 function delay(callback, time) {
     var time = time == null ? delayTime : time
@@ -88,9 +89,14 @@ function calculateSuccessRate(progress) {
     for (const [hash, correctMoves] of Object.entries(progress)) {
         var puzzle = puzzles[hashes[hash]]
         if (puzzle != null) {
-        total += 1
-            if (correctMoves >= puzzle.moves) {
-                correct += 1
+            if (hardEvaluation) {
+                total += 1
+                if (correctMoves >= puzzle.moves) {
+                    correct += 1
+                }
+            } else {
+                total += puzzle.moves
+                correct += correctMoves
             }
         }
     }
