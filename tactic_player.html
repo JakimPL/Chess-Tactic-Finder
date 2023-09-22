@@ -29,7 +29,7 @@
                 <tr><td><input id="keep_playing" type="checkbox" checked><label for="keep_playing">Keep playing random puzzles?</label></td></tr>
             </table>
         </div>
-        <div><p><b><span id="success_rate">Success rate:</span></b></p></div>
+        <div><p><b><span id="success_rate">Success rate: <i>loading...</i></span></b></p></div>
         <div class="buttons">
             <button id="random">Play a random puzzle</button>
         </div>
@@ -62,7 +62,7 @@
                 <div class="column"><h4>Theme</h4>
                     <div>
                         <div><input id="checkmate" class="theme" type="checkbox" checked><label for="checkmate">checkmate</label></div>
-                        <div><input id="mating_net" class="theme" type="checkbox" checked><label for="mating_net">mating net</label></div>
+                        <div><input id="mating_net" class="theme" type="checkbox"><label for="mating_net">mating net</label></div>
                         <div><input id="material_advantage" class="theme" type="checkbox" checked><label for="material_advantage">material advantage</label></div>
                         <div><input id="repetition" class="theme" type="checkbox" checked><label for="repetition">repetition</label></div>
                         <div><input id="stalemate" class="theme" type="checkbox" checked><label for="stalemate">stalemate</label></div>
@@ -113,7 +113,11 @@
                             <th>Evaluation</th>
                         </tr>
                     </thead>
-                    <tbody id="puzzleList"></tbody>
+                    <tbody id="puzzleList">
+                        <tr>
+                            <td colspan="10">loading...</td>
+                        </tr>
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -122,7 +126,6 @@
 
 <script>
 
-configuration = loadConfiguration()
 board = Chessboard('board')
 
 const $status = $('#status')
@@ -264,6 +267,7 @@ function loadConfiguration() {
         puzzlesPath = configuration['paths']['gathered_puzzles']
         hardEvaluation = !configuration['tactic_player']['count_moves_instead_of_puzzles']
         useLocalStorage = configuration['tactic_player']['use_local_storage']
+        refresh()
     })
 }
 
@@ -417,6 +421,7 @@ progressCallback = updateSolvedStatus
 loadPuzzlesCallback = loadPuzzles
 loadProgressCallback = loadProgress
 updateSuccessRateCallback = updateSuccessRate
+filterPuzzlesCallback = filterPuzzles
 
 beforeLoadCallback = () => {markButton('random')}
 afterLoadCallback = () => {
@@ -432,7 +437,7 @@ hideFirstMove = document.getElementById('hide_first_move').checked
 keepPlaying = document.getElementById('keep_playing').checked
 markButton('random')
 
-refresh()
+configuration = loadConfiguration()
 </script>
 
 </body>

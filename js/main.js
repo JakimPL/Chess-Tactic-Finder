@@ -27,6 +27,7 @@ var progressCallback = null
 var loadPuzzlesCallback = null
 var loadProgressCallback = null
 var updateSuccessRateCallback = null
+var filterPuzzlesCallback = null
 
 var beforeLoadCallback = null
 var afterLoadCallback = null
@@ -259,8 +260,11 @@ function checkIfSolved() {
 }
 
 function updateStatus() {
-	var statusText = ''
+    if (game == null) {
+        return
+    }
 
+	var statusText = ''
 	var moveColor = game.turn() === 'b' ? 'Black' : 'White'
 	if (game.in_checkmate()) {
 		statusText = 'Game over, ' + moveColor + ' is checkmated.'
@@ -291,7 +295,7 @@ function save(hash, value) {
             updateSuccessRateCallback()
         }
 
-        refresh()
+        filterPuzzlesCallback(puzzles)
     } else {
         $.ajax({
             url: `save/${hash}/${targetValue}`,
@@ -305,11 +309,11 @@ function save(hash, value) {
                     updateSuccessRateCallback()
                 }
 
-                refresh()
+                filterPuzzlesCallback(puzzles)
             },
             error: () => {
                 console.error('Invalid response from server')
-                refresh()
+                filterPuzzlesCallback(puzzles)
             }
         })
     }

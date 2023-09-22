@@ -83,7 +83,7 @@ def save_puzzles(puzzles: list[dict], path: str = GATHERED_PUZZLES_PATH) -> None
     json_save(puzzles, path)
 
 
-def save(
+def save_progress(
         logger: Optional[callable] = lambda message: None,
         puzzle_id: str = None,
         value: Optional[int] = None
@@ -108,12 +108,14 @@ def get_value(value: str) -> Optional[int]:
 
 
 def refresh(logger: Optional[callable] = lambda message: None):
-    logger('Gathering games...')
-    paths = gather_variations()
-    puzzles = gather_puzzles(paths)
-    save_puzzles(puzzles)
-    save(logger)
-    logger(f'Puzzle saved to {GATHERED_PUZZLES_PATH}')
+    if not os.path.exists(GATHERED_PUZZLES_PATH):
+        logger('Gathering games...')
+        paths = gather_variations()
+        puzzles = gather_puzzles(paths)
+        save_puzzles(puzzles)
+        logger(f'Puzzle saved to {GATHERED_PUZZLES_PATH}')
+
+    save_progress(logger)
 
 
 class TacticPlayerHandler(http.server.SimpleHTTPRequestHandler):
@@ -135,7 +137,7 @@ class TacticPlayerHandler(http.server.SimpleHTTPRequestHandler):
         elif 'save' in parsed_url.path:
             puzzle_id, value = parsed_url.path.split('/')[-2:]
             value = get_value(value)
-            result = str(save(self.log_message, puzzle_id, value))
+            result = str(save_progress(self.log_message, puzzle_id, value))
 
             self.send_response(200)
             self.send_header('Content-type', 'text/plain')
@@ -160,7 +162,7 @@ def run(httpd):
 
 if __name__ == '__main__':
     refresh()
-    save()
+    save_progress()
     if SOCKET:
         from socketserver import UnixStreamServer
 
