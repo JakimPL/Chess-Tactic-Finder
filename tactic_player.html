@@ -45,10 +45,14 @@
             <button id="copyFEN" type="button">Copy FEN</button>
             <button id="copyPGN" type="button">Copy PGN</button>
         </div>
-
         <div id="panel">&nbsp</div>
         <div id="status"></div>
         <div id="moveHistory"></div>
+
+        <div class="buttons">Analyze:
+            <a href="https://www.chess.com/analysis" class="button" id="analyze_chess" target=”_blank”>chess.com</a>
+            <a href="https://lichess.com/analysis/" class="button" id="analyze_lichess" target=”_blank”>lichess.org</a>
+        </div>
     </div>
     <div class="column" id="games_panel">
         <h2><a href="javascript: refresh()">&#10227;</a> Games</h2>
@@ -187,7 +191,7 @@ $('#copyFEN').on('click', function() {
 })
 
 $('#copyPGN').on('click', function() {
-    if (fen !== pgn) {
+    if (pgn !== null) {
         navigator.clipboard.writeText(pgn)
         setPanel('PGN copied to clipboard!')
     }
@@ -414,8 +418,15 @@ loadPuzzlesCallback = loadPuzzles
 loadProgressCallback = loadProgress
 updateSuccessRateCallback = updateSuccessRate
 
-afterLoadCallback = () => {unmarkButton('random')}
 beforeLoadCallback = () => {markButton('random')}
+afterLoadCallback = () => {
+    unmarkButton('random')
+    var chessLink = `https://www.chess.com/analysis?pgn=${pgn}`
+    document.getElementById('analyze_chess').href = encodeURI(chessLink)
+
+    var lichessLink = `https://lichess.com/analysis/${fen}`
+    document.getElementById('analyze_lichess').href = encodeURI(lichessLink)
+}
 
 hideFirstMove = document.getElementById('hide_first_move').checked
 keepPlaying = document.getElementById('keep_playing').checked
