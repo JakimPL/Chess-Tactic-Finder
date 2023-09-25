@@ -148,7 +148,13 @@ function getConfig(tactic) {
 }
 
 function onDragStart(source, piece, position, orientation) {
-	if (wait || tactic.solved || game.game_over() || game.turn() != player) return false
+	if (tactic == null || game == null) {
+	    return false
+	}
+
+	if (wait || tactic.solved || game.game_over() || game.turn() != player) {
+	    return false
+	}
 
 	if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
 		(game.turn() === 'b' && piece.search(/^w/) !== -1)) {
