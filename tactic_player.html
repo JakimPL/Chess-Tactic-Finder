@@ -29,7 +29,6 @@
                 <tr><td><input id="keep_playing" type="checkbox" checked><label for="keep_playing">Keep playing random puzzles?</label></td></tr>
             </table>
         </div>
-        <div><p><b><span id="success_rate">Success rate: <i>loading...</i></span></b></p></div>
         <div class="buttons">
             <button id="random">Play a random puzzle</button>
         </div>
@@ -48,10 +47,23 @@
         <div id="panel">&nbsp</div>
         <div id="status"></div>
         <div id="moveHistory"></div>
-
-        <div class="buttons">Analyze:
+        <div>Analyze:
             <a href="https://www.chess.com/analysis" class="button" id="analyze_chess" target=”_blank”>chess.com</a>
             <a href="https://lichess.com/analysis/" class="button" id="analyze_lichess" target=”_blank”>lichess.org</a>
+        </div>
+
+        <div class="buttons"><p style="text-align: left">Progress:</p>
+            <div>
+                <p><b><span id="success_rate">Success rate: <i>loading...</i></span></b></p>
+            </div>
+            <div>
+                <input id="progressClear" type="submit" value="Clear">
+                <input id="progressExport" type="submit" value="Export">
+                <input id="progressImport" type="submit" value="Import">
+            </div>
+            <div>
+                <input id="file" type="file" value="Import">
+            </div>
         </div>
     </div>
     <div class="column" id="games_panel">
@@ -200,6 +212,60 @@ $('#copyPGN').on('click', function() {
         setPanel('PGN copied to clipboard!')
     }
 })
+
+$('#progressClear').on('click', function(event) {
+    if (confirm('Are you sure you want to clear the progress? This cannot be undone.')) {
+        progress = {}
+        localStorage.setItem('progress', JSON.stringify(progress))
+        updateSolvedStates()
+        updateSuccessRate()
+    }
+})
+
+$('#progressExport').on('click', function(event) {
+    event.preventDefault()
+    var element = document.createElement('a')
+    if (useLocalStorage) {
+        var data = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(progress))
+    } else {
+        var data = progressPath
+    }
+
+    element.setAttribute('href', data)
+    element.setAttribute('download', 'progress.json')
+    element.click()
+})
+
+$('#progressImport').on('click', function(event) {
+    var fileElement = document.getElementById('file')
+    var file = fileElement.files[0]
+    if (file == null) {
+        alert('No progress file selected.')
+        return
+    }
+    if (confirm('Are you sure you want to overwrite the progress? This cannot be undone.')) {
+        readProgress(file)
+    }
+})
+
+function readProgress(file) {
+    var reader = new FileReader()
+    reader.readAsText(file)
+    reader.onload = function(event) {
+        var data = JSON.parse(event.target.result)
+        if (data != null) {
+            try {
+                progress = data
+                localStorage.setItem('progress', JSON.stringify(progress))
+                updateSolvedStates()
+                updateSuccessRate()
+                alert('Progress imported successfully.')
+            } catch (error) {
+                console.error(error)
+            }
+        }
+    }
+}
 
 $('.theme').change(function() {
     filterPuzzles(puzzles)
@@ -461,6 +527,7 @@ afterLoadCallback = () => {
 hideFirstMove = document.getElementById('hide_first_move').checked
 keepPlaying = document.getElementById('keep_playing').checked
 markButton('random')
+
 
 configuration = loadConfiguration()
 </script>

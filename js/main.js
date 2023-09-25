@@ -18,7 +18,7 @@ var currentPuzzleId = -1
 
 var action = 0
 var wait = false
-var delayTime = 750
+var delayTime = 1000
 
 var panelTextCallback = null
 var statusTextCallback = null
@@ -271,7 +271,7 @@ function updateStatus() {
     }
 
 	var statusText = ''
-	var moveColor = game.turn() === 'b' ? 'Black' : 'White'
+	var moveColor = game.turn() === 'b' ? '◉ Black' : '○ White'
 	if (game.in_checkmate()) {
 		statusText = 'Game over, ' + moveColor + ' is checkmated.'
 	} else if (game.in_draw()) {
