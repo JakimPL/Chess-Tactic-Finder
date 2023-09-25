@@ -134,6 +134,7 @@ const $panel = $('#panel')
 
 var progressLoaded = $.Deferred()
 var puzzlesLoaded = $.Deferred()
+var actionId = 0
 
 $.when(progressLoaded, puzzlesLoaded).done(function() {
     updateSuccessRate()
@@ -422,6 +423,8 @@ async function refreshPuzzleTable(filteredPuzzles) {
         return
     }
 
+    actionId += 1
+    var currentActionId = actionId
     for (const hash of Object.keys(hashes)) {
         $(`#row${hash}`).hide()
     }
@@ -429,7 +432,9 @@ async function refreshPuzzleTable(filteredPuzzles) {
 
     for (const puzzle of filteredPuzzles) {
         setTimeout(() => {
-            $(`#row${puzzle.hash}`).show()
+            if (currentActionId == actionId) {
+                $(`#row${puzzle.hash}`).show()
+            }
         }, 1)
     }
 }
