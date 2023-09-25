@@ -11,7 +11,7 @@ if not exist "venv" (
 	pip install virtualenv
 
 	echo Installing a virtual environment.
-	virtualenv venv
+	python -m virtualenv venv
 	call venv\Scripts\activate
 
 	:: download and install dependencies
