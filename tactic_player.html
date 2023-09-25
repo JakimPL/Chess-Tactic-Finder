@@ -304,6 +304,8 @@ function loadPuzzles() {
         }
 
         puzzlesLoaded.resolve()
+        createPuzzleTable(puzzles)
+        refreshPuzzleTable(filteredPuzzles)
     })
 }
 
@@ -356,7 +358,7 @@ function filterPuzzles(puzzles) {
         }
     }
 
-    createPuzzleTable(filteredPuzzles)
+    refreshPuzzleTable(filteredPuzzles)
     updateNumberOfPuzzles(filteredPuzzles)
     updateSolvedStates()
 }
@@ -392,6 +394,7 @@ function createPuzzleTable(puzzles) {
     const tableObject = document.getElementById('puzzleList')
     for (const puzzle of puzzles) {
         var tr = document.createElement('tr')
+        tr.id = `row${puzzle.hash}`
 
         var path = getPuzzlePath(puzzle)
         var link = `javascript:loadPGN('${path}', '${puzzle.hash}')`
@@ -412,6 +415,23 @@ function createPuzzleTable(puzzles) {
     }
 
     sorttable.makeSortable(document.getElementById('puzzles'))
+}
+
+async function refreshPuzzleTable(filteredPuzzles) {
+    if (puzzles == null || progress == null || hashes == null) {
+        return
+    }
+
+    for (const hash of Object.keys(hashes)) {
+        $(`#row${hash}`).hide()
+    }
+
+
+    for (const puzzle of filteredPuzzles) {
+        setTimeout(() => {
+            $(`#row${puzzle.hash}`).show()
+        }, 1)
+    }
 }
 
 panelTextCallback = setPanel

@@ -294,8 +294,6 @@ function save(hash, value) {
             progressCallback(hash, targetValue, moves)
             updateSuccessRateCallback()
         }
-
-        filterPuzzlesCallback(puzzles)
     } else {
         $.ajax({
             url: `save/${hash}/${targetValue}`,
@@ -308,8 +306,6 @@ function save(hash, value) {
                     progressCallback(hash, targetValue, moves)
                     updateSuccessRateCallback()
                 }
-
-                filterPuzzlesCallback(puzzles)
             },
             error: () => {
                 console.error('Invalid response from server')
