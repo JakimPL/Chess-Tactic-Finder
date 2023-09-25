@@ -31,7 +31,7 @@ if not exist "venv" (
 	curl "https://code.jquery.com/jquery-3.4.1.min.js" > js\import\jquery-3.4.1.min.js
 	curl "https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js" > js\import\chessboard-1.0.0.min.js
 	curl "https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.2/chess.js" > js\import\chess.js
-	curl "https://unpkg.com/chess-pgn-parser/dist/parser.js" > js\import\parser.js
+	curl "https://unpkg.com/chess-pgn-parser@1.3.9/dist/parser.js" > js\import\parser.js
 	curl "https://www.kryogenix.org/code/browser/sorttable/sorttable.js" > js\import\sorttable.js
 
 	echo To analyze a game run:
