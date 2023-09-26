@@ -57,9 +57,9 @@
                 <p><b><span id="success_rate">Success rate: <i>loading...</i></span></b></p>
             </div>
             <div>
-                <input id="progressClear" type="submit" value="Clear">
-                <input id="progressExport" type="submit" value="Export">
-                <input id="progressImport" type="submit" value="Import">
+                <button id="progressClear" type="submit">Clear</button>
+                <button id="progressExport" type="submit">Export</button>
+                <button id="progressImport" type="submit">Import</button>
             </div>
             <div>
                 <input id="file" type="file" value="Import">
@@ -527,7 +527,6 @@ afterLoadCallback = () => {
 hideFirstMove = document.getElementById('hide_first_move').checked
 keepPlaying = document.getElementById('keep_playing').checked
 markButton('random')
-
 
 configuration = loadConfiguration()
 </script>
