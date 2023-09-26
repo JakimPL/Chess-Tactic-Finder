@@ -42,8 +42,10 @@ if not exist "venv" (
 	echo Virtual environment found.
 	call venv\Scripts\activate
 
+	echo To set the Stockfish engine path type:
+	echo     python config.py paths.stockfish [executable path]
 	echo To analyze a game run:
-	echo 	python analyze.py [pgn file]
+	echo 	 python analyze.py [pgn file]
 	echo To run Tactic Player:
-	echo 	python play.py
+	echo 	 python play.py
 )
