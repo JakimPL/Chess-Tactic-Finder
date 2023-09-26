@@ -270,14 +270,14 @@ function updateStatus() {
         return
     }
 
-	var statusText = ''
-	var moveColor = game.turn() === 'b' ? '◉ Black' : '○ White'
+	var statusText = game.turn() === 'b' ? '◉ ' : '○ '
+	var moveColor = game.turn() === 'b' ? 'Black' : 'White'
 	if (game.in_checkmate()) {
-		statusText = 'Game over, ' + moveColor + ' is checkmated.'
+		statusText += 'Game over, ' + moveColor + ' is checkmated.'
 	} else if (game.in_draw()) {
-		statusText = 'Game over, drawn position'
+		statusText += 'Game over, drawn position'
 	} else {
-		statusText = moveColor + ' to move'
+		statusText += moveColor + ' to move'
 	}
 
     statusTextCallback(statusText)
