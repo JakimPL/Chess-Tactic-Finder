@@ -33,6 +33,11 @@ python config.py paths.stockfish "C:\Stockfish\stockfish-windows-x84-64.exe"
 ```
 or you can edit `configuration.json` file manually and adjust the path (`/usr/bin/stockfish/` by default).
 
+**Caution**. If you edit the path manually, make sure you use either a slash `/` or double backslash `\\` instead of `\` in the path, that is:
+```json
+"stockfish": "C:\\Stockfish\\stockfish-windows-x84-64.exe"
+```
+
 #### Usage
 
 Use `run.bat` from your command line to activate the virtual environment. Then you can run the analysis by:

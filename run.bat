@@ -34,6 +34,8 @@ if not exist "venv" (
 	curl "https://unpkg.com/chess-pgn-parser@1.3.9/dist/parser.js" > js\import\parser.js
 	curl "https://www.kryogenix.org/code/browser/sorttable/sorttable.js" > js\import\sorttable.js
 
+	echo To set the Stockfish engine path type:
+	echo     python config.py paths.stockfish [executable path]
 	echo To analyze a game run:
 	echo 	python analyze.py [pgn file]
 	echo To run Tactic Player:
