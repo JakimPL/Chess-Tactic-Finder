@@ -1,12 +1,16 @@
+import json
+from copy import deepcopy
 from dataclasses import dataclass
 from typing import Optional
 
-from anytree import Node
+from anytree import Node, PreOrderIter
+from anytree.exporter import JsonExporter
+from anytree.importer import JsonImporter
 from chess.pgn import Headers
 
-from modules.picklable import Picklable
 from modules.finder.position import Position
 from modules.finder.tactic import Tactic
+from modules.picklable import Picklable
 
 
 def get_node_history(node: Node) -> list[Position]:
@@ -46,3 +50,31 @@ class Variations(Picklable):
             ], key=lambda pair: (pair[0], pair[1]), reverse=True)
 
             return tactics[0][2]
+
+    def to_json(self) -> dict:
+        exporter = JsonExporter()
+        root = deepcopy(self.root)
+        for node in PreOrderIter(root):
+            if isinstance(node.name, Position):
+                node.name = node.name.to_json()
+
+        return {
+            'root': json.loads(exporter.export(root)),
+            'headers': self.headers.__dict__
+        }
+
+    @staticmethod
+    def from_json(dictionary: dict):
+        importer = JsonImporter()
+        root = importer.import_(json.dumps(dictionary['root']))
+        for node in PreOrderIter(root):
+            if isinstance(node.name, dict):
+                node.name = Position.from_json(node.name)
+
+        headers = Headers()
+        headers._tag_roster = dictionary['headers']['_tag_roster']
+        headers._others = dictionary['headers']['_others']
+        return Variations(
+            root=root,
+            headers=headers
+        )

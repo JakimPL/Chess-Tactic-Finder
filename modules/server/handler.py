@@ -7,6 +7,7 @@ import urllib.parse
 
 from modules.configuration import load_configuration, save_configuration
 from modules.server.auxiliary import refresh, get_value, save_progress
+from modules.server.run import run_windows, run_linux
 
 configuration = load_configuration()
 INPUT_PGN_FILE = configuration['paths']['input_pgn']
@@ -39,6 +40,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     stderr=subprocess.PIPE
                 )
             elif platform.system() == 'Linux':
+                path = os.path.join('shell', 'sh', 'install.sh')
+                run_windows(path)
                 result = subprocess.run(
                     [os.path.join('shell', 'sh', 'install.sh')],
                     stdout=subprocess.PIPE,
@@ -69,12 +72,14 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
             if platform.system() == 'Windows':
                 path = os.path.join('shell', 'bat', 'analyze.bat')
-                command = f'cmd /c {path} {INPUT_PGN_FILE}'
-                os.system(f'start /wait {command}')
+                command = f'{path} {INPUT_PGN_FILE}'
+                run_windows(command)
+
             elif platform.system() == 'Linux':
                 path = os.path.join('shell', 'sh', 'analyze.sh')
-                command = f'bash {path} {INPUT_PGN_FILE}'
-                os.system(f'gnome-terminal -- {command}')
+                command = f'{path} {INPUT_PGN_FILE}'
+                run_windows(command)
+
             else:
                 raise NotImplementedError(f'Platform {platform.system()} is not supported')
 
