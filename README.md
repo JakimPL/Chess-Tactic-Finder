@@ -26,8 +26,8 @@ To use _Chess-Tactic-Finder_ you need to have installed Python 3.10 or higher. Y
 1. Download and install Python 3.10 or higher from [here](https://www.python.org/downloads/).  
 2. Download Stockfish from [here](https://stockfishchess.org/download/) to some directory, e.g. `C:\Stockfish`. The executable `stockfish-windows-x84-64.exe` (or any other version) should be contained in that folder.  
 3. Download `pgn-extract` from [here](https://www.cs.kent.ac.uk/people/staff/djb/pgn-extract/). Copy `pgn-extract.exe` to the main directory of this tool. 
-4. Launch the command line (`cmd`), proceed to the tool directory and run the installation script `run.bat`. For the first time, it will install a virtual environment and install necessary Python dependencies.
-5. After a successful installation you need to set a Stockfish executable path: `python config.py paths.stockfish [executable path]`, e.g.:
+4. Run `run.bat` from Explorer or Launch the command line (`cmd`), proceed to the tool directory and run the installation script `run.bat`. This will create a virtual environment and install necessary JavaScript/Python dependencies.
+5. After the installation, a server will start on `http://localhost:8000/`. After a successful installation you need to set a Stockfish executable path in the `Set paths > Stockfish` box. You can also set the path by running: 
 ```batch
 python config.py paths.stockfish "C:\Stockfish\stockfish-windows-x84-64.exe"  
 ```
@@ -40,19 +40,11 @@ or you can edit `configuration.json` file manually and adjust the path (`/usr/bi
 
 #### Usage
 
-Use `run.bat` from your command line to activate the virtual environment. Then you can run the analysis by:
-```batch
-python analyze.py game.pgn  
-```
+After the first installation, you can just run `run.bat` to launch the server. Use _Game analysis_ section to analyze your games. 
 
-assuming `game.pgn` is a PGN file of a game (or multiple games). The output tactics should be in the folder `tactics` in a directory corresponding to the PGN data. For example `Player 1 vs Player 2 (2022.02.22) [aa519caa19c5d254aee5d63d626a94bd]`. A PGN file may contain multiple games, and each game will have its own directory.
+The output tactics should be in the folder `tactics` in a directory corresponding to the PGN data. For example `Player 1 vs Player 2 (2022.02.22) [aa519caa19c5d254aee5d63d626a94bd]`. A PGN file may contain multiple games, and each game will have its own directory.
 
-To run the tactic player, run:
-```batch
-python run.py
-```
-
-and open `http://localhost:8000/tactic_player.html` in your browser. You can change the port in `configuration.json`.
+To run the tactic player directly, open `http://localhost:8000/tactic_player.html` in your browser. You can change the port in `configuration.json`.
 
 ### Linux
 
@@ -81,35 +73,19 @@ and open `http://localhost:8000/tactic_player.html` in your browser. You can cha
     ```bash
     python config.py paths.pgn_extract ./pgn-extract
     ```
-4. Create a virtual environment by running:
+4. Create a virtual environment, install dependencies and run the server by:
     ```bash
     source run.sh
     ``` 
    In case of permission error, run `chmod +x run.sh` first.
-5. Run the virtual environment:
-    ```bash
-    source run.sh   
-    ```   
-   or, directly, by running:
-    ```bash
-    source venv/bin/activate
-    ```
 
 #### Usage
 
-To run the analysis, run:
-```bash  
-python analyze.py games.pgn
-```  
+After the first installation, you can just run `run.sh` to launch the server. Use _Game analysis_ section to analyze your games.
 
-assuming `game.pgn` is a PGN file of a game (or multiple games). The output tactics should be in the folder `tactics` in a directory corresponding to the PGN data. For example `Player 1 vs Player 2 (2022.02.22) [aa519caa19c5d254aee5d63d626a94bd]`. A PGN file may contain multiple games, and each game will have its own directory.
+The output tactics should be in the folder `tactics` in a directory corresponding to the PGN data. For example `Player 1 vs Player 2 (2022.02.22) [aa519caa19c5d254aee5d63d626a94bd]`. A PGN file may contain multiple games, and each game will have its own directory.
 
-To run the tactic player, run:
-```batch
-python run.py
-```
-
-and open `http://localhost:8000/tactic_player.html` in your browser. You can change the port in `configuration.json`.
+To run the tactic player directly, open `http://localhost:8000/tactic_player.html` in your browser. You can change the port in `configuration.json`.
 
 ## Dependencies  
   
@@ -125,17 +101,7 @@ Make sure you set the proper paths (see `configuration.json`) to:
 * Stockfish engine  
 * `pgn-extract` tool  
   
-### Playing tactics  
-  
-After scanning your PGN files, you can play the tactics in the browser. To do so, run the following (in the virtual environment): 
-  
-```bash  
-python run.py
-```  
-  
-The server will be running on `http://localhost:8000/tactic_player.html`. You can change the port in `configuration.json`.  
-  
-The module is solely based on two JavaScript libraries:  
+The Tactic Player module is solely based on two JavaScript libraries:  
 * [chessboard.js](https://chessboardjs.com/) for the board  
 * [chess.js](https://github.com/jhlywa/chess.js/blob/master/README.md) for the game logic  
   
