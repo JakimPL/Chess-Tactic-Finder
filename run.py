@@ -5,7 +5,7 @@ import webbrowser
 
 from modules.configuration import load_configuration
 from modules.server.auxiliary import refresh, save_progress
-from modules.server.tactic_player import TacticPlayerHandler
+from modules.server.tactic_player import Handler
 
 configuration = load_configuration()
 
@@ -45,7 +45,7 @@ if __name__ == '__main__':
             if os.path.exists(SOCKET_PATH):
                 os.remove(SOCKET_PATH)
 
-            server = UnixSocketHttpServer(SOCKET_PATH, TacticPlayerHandler)
+            server = UnixSocketHttpServer(SOCKET_PATH, Handler)
             thread = threading.Thread(target=lambda: server.serve_forever(), daemon=True)
             thread.start()
 
@@ -57,11 +57,11 @@ if __name__ == '__main__':
             print('Exit.')
     else:
         try:
-            with socketserver.TCPServer(('0.0.0.0', PORT), TacticPlayerHandler, bind_and_activate=False) as httpd:
+            with socketserver.TCPServer(('0.0.0.0', PORT), Handler, bind_and_activate=False) as httpd:
                 thread = threading.Thread(target=lambda: run(httpd), daemon=True)
                 thread.start()
                 if OPEN_BROWSER:
-                    webbrowser.open(f'localhost:{PORT}/tactic_player.html')
+                    webbrowser.open(f'localhost:{PORT}/index.html')
 
                 thread.join()
         except KeyboardInterrupt:

@@ -1,10 +1,12 @@
+import subprocess
+import platform
 import http.server
 import urllib.parse
 
 from modules.server.auxiliary import refresh, get_value, save_progress
 
 
-class TacticPlayerHandler(http.server.SimpleHTTPRequestHandler):
+class Handler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         parsed_url = urllib.parse.urlparse(self.path)
         if parsed_url.path == '/refresh':
@@ -19,7 +21,13 @@ class TacticPlayerHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
 
             self.wfile.write(bytes('Refreshed', 'utf-8'))
-
+        elif parsed_url.path == 'reinstall':
+            if platform.system() == 'Windows':
+                subprocess.run(['run.bat'])
+            elif platform.system() == 'Linux':
+                subprocess.run(['./run.sh'])
+            else:
+                raise NotImplementedError(f'Platform {platform.system()} is not supported')
         elif 'save' in parsed_url.path:
             puzzle_id, value = parsed_url.path.split('/')[-2:]
             value = get_value(value)

@@ -49,7 +49,7 @@ assuming `game.pgn` is a PGN file of a game (or multiple games). The output tact
 
 To run the tactic player, run:
 ```batch
-python play.py
+python run.py
 ```
 
 and open `http://localhost:8000/tactic_player.html` in your browser. You can change the port in `configuration.json`.
@@ -83,9 +83,9 @@ and open `http://localhost:8000/tactic_player.html` in your browser. You can cha
     ```
 4. Create a virtual environment by running:
     ```bash
-    # chmod +x run.sh in case of permission error
     source run.sh
     ``` 
+   In case of permission error, run `chmod +x run.sh` first.
 5. Run the virtual environment:
     ```bash
     source run.sh   
@@ -106,7 +106,7 @@ assuming `game.pgn` is a PGN file of a game (or multiple games). The output tact
 
 To run the tactic player, run:
 ```batch
-python play.py
+python run.py
 ```
 
 and open `http://localhost:8000/tactic_player.html` in your browser. You can change the port in `configuration.json`.
@@ -130,7 +130,7 @@ Make sure you set the proper paths (see `configuration.json`) to:
 After scanning your PGN files, you can play the tactics in the browser. To do so, run the following (in the virtual environment): 
   
 ```bash  
-python play.py
+python run.py
 ```  
   
 The server will be running on `http://localhost:8000/tactic_player.html`. You can change the port in `configuration.json`.  
