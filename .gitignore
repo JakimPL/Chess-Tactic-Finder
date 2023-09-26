@@ -13,6 +13,10 @@ __pycache__/
 *.progress
 *.temp
 
+*.log
+*.error
+*.exe
+
 chess.js
 chessboard-1.0.0.min.js
 jquery-3.4.1.min.js

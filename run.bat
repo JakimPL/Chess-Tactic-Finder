@@ -2,7 +2,7 @@
 @echo off
 if not exist pgn-extract.exe (
 	echo Downloading pgn-extract.exe.
-	curl "https://www.cs.kent.ac.uk/~djb/pgn-extract/pgn-extract.exe" > pgn-extract.exe
+	curl "https://www.cs.kent.ac.uk/people/staff/djb/pgn-extract/pgn-extract.exe" > pgn-extract.exe
 )
 
 if not exist "venv" (
