@@ -34,6 +34,11 @@ button, input[type=number], input[type=button], input[type=submit] {
     cursor: pointer;
 }
 
+button:active {
+    background-color: #b58863;
+    transform: translateY(1px);
+}
+
 .buttons {
     display: inline-block;
     text-align: center;
