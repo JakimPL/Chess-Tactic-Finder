@@ -21,6 +21,11 @@ input {
     font-size: 10px;
 }
 
+footer {
+    font-size: 8pt;
+    text-align: center;
+}
+
 button, input[type=number], input[type=button], input[type=submit] {
     font-size: 12px;
     background-color: #f0d9b5;
