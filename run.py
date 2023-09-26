@@ -29,7 +29,7 @@ def run(httpd):
 
 
 if __name__ == '__main__':
-    refresh()
+    refresh(gather_games=True)
     save_progress()
     if SOCKET:
         from socketserver import UnixStreamServer
