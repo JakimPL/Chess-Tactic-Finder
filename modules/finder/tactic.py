@@ -5,9 +5,9 @@ import chess
 import chess.pgn
 from chess.pgn import Headers
 
-from modules.evaluation import Evaluation
+from modules.finder.evaluation import Evaluation
 from modules.picklable import Picklable
-from modules.position import Position
+from modules.finder.position import Position
 
 
 @dataclass

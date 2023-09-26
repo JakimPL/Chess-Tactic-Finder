@@ -5,13 +5,13 @@ from anytree import Node
 from chess.pgn import Headers
 from stockfish import Stockfish
 
-from modules.analysis import calculate_material_balance
+from modules.finder.analysis import calculate_material_balance
 from modules.configuration import load_configuration
-from modules.evaluation import Evaluation
-from modules.outcome import Outcome
-from modules.position import PositionOccurred, Position
-from modules.tactic import Tactic
-from modules.variations import Variations, get_node_history
+from modules.finder.evaluation import Evaluation
+from modules.finder.outcome import Outcome
+from modules.finder.position import PositionOccurred, Position
+from modules.finder.tactic import Tactic
+from modules.finder.variations import Variations, get_node_history
 
 configuration = load_configuration()
 

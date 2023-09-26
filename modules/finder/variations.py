@@ -5,8 +5,8 @@ from anytree import Node
 from chess.pgn import Headers
 
 from modules.picklable import Picklable
-from modules.position import Position
-from modules.tactic import Tactic
+from modules.finder.position import Position
+from modules.finder.tactic import Tactic
 
 
 def get_node_history(node: Node) -> list[Position]:

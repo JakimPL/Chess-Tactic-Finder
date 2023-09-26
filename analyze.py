@@ -10,11 +10,11 @@ from tqdm import tqdm
 
 from modules.configuration import load_configuration
 from modules.converter import convert, get_moves
-from modules.evaluation import Evaluation
-from modules.position import Position
-from modules.tactic import Tactic
-from modules.tactic_finder import TacticFinder
-from modules.variations import Variations
+from modules.finder.evaluation import Evaluation
+from modules.finder.position import Position
+from modules.finder.tactic import Tactic
+from modules.finder.tactic_finder import TacticFinder
+from modules.finder.variations import Variations
 
 configuration = load_configuration()
 

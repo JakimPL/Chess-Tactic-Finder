@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from modules.evaluation import Evaluation
+from modules.finder.evaluation import Evaluation
 
 
 @dataclass
