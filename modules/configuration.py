@@ -7,6 +7,10 @@ def load_configuration(path: str = CONFIGURATION_PATH) -> dict | list:
     return json_load(path)
 
 
+def save_configuration(configuration: dict | list, path: str = CONFIGURATION_PATH):
+    json_save(configuration, path)
+
+
 def set_field(key: str, value: any, path: str = CONFIGURATION_PATH):
     configuration = load_configuration(path)
 

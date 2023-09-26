@@ -16,7 +16,7 @@
 <body>
 
 <div class="row">
-    <div class="column" id="board_panel">
+    <div class="column">
         <div><h3>Installation</h3></div>
         <div><p>Download:</p>
             <ul>
@@ -26,17 +26,17 @@
             </ul>
         </div>
         <div><p>Set paths:</p>
-            <div>
+            <div id="paths">
                 <table>
                     <tr>
                         <td>&#9818;</td>
                         <td><label for="stockfish">Stockfish</label></td>
-                        <td><input id="stockfish" type="file"></td>
+                        <td><input id="stockfish" type="text"></td>
                     </tr>
                     <tr>
                         <td>&#9817;</td>
                         <td><label for="pgn_extract">pgn-extract</label></td>
-                        <td><input id="pgn_extract" type="file"></td>
+                        <td><input id="pgn_extract" type="text"></td>
                     </tr>
                 </table>
             </div>
@@ -48,10 +48,10 @@
             </div>
         </div>
     </div>
-    <div class="column" id="games_panel">
+    <div class="column">
         <div><h3>Game analysis</h3></div>
         <div><p>Analyze a game:</p>
-            <div><input id="pgn" type="file"></div>
+            <div><input id="pgn" type="file" accept=".pgn"></div>
             <div class="buttons">
                 <button id="start">Start</button>
             </div>
@@ -61,15 +61,22 @@
 
 <script>
 
+var configuration = null
+
 var installation = false
 var analysis = false
 
+var stockfishPath = ''
+var pgnExtractPath = ''
+
 $('#stockfish').on('change', function() {
-    // to implement
+    configuration['paths']['stockfish'] = $(this).val()
+    saveConfiguration(configuration)
 })
 
 $('#pgn_extract').on('change', function() {
-    // to implement
+    configuration['paths']['pgn_extract'] = $(this).val()
+    saveConfiguration(configuration)
 })
 
 $('#start').on('click', function() {
@@ -95,11 +102,9 @@ $('#start').on('click', function() {
             type: 'POST',
             data: pgn,
             success: () => {
-                console.log('Game analyzed.')
                 analysis = false
             },
             error: () => {
-                console.error('Failed to analyze a game.')
                 analysis = false
             }
         })
@@ -128,6 +133,35 @@ $('#reinstall').on('click', function() {
         }
     })
 })
+
+function saveConfiguration(configuration) {
+    $.ajax({
+        url: 'save_configuration',
+        type: 'POST',
+        data: JSON.stringify(configuration),
+        contentType: "application/json; charset=utf-8",
+        success: () => {
+            console.log('Configuration saved.')
+        },
+        error: () => {
+            console.error('Failed to save configuration.')
+        }
+    })
+}
+
+function loadConfiguration() {
+    fetch('configuration.json', {cache: 'no-cache'})
+    .then(response => response.json())
+    .then(json => {
+        configuration = json
+        stockfishPath = configuration['paths']['stockfish']
+        pgnExtractPath = configuration['paths']['pgn_extract']
+        document.getElementById('stockfish').value = stockfishPath
+        document.getElementById('pgn_extract').value = pgnExtractPath
+    })
+}
+
+loadConfiguration()
 
 </script>
 

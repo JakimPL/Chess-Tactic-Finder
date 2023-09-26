@@ -40,7 +40,6 @@ button:active {
 }
 
 .buttons {
-    display: inline-block;
     text-align: center;
     display: block;
 }
@@ -58,6 +57,10 @@ button:active {
 
 .options {
     width: 100px;
+}
+
+#paths {
+    display: block;
 }
 
 #board {

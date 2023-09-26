@@ -15,6 +15,7 @@ call venv\Scripts\activate
 :: download and install dependencies
 echo Installing Python dependencies.
 pip install -r requirements.txt
+python config.py paths.stockfish C:\Stockfish\stockfish-windows-x86-64.exe
 python config.py paths.pgn_extract pgn-extract.exe
 
 :: download js scripts
