@@ -352,7 +352,7 @@ function loadProgress() {
 }
 
 function loadPuzzles() {
-    fetch(puzzlesPath)
+    fetch(puzzlesPath, {cache: 'no-cache'})
     .then(response => response.json())
     .then(json => {
         puzzles = json
