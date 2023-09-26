@@ -1,7 +1,7 @@
 {
     "algorithm": {
         "centipawn_threshold": 1.5,
-        "centipawn_limit": 10.0,
+        "centipawn_limit": 10,
         "centipawn_tolerance": 0.4,
         "checkmate_progress_threshold": 0.5,
         "repetition_threshold": 2,
@@ -27,8 +27,8 @@
         "pgn_extract": "/usr/bin/pgn-extract",
         "processed": "games",
         "output": "tactics",
-        "temp_file": "./temp/temp.pgn",
-        "input_pgn": "./temp/input.pgn",
+        "temp_file": "temp/temp.pgn",
+        "input_pgn": "temp/input.pgn",
         "gathered_puzzles": "json/puzzles.json",
         "progress": "json/progress.json",
         "unix_socket": "./temp/http.socket"

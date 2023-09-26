@@ -5,10 +5,10 @@ if not exist pgn-extract.exe (
 )
 
 :: create a virtual environment
+echo Installing a virtual environment.
 py -m ensurepip --upgrade
 pip install virtualenv
 
-echo Installing a virtual environment.
 python -m virtualenv venv
 call venv\Scripts\activate
 

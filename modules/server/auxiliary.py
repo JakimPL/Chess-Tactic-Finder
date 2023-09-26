@@ -79,7 +79,7 @@ def save_puzzles(puzzles: list[dict], path: str = GATHERED_PUZZLES_PATH) -> None
 
 
 def save_progress(
-        logger: Optional[callable] = lambda message: None,
+        logger: Optional[callable] = print,
         puzzle_id: str = None,
         value: Optional[int] = None
 ):
@@ -102,8 +102,8 @@ def get_value(value: str) -> Optional[int]:
         return None
 
 
-def refresh(logger: Optional[callable] = lambda message: None):
-    if not os.path.exists(GATHERED_PUZZLES_PATH):
+def refresh(logger: Optional[callable] = print, gather_games: bool = True):
+    if not os.path.exists(GATHERED_PUZZLES_PATH) or gather_games:
         logger('Gathering games...')
         paths = gather_variations()
         puzzles = gather_puzzles(paths)
