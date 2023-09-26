@@ -5,7 +5,7 @@ import webbrowser
 
 from modules.configuration import load_configuration
 from modules.server.auxiliary import refresh, save_progress
-from modules.server.tactic_player import Handler
+from modules.server.handler import Handler
 
 configuration = load_configuration()
 
@@ -61,7 +61,7 @@ if __name__ == '__main__':
                 thread = threading.Thread(target=lambda: run(httpd), daemon=True)
                 thread.start()
                 if OPEN_BROWSER:
-                    webbrowser.open(f'localhost:{PORT}/index.html')
+                    webbrowser.open(f'http://localhost:{PORT}/index.html')
 
                 thread.join()
         except KeyboardInterrupt:

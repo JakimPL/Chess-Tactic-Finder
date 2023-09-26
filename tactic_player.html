@@ -17,6 +17,7 @@
     <script src="js/import/sorttable.js"></script>
     <script src="js/tactic.js"></script>
     <script src="js/main.js"></script>
+    <script src="js/common.js"></script>
 </head>
 
 <body>
@@ -279,14 +280,6 @@ $('#random').on('click', function() {
     markButton('random')
     delay(loadNextPuzzle, 50)
 })
-
-function markButton(button) {
-    document.getElementById(button).style.backgroundColor = '#b58863'
-}
-
-function unmarkButton(button) {
-    document.getElementById(button).style.backgroundColor = '#f0d9b5'
-}
 
 function updateNumberOfPuzzles(puzzles) {
     if (puzzles != null) {

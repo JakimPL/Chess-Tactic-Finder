@@ -6,10 +6,11 @@
     <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible"/>
     <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
 
-    <script src="js/import/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
-
     <link href="img/chesspieces/wikipedia/wB.png" rel="icon" type="image/png">
     <link href="css/style.css" rel="stylesheet">
+
+    <script src="js/import/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="js/common.js"></script>
 </head>
 
 <body>
@@ -34,8 +35,8 @@
                     </tr>
                     <tr>
                         <td>&#9817;</td>
-                        <td><label for="pgn-extract">pgn-extract</label></td>
-                        <td><input id="pgn-extract" type="file"></td>
+                        <td><label for="pgn_extract">pgn-extract</label></td>
+                        <td><input id="pgn_extract" type="file"></td>
                     </tr>
                 </table>
             </div>
@@ -43,7 +44,7 @@
         <div><p>Chess Tactic Finder:</p>
             <div class="buttons">
                 <button id="reinstall" type="button">&#9654; Reinstall Tactic Finder</button>
-                <button id="tactic_player" type="button">&#9654; Run Tactic Player</button>
+                <button id="tactic_player" type="button"><a href="tactic_player.html" target="_blank">&#9654; Run Tactic Player</a></button>
             </div>
         </div>
     </div>
@@ -60,15 +61,70 @@
 
 <script>
 
+var installation = false
+var analysis = false
+
+$('#stockfish').on('change', function() {
+    // to implement
+})
+
+$('#pgn_extract').on('change', function() {
+    // to implement
+})
+
+$('#start').on('click', function() {
+    if (analysis) {
+        return
+    }
+
+    var reader = new FileReader()
+    var fileElement = document.getElementById('pgn')
+    var file = fileElement.files[0]
+
+    if (file == null) {
+        alert('No file selected.')
+        return
+    }
+
+    reader.readAsText(file)
+    reader.onload = function(event) {
+        var pgn = event.target.result
+        analysis = true
+        $.ajax({
+            url: 'analyze',
+            type: 'POST',
+            data: pgn,
+            success: () => {
+                console.log('Game analyzed.')
+                analysis = false
+            },
+            error: () => {
+                console.error('Failed to analyze a game.')
+                analysis = false
+            }
+        })
+    }
+})
+
 $('#reinstall').on('click', function() {
+    if (installation) {
+        return
+    }
+
+    installation = true
+    markButton('reinstall')
     $.ajax({
         url: 'reinstall',
         type: 'GET',
         success: () => {
-            alert('Tactic Finder reinstalled')
+            alert('Tactic Finder reinstalled.')
+            unmarkButton('reinstall')
+            installation = false
         },
         error: () => {
-            console.error('Unable to refresh puzzles')
+            alert('Failed to reinstall a Tactic Finder.')
+            unmarkButton('reinstall')
+            installation = false
         }
     })
 })

@@ -28,6 +28,7 @@
         "processed": "games",
         "output": "tactics",
         "temp_file": "./temp/temp.pgn",
+        "input_pgn": "./temp/input.pgn",
         "gathered_puzzles": "json/puzzles.json",
         "progress": "json/progress.json",
         "unix_socket": "./temp/http.socket"

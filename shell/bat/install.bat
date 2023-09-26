@@ -1,3 +1,9 @@
+:: download pgn-extract
+if not exist pgn-extract.exe (
+	echo Downloading pgn-extract.exe.
+	curl "https://www.cs.kent.ac.uk/people/staff/djb/pgn-extract/pgn-extract.exe" > pgn-extract.exe
+)
+
 :: create a virtual environment
 py -m ensurepip --upgrade
 pip install virtualenv
