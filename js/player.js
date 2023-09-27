@@ -1,150 +1,10 @@
-<!doctype html>
-<html>
-<head>
-    <title>Tactic player</title>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
-
-    <link rel="icon" type="image/png" href="img/chesspieces/wikipedia/wB.png">
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/import/chessboard-1.0.0.min.css" integrity="sha384-q94+BZtLrkL1/ohfjR8c6L+A6qzNH9R2hBLwyoAfu3i/WCvQjzL2RQJ3uNHDISdU" crossorigin="anonymous">
-
-    <script src="js/import/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
-    <script src="js/import/chessboard-1.0.0.min.js" integrity="sha384-8Vi8VHwn3vjQ9eUHUxex3JSN/NFqUg3QbPyX8kWyb93+8AC/pPWTzj+nHtbC5bxD" crossorigin="anonymous"></script>
-    <script src="js/import/chess.js" integrity="sha384-s3XgLpvmHyscVpijnseAmye819Ee3yaGa8NxstkJVyA6nuDFjt59u1QvuEl/mecz" crossorigin="anonymous"></script>
-    <script src="js/import/parser.js"></script>
-    <script src="js/import/sorttable.js"></script>
-    <script src="js/tactic.js"></script>
-    <script src="js/main.js"></script>
-    <script src="js/common.js"></script>
-</head>
-
-<body>
-<div class="row">
-    <div class="column" id="board_panel">
-        <div><h3>Board</h3></div>
-        <div>
-            <table>
-                <tr><td><input id="hide_first_move" type="checkbox"><label for="hide_first_move">Hide the first move?</label></td></tr>
-                <tr><td><input id="keep_playing" type="checkbox" checked><label for="keep_playing">Keep playing random puzzles?</label></td></tr>
-            </table>
-        </div>
-        <div class="buttons">
-            <button id="random">Play a random puzzle</button>
-        </div>
-        <div id="board"></div>
-        <div class="buttons">
-            <button id="backward" type="button">&#9664;</button>
-            <button id="reset" type="button">Reset puzzle</button>
-            <button id="hint" type="button">Hint</button>
-            <button id="solution" type="button">Solution</button>
-            <button id="forward" type="button">&#9654;</button>
-        </div>
-        <div class="buttons">
-            <button id="copyFEN" type="button">Copy FEN</button>
-            <button id="copyPGN" type="button">Copy PGN</button>
-        </div>
-        <div id="panel">&nbsp</div>
-        <div id="status"></div>
-        <div id="moveHistory"></div>
-        <div>Analyze:
-            <a href="https://www.chess.com/analysis" class="button" id="analyze_chess" target=”_blank”>chess.com</a>
-            <a href="https://lichess.com/analysis/" class="button" id="analyze_lichess" target=”_blank”>lichess.org</a>
-        </div>
-
-        <div class="buttons"><p style="text-align: left">Progress:</p>
-            <div>
-                <p><b><span id="success_rate">Success rate: <i>loading...</i></span></b></p>
-            </div>
-            <div>
-                <button id="progressClear" type="submit">Clear</button>
-                <button id="progressExport" type="submit">Export</button>
-                <button id="progressImport" type="submit">Import</button>
-            </div>
-            <div>
-                <input id="file" type="file" value="Import" accept=".json">
-            </div>
-        </div>
-    </div>
-    <div class="column" id="games_panel">
-        <h2><a href="javascript: refresh()">&#10227;</a> Games</h2>
-        <p>All <code>checkmate</code> and <code>mating net</code> puzzles require to find the shortest route. Sometimes, there may be more one way to checkmate but only one should be the shortest. Unfortunately, in some cases Stockfish misevaluated the checkmate counters in a puzzle, yielding a puzzle that is not well posed.</p>
-        <div class="row">
-            <div><h3>Puzzle options</h3>
-                <div class="column"><h4>Theme</h4>
-                    <div>
-                        <div><input id="checkmate" class="theme" type="checkbox" checked><label for="checkmate">checkmate</label></div>
-                        <div><input id="mating_net" class="theme" type="checkbox"><label for="mating_net">mating net</label></div>
-                        <div><input id="material_advantage" class="theme" type="checkbox" checked><label for="material_advantage">material advantage</label></div>
-                        <div><input id="repetition" class="theme" type="checkbox" checked><label for="repetition">repetition</label></div>
-                        <div><input id="stalemate" class="theme" type="checkbox" checked><label for="stalemate">stalemate</label></div>
-                    </div>
-                </div>
-                <div class="column"><h4>Other options</h4>
-                    <table>
-                        <tr>
-                            <td><label for="unsolved">Only unsolved?</label></td>
-                            <td><input id="unsolved" class="options" type="checkbox" checked></td>
-                        </tr>
-                        <tr>
-                            <td><label for="min_moves">Minimum moves:</label></td>
-                            <td><input type="number" class="options" id="min_moves" min="1" max="100" value="2"></td>
-                        </tr>
-                        <tr>
-                            <td><label for="max_moves">Maximum moves:</label></td>
-                            <td><input type="number" class="options" id="max_moves" min="1" max="100" value="100"></td>
-                        </tr>
-                        <tr>
-                            <td><label for="min_hardness">Minimum hardness:</label></td>
-                            <td><input type="number" class="options" id="min_hardness" min="0" max="1" step="0.05" value="0.0"></td>
-                        </tr>
-                        <tr>
-                            <td><label for="max_hardness">Maximum hardness:</label></td>
-                            <td><input type="number" class="options" id="max_hardness" min="0" max="1" step="0.05" value="1.0"></td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-        </div>
-        <div>
-            <p>Attention! The <b>Hardness</b> parameter does not mean the degree of difficulty of the puzzle, but the frequency of situations in which all but one of the player's moves fails. Counterintuitively, more often than not, puzzles with higher level of <b>Hardness</b> are easier to solve, as there is a very limited number of ways to not lose in a given situation.</p>
-            <div id="number_of_puzzles"><p>0 puzzles in total.</p></div>
-            <div id="puzzlesList">
-                <table id="puzzles" class="sortable">
-                    <thead>
-                        <tr>
-                            <th>Play</th>
-                            <th>Solved?</th>
-                            <th>Color</th>
-                            <th>White</th>
-                            <th>Black</th>
-                            <th>Date</th>
-                            <th>Puzzle type</th>
-                            <th>Moves</th>
-                            <th>Hardness</th>
-                            <th>Evaluation</th>
-                        </tr>
-                    </thead>
-                    <tbody id="puzzleList">
-                        <tr>
-                            <td colspan="10">loading...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-
 board = Chessboard('board')
 
 const $status = $('#status')
 const $moveHistory = $('#moveHistory')
 const $panel = $('#panel')
 
+var localConfiguration = {}
 var progressLoaded = $.Deferred()
 var puzzlesLoaded = $.Deferred()
 var actionId = 0
@@ -214,6 +74,21 @@ $('#copyPGN').on('click', function() {
     }
 })
 
+$('.theme').change(function() {
+    filterPuzzles(puzzles)
+    saveLocalConfiguration()
+})
+
+$('.options').change(function() {
+    filterPuzzles(puzzles)
+    saveLocalConfiguration()
+})
+
+$('#random').on('click', function() {
+    markButton('random')
+    delay(loadNextPuzzle, 50)
+})
+
 $('#progressClear').on('click', function(event) {
     if (confirm('Are you sure you want to clear the progress? This cannot be undone.')) {
         progress = {}
@@ -268,19 +143,6 @@ function readProgress(file) {
     }
 }
 
-$('.theme').change(function() {
-    filterPuzzles(puzzles)
-})
-
-$('.options').change(function() {
-    filterPuzzles(puzzles)
-})
-
-$('#random').on('click', function() {
-    markButton('random')
-    delay(loadNextPuzzle, 50)
-})
-
 function updateNumberOfPuzzles(puzzles) {
     if (puzzles != null) {
         var numberOfPuzzles = Object.keys(puzzles).length
@@ -314,6 +176,42 @@ function updateSolvedStates() {
         if (index in puzzles) {
             var moves = puzzles[index].moves
             updateSolvedStatus(hash, value, moves)
+        }
+    }
+}
+
+function saveLocalConfiguration() {
+    localConfiguration = {
+        'theme': {
+            'checkmate': $('#checkmate').prop('checked'),
+            'mating_net': $('#mating_net').prop('checked'),
+            'material_advantage': $('#material_advantage').prop('checked'),
+            'repetition': $('#repetition').prop('checked'),
+            'stalemate': $('#stalemate').prop('checked'),
+        },
+        'options': {
+            'unsolved': $('#unsolved').prop('checked'),
+            'min_moves': $('#min_moves').prop('value'),
+            'max_moves': $('#max_moves').prop('value'),
+            'min_hardness': $('#min_hardness').prop('value'),
+            'max_hardness': $('#max_hardness').prop('value'),
+        }
+    }
+
+    localStorage.setItem('configuration', JSON.stringify(localConfiguration))
+}
+
+function loadLocalConfiguration() {
+    var localStorageConfiguration = JSON.parse(localStorage.getItem('configuration'))
+    if (localStorageConfiguration != null) {
+        localConfiguration = localStorageConfiguration
+        for (const element of $('.theme')) {
+            element.checked = localConfiguration['theme'][element.id]
+        }
+
+        for (const element of $('.options')) {
+            element.checked = localConfiguration['options'][element.id]
+            element.value = localConfiguration['options'][element.id]
         }
     }
 }
@@ -522,11 +420,4 @@ keepPlaying = document.getElementById('keep_playing').checked
 markButton('random')
 
 configuration = loadConfiguration()
-</script>
-
-<footer>
-    <a href="https://github.com/JakimPL/Chess-Tactic-Finder/">Tactic Finder by Jakim (2023).</a>
-</footer>
-
-</body>
-</html>
+loadLocalConfiguration()

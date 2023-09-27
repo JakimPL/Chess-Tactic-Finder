@@ -44,7 +44,7 @@ After the first installation, you can just run `run.bat` to launch the server. U
 
 The output tactics should be in the folder `tactics` in a directory corresponding to the PGN data. For example `Player 1 vs Player 2 (2022.02.22) [aa519caa19c5d254aee5d63d626a94bd]`. A PGN file may contain multiple games, and each game will have its own directory.
 
-To run the tactic player directly, open `http://localhost:8000/tactic_player.html` in your browser. You can change the port in `configuration.json`.
+To run the tactic player directly, open `http://localhost:8000/player.html` in your browser. You can change the port in `configuration.json`.
 
 ### Linux
 
@@ -85,7 +85,7 @@ After the first installation, you can just run `run.sh` to launch the server. Us
 
 The output tactics should be in the folder `tactics` in a directory corresponding to the PGN data. For example `Player 1 vs Player 2 (2022.02.22) [aa519caa19c5d254aee5d63d626a94bd]`. A PGN file may contain multiple games, and each game will have its own directory.
 
-To run the tactic player directly, open `http://localhost:8000/tactic_player.html` in your browser. You can change the port in `configuration.json`.
+To run the tactic player directly, open `http://localhost:8000/player.html` in your browser. You can change the port in `configuration.json`.
 
 ## Dependencies  
   

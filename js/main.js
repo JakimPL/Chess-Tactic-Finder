@@ -314,7 +314,7 @@ function save(hash, value) {
                 }
             },
             error: () => {
-                console.error('Invalid response from server')
+                console.error('Invalid response from server.')
                 filterPuzzlesCallback(puzzles)
             }
         })
@@ -330,7 +330,8 @@ function refresh() {
             loadProgressCallback()
         },
         error: () => {
-            console.error('Unable to refresh puzzles')
+            console.error('Unable to refresh puzzles.')
+            $('#number_of_puzzles').html('Unable to refresh puzzles. Please refresh the page.')
         }
     })
 }
