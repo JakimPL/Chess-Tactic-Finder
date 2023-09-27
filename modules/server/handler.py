@@ -132,9 +132,11 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.send_error(404)
 
     def log_message(self, format, *args):
+        message = format % args
         logger.info(
             "%s - - [%s] %s" % (
-                self.client_address[0],
+                self.address_string(),
                 self.log_date_time_string(),
-                format % args
-            ))
+                message
+            )
+        )
