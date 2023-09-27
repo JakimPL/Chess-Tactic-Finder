@@ -74,6 +74,10 @@ $('#copyPGN').on('click', function() {
     }
 })
 
+$('.board_settings').change(function() {
+    saveLocalConfiguration()
+})
+
 $('.theme').change(function() {
     filterPuzzles(puzzles)
     saveLocalConfiguration()
@@ -182,19 +186,23 @@ function updateSolvedStates() {
 
 function saveLocalConfiguration() {
     localConfiguration = {
+        'board_settings': {
+            'hide_first_move': $('#hide_first_move').prop('checked'),
+            'keep_playing': $('#keep_playing').prop('checked')
+        },
         'theme': {
             'checkmate': $('#checkmate').prop('checked'),
             'mating_net': $('#mating_net').prop('checked'),
             'material_advantage': $('#material_advantage').prop('checked'),
             'repetition': $('#repetition').prop('checked'),
-            'stalemate': $('#stalemate').prop('checked'),
+            'stalemate': $('#stalemate').prop('checked')
         },
         'options': {
             'unsolved': $('#unsolved').prop('checked'),
             'min_moves': $('#min_moves').prop('value'),
             'max_moves': $('#max_moves').prop('value'),
             'min_hardness': $('#min_hardness').prop('value'),
-            'max_hardness': $('#max_hardness').prop('value'),
+            'max_hardness': $('#max_hardness').prop('value')
         }
     }
 
@@ -205,6 +213,10 @@ function loadLocalConfiguration() {
     var localStorageConfiguration = JSON.parse(localStorage.getItem('configuration'))
     if (localStorageConfiguration != null) {
         localConfiguration = localStorageConfiguration
+        for (const element of $('.board_settings')) {
+            element.checked = localConfiguration['board_settings'][element.id]
+        }
+
         for (const element of $('.theme')) {
             element.checked = localConfiguration['theme'][element.id]
         }
@@ -415,9 +427,9 @@ afterLoadCallback = () => {
     document.getElementById('analyze_lichess').href = encodeURI(lichessLink)
 }
 
+configuration = loadConfiguration()
+loadLocalConfiguration()
+
 hideFirstMove = document.getElementById('hide_first_move').checked
 keepPlaying = document.getElementById('keep_playing').checked
 markButton('random')
-
-configuration = loadConfiguration()
-loadLocalConfiguration()
