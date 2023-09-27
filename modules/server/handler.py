@@ -12,15 +12,41 @@ from modules.server.run import run_windows, run_linux
 
 configuration = load_configuration()
 INPUT_PGN_FILE = configuration['paths']['input_pgn']
+LOG_FILE = configuration['paths']['log']
 
 logger = logging.getLogger('handler')
 logger.setLevel(logging.DEBUG)
-file_handler = logging.FileHandler('.log')
+file_handler = logging.FileHandler(LOG_FILE)
 file_handler.setLevel(logging.DEBUG)
 logger.addHandler(file_handler)
+logger.addHandler(logging.StreamHandler())
+
+DEFAULT_ERROR_MESSAGE = """
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Error response</title>
+        <link href="css/style.css" rel="stylesheet">
+    </head>
+    <body>
+        <h1>Error response</h1>
+        <p>Error code: %(code)d</p>
+        <p>Message: %(message)s.</p>
+        <p>Error code explanation: %(code)s - %(explain)s.</p>
+        <footer>
+            <a href="https://github.com/JakimPL/Chess-Tactic-Finder/">Tactic Finder by Jakim (2023).</a>
+        </footer>
+    </body>
+</html>
+"""
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
+    def __init__(self, request, client_address, server, **kwargs):
+        self.error_message_format = DEFAULT_ERROR_MESSAGE
+        super().__init__(request, client_address, server, **kwargs)
+
     def send_text(self, text: str):
         self.send_response(200)
         self.send_header('Content-type', 'text/plain')

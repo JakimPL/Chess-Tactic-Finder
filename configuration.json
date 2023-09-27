@@ -31,7 +31,8 @@
         "input_pgn": "temp/input.pgn",
         "gathered_puzzles": "json/puzzles.json",
         "progress": "json/progress.json",
-        "unix_socket": "./temp/http.socket"
+        "unix_socket": "./temp/http.socket",
+        "log": "log.txt"
     },
     "export": {
         "ignore_first_move": false,
