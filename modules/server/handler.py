@@ -1,5 +1,6 @@
 import http.server
 import json
+import logging
 import os
 import platform
 import subprocess
@@ -11,6 +12,12 @@ from modules.server.run import run_windows, run_linux
 
 configuration = load_configuration()
 INPUT_PGN_FILE = configuration['paths']['input_pgn']
+
+logger = logging.getLogger('handler')
+logger.setLevel(logging.DEBUG)
+file_handler = logging.FileHandler('.log')
+file_handler.setLevel(logging.DEBUG)
+logger.addHandler(file_handler)
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
@@ -52,8 +59,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
             result = result.stdout.decode()
             self.send_text(result)
-        elif parsed_url.path.endswith(('.py', '.bat', '.sh', '.tactic', '.vars', '.md', '.txt')):
-            self.send_response(404)
+        elif parsed_url.path.endswith(('.py', '.pyc', '.bat', '.sh', '.tactic', '.vars', '.md', '.txt')):
+            self.send_error(404)
         elif 'save' in parsed_url.path:
             puzzle_id, value = parsed_url.path.split('/')[-2:]
             value = get_value(value)
@@ -80,7 +87,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             elif platform.system() == 'Linux':
                 path = os.path.join('shell', 'sh', 'analyze.sh')
                 command = f'{path} {INPUT_PGN_FILE}'
-                run_windows(command)
+                run_linux(command)
 
             else:
                 raise NotImplementedError(f'Platform {platform.system()} is not supported')
@@ -96,4 +103,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.send_text(result)
 
     def list_directory(self, path):
-        self.send_response(404)
+        self.send_error(404)
+
+    def log_message(self, format, *args):
+        logger.info(
+            "%s - - [%s] %s" % (
+                self.client_address[0],
+                self.log_date_time_string(),
+                format % args
+            ))
