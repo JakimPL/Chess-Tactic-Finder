@@ -27,7 +27,7 @@ DEFAULT_ERROR_MESSAGE = """
     <head>
         <meta charset="utf-8">
         <title>Error response</title>
-        <link href="css/style.css" rel="stylesheet">
+        <link href="/css/style.css" rel="stylesheet">
     </head>
     <body>
         <h1>Error response</h1>
