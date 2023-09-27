@@ -52,6 +52,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
             result = result.stdout.decode()
             self.send_text(result)
+        elif parsed_url.path.endswith(('.py', '.bat', '.sh', '.tactic', '.vars', '.md', '.txt')):
+            self.send_response(404)
         elif 'save' in parsed_url.path:
             puzzle_id, value = parsed_url.path.split('/')[-2:]
             value = get_value(value)
@@ -92,3 +94,6 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             save_configuration(config)
             result = 'Configuration saved.'
             self.send_text(result)
+
+    def list_directory(self, path):
+        self.send_response(404)
