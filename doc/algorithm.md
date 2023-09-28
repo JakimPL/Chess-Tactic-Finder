@@ -31,19 +31,19 @@ In checkmate puzzles, the player's objective is to find a checkmate. Often, the 
 
 However, [chess.com](chess.com) checkmate puzzles sometimes have a different policy. In some puzzles in each player's turn there is only one move leading to a checkmate and all remaining ones are stepping out of the checkmate, or even losing. I will refer to this type of puzzles as _hard checkmates_.
 
-![Mate in 4](/img/doc/mate_in_4.png "Mate in 4")
+![Mate in 4](/img/doc/mate_in_4.png "Mate in 4" | width=180)
 
 ### Draw Puzzles
 
 Sometimes the goal of the puzzle is to evade being defeated by forcing a draw. This means that the player must find a move that forces a draw in a position where every other move leads to a loss. It does not matter whether the draw is obtained by a perpetual check or a stalemate.
 
-![Repetition](/img/doc/repetition.png "Repetition")
+![Repetition](/img/doc/repetition.png "Repetition" | width=180)
 
 ### Material advantage puzzles
 
 If there is no checkmate involved, it should be rather clear that a final position is winning. This includes gaining a serious material advantage (including promoting a pawn). The position should be somehow resolved, without many threats from both players.
 
-![Material advantage](/img/doc/material_advantage.png "Material advantage")
+![Material advantage](/img/doc/material_advantage.png "Material advantage" | width=180)
 
 ## Algorithm
 
@@ -77,11 +77,11 @@ So, we know that **there is only one good move if there is only one move that de
 
 Here's a puzzle in that spirit (mate in 3):
 
-![Mate in 3](/img/doc/mate_in_3.png "Mate in 3")
+![Mate in 3](/img/doc/mate_in_3.png "Mate in 3" | width=180)
 
 If we talk about _hard checkmates_, the conditions become much simpler: **there should be only one way to deliver a checkmate**. All other moves miss the mate.
 
-![Hard checkmate](/img/doc/hard_checkmate.png "Hard checkmate")
+![Hard checkmate](/img/doc/hard_checkmate.png "Hard checkmate" | width=180)
 
 Sometimes, there is only one correct one move up to a certain point. To include checkmate puzzles that have multiple options towards the end, I decided to allow puzzles where there's substantial progress toward checkmate up to that point. As a rule of thumb I picked a threshold of 50% of moves. In other words, a checkmate puzzle can end before the actual checkmate if more than 50% of the initial moves have a definite answer.
 
@@ -102,7 +102,7 @@ If there is no checkmate, how do we know that there is only one good move? I cam
 
 I impose another requirement to fulfill the third condition: the evaluation for a player has to be positive. There is no point of a puzzle if you punish the opponent's mistake and you lose anyway.
 
-![Deflection](/img/doc/deflection.png "Deflection")
+![Deflection](/img/doc/deflection.png "Deflection" | width=180)
 
 #### Upper Limit
 
@@ -142,7 +142,7 @@ The algorithm stops either if there is no such move or if the game simply ends. 
 
 An example tree of nodes in an example. Each move is represented in the [long algebraic notation](https://en.wikipedia.org/wiki/Algebraic_notation_(chess)#Long_algebraic_notation) (move format including a starting position of a piece, like e2e4 instead of e4). Here's the corresponding situation:
 
-![Situation](/img/doc/situation.png "Situation")
+![Situation](/img/doc/situation.png "Situation" | width=180)
 
 Additionally, at each step, the algorithm determines if a position is **resolved**. Has checkmate been delivered? Is there a stalemate? Is there a draw by threefold repetition? Has a significant material advantage gained? If not, we don't have a puzzle with a clear winning (or drawing) outcome.
 
