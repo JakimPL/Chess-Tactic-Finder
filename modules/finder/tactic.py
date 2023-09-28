@@ -11,7 +11,8 @@ from modules.finder.position import Position
 
 
 TACTIC_TYPES_ORDER = [
-    '', 'mating net', 'material advantage', 'repetition', 'insufficient material', 'checkmate', 'stalemate'
+    '', 'mating net', 'insufficient material', 'material advantage',
+    'repetition', 'checkmate', 'stalemate'
 ]
 
 
