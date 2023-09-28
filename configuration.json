@@ -1,8 +1,8 @@
 {
     "algorithm": {
-        "centipawn_threshold": 1.5,
-        "centipawn_limit": 10,
-        "centipawn_tolerance": 0.4,
+        "centipawn_threshold": 150,
+        "centipawn_limit": 1000,
+        "centipawn_tolerance": 40,
         "checkmate_progress_threshold": 0.5,
         "repetition_threshold": 2,
         "min_relative_material_balance": 3
@@ -38,11 +38,13 @@
         "ignore_first_move": false,
         "save_last_opponent_move": true
     },
-    "tactic_player": {
+    "server": {
         "port": 8000,
-        "hard_progress": true,
-        "open_browser": true,
         "socket": false,
+        "open_browser": true
+    },
+    "tactic_player": {
+        "hard_progress": true,
         "count_moves_instead_of_puzzles": false,
         "use_local_storage": true
     }

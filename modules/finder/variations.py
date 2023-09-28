@@ -49,7 +49,7 @@ class Variations(Picklable):
                 for tactic in tactics
             ], key=lambda pair: (pair[0], pair[1]), reverse=True)
 
-            return tactics[0][2]
+            return tactics[0][-1]
 
     def to_json(self) -> dict:
         exporter = JsonExporter()

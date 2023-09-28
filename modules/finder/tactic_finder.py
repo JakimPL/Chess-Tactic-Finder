@@ -50,9 +50,9 @@ class TacticFinder:
         self.material_balance: int = calculate_material_balance(chess.Board(starting_fen))
         self.checkmate_counter: Optional[int] = None
 
-        self.centipawn_threshold: float = centipawn_threshold
-        self.centipawn_limit: float = centipawn_limit
-        self.centipawn_tolerance: float = centipawn_tolerance
+        self.pawn_threshold: float = centipawn_threshold / 100
+        self.pawn_limit: float = centipawn_limit / 100
+        self.pawn_tolerance: float = centipawn_tolerance / 100
         self.checkmate_progress_threshold: float = checkmate_progress_threshold
         self.repetition_threshold: int = repetition_threshold
         self.stockfish_top_moves: int = stockfish_top_moves
@@ -103,8 +103,8 @@ class TacticFinder:
                 return evaluation.value >= 0.0
             elif not evaluation.mate and not next_evaluation.mate:
                 return (
-                        evaluation.value - next_evaluation.value > self.centipawn_threshold
-                        and 0 <= evaluation.value <= self.centipawn_limit
+                        evaluation.value - next_evaluation.value > self.pawn_threshold
+                        and 0 <= evaluation.value <= self.pawn_limit
                 )
         else:
             raise ValueError("unexpected number of moves")
@@ -135,7 +135,7 @@ class TacticFinder:
             else:
                 return [
                     move for move, evaluation in evaluations.items()
-                    if not evaluation.mate and abs(best_evaluation - evaluation) < self.centipawn_tolerance
+                    if not evaluation.mate and abs(best_evaluation - evaluation) < self.pawn_tolerance
                 ]
 
     def get_board_from_history(self, node: Optional[Node]) -> chess.Board:

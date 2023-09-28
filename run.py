@@ -14,10 +14,10 @@ GATHERED_PUZZLES_PATH = configuration['paths']['gathered_puzzles']
 PROGRESS_PATH = configuration['paths']['progress']
 SOCKET_PATH = configuration['paths']['unix_socket']
 
-PORT = configuration['tactic_player']['port']
+PORT = configuration['server']['port']
 HARD_PROGRESS = configuration['tactic_player']['hard_progress']
-OPEN_BROWSER = configuration['tactic_player']['open_browser']
-SOCKET = configuration['tactic_player']['socket']
+OPEN_BROWSER = configuration['server']['open_browser']
+SOCKET = configuration['server']['socket']
 
 
 def run(httpd):

@@ -116,9 +116,9 @@ Other parameters are contained in a dictionary `stockfish.parameters`.
 #### _Tactic Finder_ parameters
 
 The _Tactic Finder_ algorithm parameters are contained in `algorithm` dictionary. The main parameters are:
-* `centipawn_threshold` - the minimum centipawn difference between the best and the second-best moves. This means that the only one correct move needs to be better than the second-best move by `centipawn_threshold` centipawns, unless there is a forced checkmate. The default value is `1.5`.
-* `centipawn_limit`- the maximum value of centipawns for a position to consider. This prevents finding puzzles where an advantage for a player is huge already. The default value is `10`.
-* `centipawn_tolerance` - the allowed difference between the best move and a chosen move for an opponent to play. This allows searching for opponent's responses which are not the best move but good enough. The default value is `0.4`.
+* `centipawn_threshold` - the minimum centipawn difference between the best and the second-best moves. This means that the only one correct move needs to be better than the second-best move by `centipawn_threshold` centipawns, unless there is a forced checkmate. The default value is `150`.
+* `centipawn_limit`- the maximum value of centipawns for a position to consider. This prevents finding puzzles where an advantage for a player is huge already. The default value is `1000`.
+* `centipawn_tolerance` - the allowed difference between the best move and a chosen move for an opponent to play. This allows searching for opponent's responses which are not the best move but good enough. The default value is `40`.
 * `checkmate_progress_threshold` - the value from 0.0 to 1.0 concerning the minimal fraction of moves . This allows to consider checkmate puzzles even if there are multiple correct moves at some point. The default `0.5` requires at least half of moves towards the checkpoint to consider a puzzle `mating net`.
 * `repetition_threshold` - the number of repetitions required to considered a position a draw (`repetition`) . The default value is `2` and it enforces finding only the 
 * `min_relative_material_balance` - the minimal material difference in points to consider a `material advantage` puzzle. The default value is `3`.
