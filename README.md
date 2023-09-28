@@ -1,5 +1,5 @@
 
-# Chess Tactic Finder  
+# _Chess Tactic Finder_  
   
 This tool finds chess tactics out of PGN files, including missed ones. A _tactic_ is a puzzle with one correct answer in each move. The opponent's response is assumed to be "good enough" with a low tolerance of errors.  
   
@@ -86,6 +86,42 @@ After the first installation, you can just run `run.sh` to launch the server. Us
 The output tactics should be in the folder `tactics` in a directory corresponding to the PGN data. For example `Player 1 vs Player 2 (2022.02.22) [aa519caa19c5d254aee5d63d626a94bd]`. A PGN file may contain multiple games, and each game will have its own directory.
 
 To run the tactic player directly, open `http://localhost:8000/player.html` in your browser. You can change the port in `configuration.json`.
+
+## Algorithm
+
+The algorithm description is given in the [algorithm.md](/doc/algorithm.md) file.
+
+## Configuration
+
+A _Tactic Finder_ configuration is stored in `configuration.json` file. You can edit it manually or by a command:
+
+```bash
+python config.py <key> <value>
+```
+
+Use `.` for nested options, for instance `stockfish.depth` to configure Stockfish depth.
+
+### _Tactic Finder_ options
+
+_Tactic Finder_ uses certain thresholds for finding the tactics out of PGN files. Make sure you understand what do the parameters exactly do. The algorithm within its parameters is described in [algorithm.md](/doc/algorithm.md).
+
+#### Stockfish parameters
+
+The algorithm relies on Stockfish engine to evaluate positions. The main parameters are:
+* `stockfish.depth` - Stockfish depth. The higher the depth, the more accurate the evaluation, but the slower the algorithm. The default value is `18`.
+* `stockfish.top_moves` - the number of top moves to consider. The default value is `5`.
+
+Other parameters are contained in a dictionary `stockfish.parameters`.
+
+#### _Tactic Finder_ parameters
+
+The _Tactic Finder_ algorithm parameters are contained in `algorithm` dictionary. The main parameters are:
+* `centipawn_threshold` - the minimum centipawn difference between the best and the second-best moves. This means that the only one correct move needs to be better than the second-best move by `centipawn_threshold` centipawns, unless there is a forced checkmate. The default value is `1.5`.
+* `centipawn_limit`- the maximum value of centipawns for a position to consider. This prevents finding puzzles where an advantage for a player is huge already. The default value is `10`.
+* `centipawn_tolerance` - the allowed difference between the best move and a chosen move for an opponent to play. This allows searching for opponent's responses which are not the best move but good enough. The default value is `0.4`.
+* `checkmate_progress_threshold` - the value from 0.0 to 1.0 concerning the minimal fraction of moves . This allows to consider checkmate puzzles even if there are multiple correct moves at some point. The default `0.5` requires at least half of moves towards the checkpoint to consider a puzzle `mating net`.
+* `repetition_threshold` - the number of repetitions required to considered a position a draw (`repetition`) . The default value is `2` and it enforces finding only the 
+* `min_relative_material_balance` - the minimal material difference in points to consider a `material advantage` puzzle. The default value is `3`.
 
 ## Dependencies  
   

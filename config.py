@@ -11,5 +11,9 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     key, value = args.kv
-    set_field(key, value)
-    print(f'Successfully set value {key} to {value}.')
+
+    try:
+        set_field(key, value)
+        print(f'Successfully set value {key} to {value}.')
+    except Exception as exception:
+        print(exception)
