@@ -10,6 +10,11 @@ from modules.picklable import Picklable
 from modules.finder.position import Position
 
 
+TACTIC_TYPES_ORDER = [
+    '', 'mating net', 'material advantage', 'repetition', 'insufficient material', 'checkmate', 'stalemate'
+]
+
+
 @dataclass
 class Tactic(Picklable):
     positions: list[Position]
@@ -27,6 +32,20 @@ class Tactic(Picklable):
 
     def __len__(self):
         return self.positions.__len__()
+
+    def __le__(self, other):
+        return (
+            TACTIC_TYPES_ORDER.index(self.type), self.hardness, self.moves
+        ) <= (
+            TACTIC_TYPES_ORDER.index(other.type), other.hardness, other.moves
+        )
+
+    def __lt__(self, other):
+        return (
+            TACTIC_TYPES_ORDER.index(self.type), self.hardness, self.moves
+        ) < (
+            TACTIC_TYPES_ORDER.index(other.type), other.hardness, other.moves
+        )
 
     def create_game_from_board(self, board: chess.Board) -> chess.pgn.Game:
         game = chess.pgn.Game.from_board(board)
@@ -76,7 +95,7 @@ class Tactic(Picklable):
 
     @property
     def hardness(self) -> float:
-        return self.hard_moves / self.moves
+        return self.hard_moves / self.moves if self.moves > 0 else 0.0
 
     @property
     def initial_evaluation(self) -> Evaluation:

@@ -44,12 +44,8 @@ class Variations(Picklable):
     def get_tactic(self) -> Optional[Tactic]:
         tactics = self.get_tactics()
         if tactics:
-            tactics = sorted([
-                (tactic.hard_moves, tactic.moves, tactic)
-                for tactic in tactics
-            ], key=lambda pair: (pair[0], pair[1]), reverse=True)
-
-            return tactics[0][-1]
+            tactics = sorted(tactics, reverse=True)
+            return tactics[0]
 
     def to_json(self) -> dict:
         exporter = JsonExporter()

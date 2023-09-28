@@ -3,6 +3,7 @@ from hashlib import md5
 from typing import Optional
 
 from modules.configuration import load_configuration
+from modules.finder.variations import Variations
 from modules.json import json_save, json_load
 from modules.finder.tactic import Tactic
 
@@ -11,20 +12,16 @@ configuration = load_configuration()
 INPUT_DIRECTORY = configuration['paths']['output']
 GATHERED_PUZZLES_PATH = configuration['paths']['gathered_puzzles']
 PROGRESS_PATH = configuration['paths']['progress']
-SOCKET_PATH = configuration['paths']['unix_socket']
 
-PORT = configuration['tactic_player']['port']
 HARD_PROGRESS = configuration['tactic_player']['hard_progress']
-OPEN_BROWSER = configuration['tactic_player']['open_browser']
-SOCKET = configuration['tactic_player']['socket']
 
 
-def gather_variations(directory: str = INPUT_DIRECTORY) -> list[str]:
+def gather_variations_paths(directory: str = INPUT_DIRECTORY) -> list[str]:
     paths = []
     for root, dirs, files in os.walk(directory):
         filenames = [
             os.path.join(root, filename)
-            for filename in files if filename.endswith('.tactic')
+            for filename in files if filename.endswith('.vars')
         ]
 
         paths.extend(filenames)
@@ -102,10 +99,31 @@ def get_value(value: str) -> Optional[int]:
         return None
 
 
-def refresh(logger: Optional[callable] = print, gather_games: bool = True):
+def refresh(
+        logger: Optional[callable] = print,
+        gather_games: bool = True,
+        recalculate_tactics: bool = False
+):
     if not os.path.exists(GATHERED_PUZZLES_PATH) or gather_games:
         logger('Gathering games...')
-        paths = gather_variations()
+        paths = gather_variations_paths()
+        if recalculate_tactics:
+            logger('Recalculating tactics...')
+            for path in paths:
+                variations = Variations.from_file(path)
+                tactic = variations.get_tactic()
+                game = tactic.to_pgn(
+                    ignore_first_move=False,
+                    save_last_opponent_move=True
+                )
+
+                tactic_path = path.replace('.vars', '.tactic')
+                tactic.to_file(tactic_path)
+
+                pgn_path = path.replace('.vars', '.pgn')
+                print(game, file=open(pgn_path, 'w'), end='\n\n')
+
+        paths = [path.replace('.vars', '.tactic') for path in paths]
         puzzles = gather_puzzles(paths)
         save_puzzles(puzzles)
         logger(f'Puzzle saved to {GATHERED_PUZZLES_PATH}')

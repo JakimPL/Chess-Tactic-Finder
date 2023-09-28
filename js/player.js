@@ -194,6 +194,7 @@ function saveLocalConfiguration() {
             'checkmate': $('#checkmate').prop('checked'),
             'mating_net': $('#mating_net').prop('checked'),
             'material_advantage': $('#material_advantage').prop('checked'),
+            'insufficient_material': $('#insufficient_material').prop('checked'),
             'repetition': $('#repetition').prop('checked'),
             'stalemate': $('#stalemate').prop('checked')
         },
