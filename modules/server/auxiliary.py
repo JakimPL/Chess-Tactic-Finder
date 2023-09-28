@@ -71,6 +71,25 @@ def gather_puzzles(paths: list[str]) -> list[dict]:
     return puzzles
 
 
+def rewrite_variations_and_tactics(paths: list[str]) -> None:
+    for path in paths:
+        variations = Variations.from_file(path)
+        json_path = path.replace('.vars', '.json')
+        json_save(variations.to_json(), json_path)
+
+        tactic = variations.get_tactic()
+        game = tactic.to_pgn(
+            ignore_first_move=False,
+            save_last_opponent_move=True
+        )
+
+        tactic_path = path.replace('.vars', '.tactic')
+        tactic.to_file(tactic_path)
+
+        pgn_path = path.replace('.vars', '.pgn')
+        print(game, file=open(pgn_path, 'w'), end='\n\n')
+
+
 def save_puzzles(puzzles: list[dict], path: str = GATHERED_PUZZLES_PATH) -> None:
     json_save(puzzles, path)
 
@@ -102,26 +121,14 @@ def get_value(value: str) -> Optional[int]:
 def refresh(
         logger: Optional[callable] = print,
         gather_games: bool = True,
-        recalculate_tactics: bool = False
+        rewrite: bool = False
 ):
     if not os.path.exists(GATHERED_PUZZLES_PATH) or gather_games:
         logger('Gathering games...')
         paths = gather_variations_paths()
-        if recalculate_tactics:
+        if rewrite:
             logger('Recalculating tactics...')
-            for path in paths:
-                variations = Variations.from_file(path)
-                tactic = variations.get_tactic()
-                game = tactic.to_pgn(
-                    ignore_first_move=False,
-                    save_last_opponent_move=True
-                )
-
-                tactic_path = path.replace('.vars', '.tactic')
-                tactic.to_file(tactic_path)
-
-                pgn_path = path.replace('.vars', '.pgn')
-                print(game, file=open(pgn_path, 'w'), end='\n\n')
+            rewrite_variations_and_tactics(paths)
 
         paths = [path.replace('.vars', '.tactic') for path in paths]
         puzzles = gather_puzzles(paths)
