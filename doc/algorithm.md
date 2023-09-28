@@ -124,6 +124,7 @@ Given a position, the algorithm consequently constructs a tree of variations. Fo
 
 The algorithm stops either if there is no such move or if the game simply ends. At the end of the process we obtain of a tree of nodes.
 
+```
 /c3b3  
 └── /c3b3/d6d3  
 └── /c3b3/d6d3/c1c3  
@@ -139,6 +140,7 @@ The algorithm stops either if there is no such move or if the game simply ends. 
 └── /c3b3/d6d3/c1c3/d3c3/b3c3/c7e5/c3b4  
 └── /c3b3/d6d3/c1c3/d3c3/b3c3/c7e5/c3b4/e5a1  
 └── /c3b3/d6d3/c1c3/d3c3/b3c3/c7e5/c3b4/e5a1/e3a7
+```
 
 An example tree of nodes in an example. Each move is represented in the [long algebraic notation](https://en.wikipedia.org/wiki/Algebraic_notation_(chess)#Long_algebraic_notation) (move format including a starting position of a piece, like e2e4 instead of e4). Here's the corresponding situation:
 
