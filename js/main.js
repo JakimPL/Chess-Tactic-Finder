@@ -272,9 +272,11 @@ function checkIfSolved() {
     if (tactic.solved) {
         panelTextCallback('Puzzle solved!')
         save(currentPuzzleId, tactic.moveIndex)
+        tactic = null
         if (keepPlaying) {
-            tactic = null
             delay(loadNextPuzzle)
+        } else {
+            delay(() => {filterPuzzles(puzzles)}, 500)
         }
     }
 }

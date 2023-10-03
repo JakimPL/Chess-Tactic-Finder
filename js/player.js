@@ -19,6 +19,10 @@ $('#hide_first_move').on('click', function() {
     hideFirstMove = document.getElementById('hide_first_move').checked
 })
 
+$('#keep_playing').on('click', function() {
+    keepPlaying = document.getElementById('keep_playing').checked
+})
+
 $('#backward').on('click', function() {
     if (tactic !== null) {
         backward()
@@ -482,7 +486,7 @@ afterLoadCallback = (puzzleId) => {
     var chessLink = `https://www.chess.com/analysis?pgn=${pgn}`
     document.getElementById('analyze_chess').href = encodeURI(chessLink)
 
-    var lichessLink = `https://lichess.com/analysis/${fen}`
+    var lichessLink = `https://lichess.org/analysis/${fen}`
     document.getElementById('analyze_lichess').href = encodeURI(lichessLink)
 
     if (favorites[puzzleId] == true) {
