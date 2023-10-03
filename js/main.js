@@ -75,9 +75,15 @@ function loadPGN(path, puzzleId, addToHistory) {
     beforeLoadCallback()
     currentPuzzleId = puzzleId
     fetch(path)
-    .then(response => response.text())
-    .then(text => {
-        alert(text)
+    .then(response => {
+        if (!response.ok) {
+            alert('Failed to load a puzzle.')
+            throw new Error('Failed to load a puzzle.')
+        }
+
+        return response.text()
+    }).
+    then(text => {
         pgn = text
         reset()
         afterLoadCallback(puzzleId)
