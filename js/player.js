@@ -74,6 +74,18 @@ $('#copyPGN').on('click', function() {
     }
 })
 
+$('#previous').on('click', function() {
+    if (puzzlesHistory == null) {
+        return
+    }
+
+    if (puzzlesHistory.length > 1) {
+        puzzlesHistory.pop()
+        const [previousPath, previousPuzzleId] = puzzlesHistory.at(-1)
+        loadPGN(previousPath, previousPuzzleId, false)
+    }
+})
+
 $('#favorite').on('click', function() {
     if (currentPuzzleId !== null) {
         if (favorites[currentPuzzleId] == true) {
