@@ -79,10 +79,20 @@ $('#previous').on('click', function() {
         return
     }
 
-    if (puzzlesHistory.length > 1) {
-        puzzlesHistory.pop()
-        const [previousPath, previousPuzzleId] = puzzlesHistory.at(-1)
-        loadPGN(previousPath, previousPuzzleId, false)
+    var historyElement = puzzlesHistory.previous()
+    loadHistoryElement(historyElement)
+})
+
+$('#next').on('click', function() {
+    if (puzzlesHistory == null) {
+        return
+    }
+
+    var historyElement = puzzlesHistory.next()
+    if (historyElement == null) {
+        loadNextPuzzle()
+    } else {
+        loadHistoryElement(historyElement)
     }
 })
 
@@ -153,6 +163,14 @@ $('#progressImport').on('click', function(event) {
         readProgress(file)
     }
 })
+
+function loadHistoryElement(historyElement) {
+    if (historyElement != null) {
+        var previousPath = historyElement[0]
+        var previousPuzzleId = historyElement[1]
+        loadPGN(previousPath, previousPuzzleId, false)
+    }
+}
 
 function readProgress(file) {
     var reader = new FileReader()

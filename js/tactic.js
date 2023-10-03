@@ -1,4 +1,17 @@
 class Tactic {
+    constructor(pgn) {
+        this.pgn = pgn
+        this.gameJSON = JSON.parse(parser.pgn2json(pgn))
+        this.fen = this.gameJSON['str']['FEN']
+        this.moves = this.gameJSON['moves']
+        this.firstMove = this.moves[0]
+
+        this.moveIndex = 0
+        this.nextMove = this.forward()
+
+        this.solved = false
+    }
+
     forward() {
         if (this.moveIndex < this.moves.length - 1) {
             this.moveIndex++
@@ -22,18 +35,5 @@ class Tactic {
         }
 
         return null
-    }
-
-    constructor(pgn) {
-        this.pgn = pgn
-        this.gameJSON = JSON.parse(parser.pgn2json(pgn))
-        this.fen = this.gameJSON['str']['FEN']
-        this.moves = this.gameJSON['moves']
-        this.firstMove = this.moves[0]
-
-        this.moveIndex = 0
-        this.nextMove = this.forward()
-
-        this.solved = false
     }
 }

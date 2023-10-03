@@ -6,7 +6,8 @@ var filteredPuzzles = null
 var progress = {}
 var favorites = {}
 var hashes = {}
-var puzzlesHistory = []
+
+var puzzlesHistory = new History()
 
 var path = null
 var board = null
@@ -89,7 +90,7 @@ function loadPGN(path, puzzleId, addToHistory) {
         afterLoadCallback(puzzleId)
 
         if (addToHistory != false) {
-            puzzlesHistory.push([path, puzzleId])
+            puzzlesHistory.add([path, puzzleId])
         }
     })
 }
