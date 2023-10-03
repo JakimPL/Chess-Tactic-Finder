@@ -4,6 +4,7 @@ var progressPath = null
 var puzzles = null
 var filteredPuzzles = null
 var progress = {}
+var favorites = {}
 var hashes = {}
 
 var path = null
@@ -77,7 +78,7 @@ function loadPGN(path, puzzleId) {
     .then(text => {
         pgn = text
         reset()
-        afterLoadCallback()
+        afterLoadCallback(puzzleId)
     })
 }
 

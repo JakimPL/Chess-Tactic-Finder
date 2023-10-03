@@ -94,6 +94,11 @@ button:active {
     font-size: 9px;
 }
 
+table {
+    cellspacing: 0px;
+    border-collapse: collapse;
+}
+
 table#puzzles th:nth-child(4),
 table#puzzles th:nth-child(5),
 table#puzzles th:nth-child(6),

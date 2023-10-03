@@ -74,6 +74,20 @@ $('#copyPGN').on('click', function() {
     }
 })
 
+$('#favorite').on('click', function() {
+    if (currentPuzzleId !== null) {
+        if (favorites[currentPuzzleId] == true) {
+            favorites[currentPuzzleId] = false
+            unmarkButton('favorite')
+        } else {
+            favorites[currentPuzzleId] = true
+            markButton('favorite')
+        }
+
+        localStorage.setItem('favorites', JSON.stringify(favorites))
+    }
+})
+
 $('.board_settings').change(function() {
     saveLocalConfiguration()
 })
@@ -242,15 +256,24 @@ function loadConfiguration() {
     })
 }
 
+function loadItemFromStorage(key) {
+    if (key in localStorage) {
+        item = JSON.parse(localStorage.getItem(key))
+    } else {
+        item = {}
+        localStorage.setItem(key, JSON.stringify(item))
+    }
+
+    return item
+}
+
+function loadFavorites() {
+    favorites = loadItemFromStorage('favorites')
+}
+
 function loadProgress() {
     if (useLocalStorage) {
-        if ('progress' in localStorage) {
-            progress = JSON.parse(localStorage.getItem('progress'))
-        } else {
-            progress = {}
-            localStorage.setItem('progress', JSON.stringify(progress))
-        }
-
+        progress = loadItemFromStorage('progress')
         progressLoaded.resolve()
     } else {
         fetch(progressPath, {cache: 'no-cache'})
@@ -371,8 +394,13 @@ function createPuzzleTable(puzzles) {
         var link = `javascript:loadPGN('${path}', '${puzzle.hash}')`
         var solved = getSolvedSymbol(progress[puzzle.hash], puzzle.moves)
         var puzzleId = `puzzle${puzzle.hash}`
+        var playSymbol = favorites[puzzle.hash] == true ? '★' : '▶'
 
-        createPuzzleTableRowEntry(tr, '▶', link)
+        if (favorites[puzzle.hash]) {
+            tr.style.backgroundColor = '#b58863'
+        }
+
+        createPuzzleTableRowEntry(tr, playSymbol, link)
         createPuzzleTableRowEntry(tr, solved, null, puzzleId)
         createPuzzleTableRowEntry(tr, puzzle.whiteToMove ? '◉' : '○')
         createPuzzleTableRowEntry(tr, puzzle.white)
@@ -399,7 +427,6 @@ async function refreshPuzzleTable(filteredPuzzles) {
         $(`#row${hash}`).hide()
     }
 
-
     for (const puzzle of filteredPuzzles) {
         setTimeout(() => {
             if (currentActionId == actionId) {
@@ -419,17 +446,25 @@ updateSuccessRateCallback = updateSuccessRate
 filterPuzzlesCallback = filterPuzzles
 
 beforeLoadCallback = () => {markButton('random')}
-afterLoadCallback = () => {
+afterLoadCallback = (puzzleId) => {
     unmarkButton('random')
+
     var chessLink = `https://www.chess.com/analysis?pgn=${pgn}`
     document.getElementById('analyze_chess').href = encodeURI(chessLink)
 
     var lichessLink = `https://lichess.com/analysis/${fen}`
     document.getElementById('analyze_lichess').href = encodeURI(lichessLink)
+
+    if (favorites[puzzleId] == true) {
+        markButton('favorite')
+    } else {
+        unmarkButton('favorite')
+    }
 }
 
 configuration = loadConfiguration()
 loadLocalConfiguration()
+loadFavorites()
 
 hideFirstMove = document.getElementById('hide_first_move').checked
 keepPlaying = document.getElementById('keep_playing').checked
