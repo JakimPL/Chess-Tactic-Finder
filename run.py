@@ -5,6 +5,7 @@ import webbrowser
 
 from modules.configuration import load_configuration
 from modules.server.auxiliary import refresh, save_progress
+from modules.server.status_server import StatusServer
 from modules.server.handler import Handler
 
 configuration = load_configuration()
@@ -20,7 +21,8 @@ OPEN_BROWSER = configuration['server']['open_browser']
 SOCKET = configuration['server']['socket']
 
 
-def run(httpd):
+def run(httpd, status_server: StatusServer):
+    Handler.status_server = status_server
     httpd.allow_reuse_address = True
     httpd.server_bind()
     httpd.server_activate()
@@ -58,11 +60,18 @@ if __name__ == '__main__':
     else:
         try:
             with socketserver.TCPServer(('0.0.0.0', PORT), Handler, bind_and_activate=False) as httpd:
-                thread = threading.Thread(target=lambda: run(httpd), daemon=True)
+                status_server = StatusServer()
+                listener_thread = threading.Thread(target=status_server.communicate, daemon=True)
+                listener_thread.start()
+
+                thread = threading.Thread(target=lambda: run(httpd, status_server), daemon=True)
                 thread.start()
+
                 if OPEN_BROWSER:
                     webbrowser.open(f'http://localhost:{PORT}/index.html')
 
                 thread.join()
         except KeyboardInterrupt:
             print('Exit.')
+        finally:
+            status_server.close()

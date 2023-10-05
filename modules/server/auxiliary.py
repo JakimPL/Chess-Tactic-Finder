@@ -3,9 +3,9 @@ from hashlib import md5
 from typing import Optional
 
 from modules.configuration import load_configuration
+from modules.finder.tactic import Tactic
 from modules.finder.variations import Variations
 from modules.json import json_save, json_load
-from modules.finder.tactic import Tactic
 
 configuration = load_configuration()
 

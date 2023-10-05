@@ -8,6 +8,7 @@ import urllib.parse
 
 from modules.configuration import load_configuration, save_configuration
 from modules.server.auxiliary import refresh, get_value, save_progress
+from modules.server.status_server import StatusServer
 from modules.server.run import run_windows, run_linux
 
 configuration = load_configuration()
@@ -43,6 +44,8 @@ DEFAULT_ERROR_MESSAGE = """
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
+    status_server: StatusServer
+
     def __init__(self, request, client_address, server, **kwargs):
         self.error_message_format = DEFAULT_ERROR_MESSAGE
         super().__init__(request, client_address, server, **kwargs)
@@ -65,7 +68,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.log_message(text)
             self.send_text(text)
         elif parsed_url.path == '/analysis_state':
-            text = 'No analysis in progress.'
+            text = Handler.status_server.message
             self.send_text(text)
         elif parsed_url.path == '/reinstall':
             self.log_message('Reinstalling...')

@@ -15,6 +15,7 @@ from modules.finder.position import Position
 from modules.finder.tactic import Tactic
 from modules.finder.tactic_finder import TacticFinder
 from modules.finder.variations import Variations
+from modules.server.connection import get_client
 
 configuration = load_configuration()
 
@@ -112,6 +113,45 @@ def save_variations(
         print(game, file=open(pgn_path, 'w'), end='\n\n')
 
 
+def analyze(filename: str):
+    game_path = os.path.join(INPUT_DIRECTORY, filename)
+    moves = get_moves(game_path)
+    game = chess.pgn.read_game(open(game_path))
+    game_hash = hashlib.md5(str(game).encode()).hexdigest()
+    headers = game.headers
+    starting_position = headers.get('FEN')
+
+    output_filename = f"{headers.get('White', '_')} vs {headers.get('Black', '_')} ({headers.get('Date', '___')}) [{game_hash}]"
+    directory = os.path.join(OUTPUT_DIRECTORY, output_filename)
+    in_progress_file = os.path.join(directory, '.progress')
+    if os.path.isdir(directory):
+        if not os.path.exists(in_progress_file):
+            print(f'Tactics for {output_filename} are already found.')
+            return
+    else:
+        os.mkdir(directory)
+
+    open(in_progress_file, 'a').close()
+    print(f'Finding tactics for: {output_filename}')
+
+    variations_list = None
+    tactic_list = None
+    try:
+        variations_list, tactic_list = find_variations(moves, starting_position)
+    except ValueError as error:
+        print(f'Stockfish error: {error}')
+    except KeyboardInterrupt:
+        raise KeyboardInterrupt('interrupted')
+
+    if tactic_list:
+        save_variations(variations_list, tactic_list, directory)
+        print(f'Saved {len(tactic_list)} tactics.')
+    else:
+        print(f'No tactics found.')
+
+    os.remove(in_progress_file)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         prog='ChessTacticFinder',
@@ -131,41 +171,29 @@ if __name__ == '__main__':
 
         convert(pgn, INPUT_DIRECTORY)
 
-    for filename in tqdm(sorted(os.listdir(INPUT_DIRECTORY), key=lambda x: int(x.split('.')[0]))):
-        game_path = os.path.join(INPUT_DIRECTORY, filename)
-        moves = get_moves(game_path)
-        game = chess.pgn.read_game(open(game_path))
-        game_hash = hashlib.md5(str(game).encode()).hexdigest()
-        headers = game.headers
-        starting_position = headers.get('FEN')
+    filenames = sorted(os.listdir(INPUT_DIRECTORY), key=lambda x: int(x.split('.')[0]))
 
-        output_filename = f"{headers.get('White', '_')} vs {headers.get('Black', '_')} ({headers.get('Date', '___')}) [{game_hash}]"
-        directory = os.path.join(OUTPUT_DIRECTORY, output_filename)
-        in_progress_file = os.path.join(directory, '.progress')
-        if os.path.isdir(directory):
-            if not os.path.exists(in_progress_file):
-                print(f'Tactics for {output_filename} are already found.')
-                continue
-        else:
-            os.mkdir(directory)
+    client = get_client()
+    client.send(f'Analysis of {len(filenames)} games started.')
 
-        open(in_progress_file, 'a').close()
-        print(f'Finding tactics for: {output_filename}')
+    success = True
+    with tqdm(filenames) as bar:
+        for filename in bar:
+            try:
+                client.send('Analyzed {items} of {total} games ({percent:.2f}%).'.format(
+                    items=bar.n,
+                    total=bar.total,
+                    percent=100 * bar.n / bar.total if bar.total > 0 else 100
+                ))
 
-        variations_list = None
-        tactic_list = None
-        try:
-            variations_list, tactic_list = find_variations(moves, starting_position)
-        except ValueError as error:
-            print(f'Stockfish error: {error}')
-        except KeyboardInterrupt:
-            print('Interrupted.')
-            break
+                analyze(filename)
+            except KeyboardInterrupt:
+                success = False
+                print('Interrupted.')
+                client.send('Analysis interrupted.')
+                break
 
-        if tactic_list:
-            save_variations(variations_list, tactic_list, directory)
-            print(f'Saved {len(tactic_list)} tactics.')
-        else:
-            print(f'No tactics found.')
+    if success:
+        client.send('Analysis completed.')
 
-        os.remove(in_progress_file)
+    client.close()
