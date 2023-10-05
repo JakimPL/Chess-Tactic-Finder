@@ -98,6 +98,13 @@ function loadConfiguration() {
     })
 }
 
+function toggleInput(value) {
+    $('#stockfish').prop('disabled', value)
+    $('#pgn_extract').prop('disabled', value)
+    $('#reinstall').prop('disabled', value)
+    $('#tactic_player').prop('disabled', value)
+}
+
 function getState() {
     $.ajax({
         url: 'analysis_state',
@@ -105,13 +112,11 @@ function getState() {
         contentType: "application/json; charset=utf-8",
         success: (data) => {
             $('#analysis_state').html(data)
+            toggleInput(true)
         },
         error: () => {
             $('#analysis_state').html('Failed to connect to the server.')
-            $('#stockfish').prop('disabled', true)
-            $('#pgn_extract').prop('disabled', true)
-            $('#reinstall').prop('disabled', true)
-            $('#tactic_player').prop('disabled', true)
+            toggleInput(false)
         }
     })
 }

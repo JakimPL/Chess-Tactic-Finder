@@ -2,6 +2,8 @@ from multiprocessing.connection import Listener
 
 from modules.server.connection import get_listener
 
+NO_ANALYSIS_MESSAGE = 'No analysis in progress.'
+
 
 class StatusServer:
     def __init__(self):
@@ -17,7 +19,9 @@ class StatusServer:
                     self.message = connection.recv()
                 except EOFError:
                     running = False
+                    self.message = NO_ANALYSIS_MESSAGE
                 except KeyboardInterrupt:
+                    self.message = NO_ANALYSIS_MESSAGE
                     return
 
     def close(self):
