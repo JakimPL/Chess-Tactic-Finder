@@ -1,11 +1,12 @@
 class Tactic {
     constructor(pgn) {
-        this.pgn = pgn
         this.gameJSON = JSON.parse(parser.pgn2json(pgn))
+        this.base_pgn = pgn
         this.base_fen = this.gameJSON['str']['FEN']
         this.moves = this.gameJSON['moves']
         this.turn = ''
         this.fen = this.get_fen()
+        this.pgn = this.get_pgn()
 
         this.moveIndex = 0
         this.firstMove = this.moves[0]
@@ -47,5 +48,15 @@ class Tactic {
 
         var fen = game.fen()
         return fen
+    }
+
+    get_pgn() {
+        var game = new Chess(this.fen)
+        for (const move of this.moves.slice(1)) {
+            game.move(move)
+        }
+
+        var pgn = game.pgn()
+        return pgn
     }
 }
