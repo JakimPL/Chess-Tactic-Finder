@@ -120,7 +120,7 @@ def get_value(value: str) -> Optional[int]:
 
 def refresh(
         logger: Optional[callable] = print,
-        gather_games: bool = True,
+        gather_games: bool = False,
         rewrite: bool = False
 ):
     if not os.path.exists(GATHERED_PUZZLES_PATH) or gather_games:

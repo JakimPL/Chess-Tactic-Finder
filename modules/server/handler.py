@@ -64,6 +64,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             text = 'Refreshed.'
             self.log_message(text)
             self.send_text(text)
+        elif parsed_url.path == '/analysis_state':
+            text = 'No analysis in progress.'
+            self.send_text(text)
         elif parsed_url.path == '/reinstall':
             self.log_message('Reinstalling...')
             if platform.system() == 'Windows':

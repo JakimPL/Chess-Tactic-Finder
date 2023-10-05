@@ -98,4 +98,23 @@ function loadConfiguration() {
     })
 }
 
+function getState() {
+    $.ajax({
+        url: 'analysis_state',
+        type: 'GET',
+        contentType: "application/json; charset=utf-8",
+        success: (data) => {
+            $('#analysis_state').html(data)
+        },
+        error: () => {
+            $('#analysis_state').html('Failed to connect to the server.')
+            $('#stockfish').prop('disabled', true)
+            $('#pgn_extract').prop('disabled', true)
+            $('#reinstall').prop('disabled', true)
+            $('#tactic_player').prop('disabled', true)
+        }
+    })
+}
+
 loadConfiguration()
+setInterval(getState, 5000)
