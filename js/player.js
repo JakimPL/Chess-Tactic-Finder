@@ -66,14 +66,19 @@ $('#solution').on('click', function() {
 })
 
 $('#copyFEN').on('click', function() {
-    if (fen !== null) {
+    if (game == null) {
+        return
+    }
+
+    var fen = game.fen()
+    if (fen != null && fen != '') {
         navigator.clipboard.writeText(fen)
         setPanel('FEN copied to clipboard!')
     }
 })
 
 $('#copyPGN').on('click', function() {
-    if (pgn !== null) {
+    if (pgn != null && pgn != '') {
         navigator.clipboard.writeText(pgn)
         setPanel('PGN copied to clipboard!')
     }
@@ -440,7 +445,7 @@ async function refreshPuzzleTable(filteredPuzzles) {
 }
 
 function setPanel(text) {
-    if (text == null) {
+    if (text == null || text == '') {
         $panel.html('&nbsp')
     } else {
         $panel.html(text)
@@ -457,10 +462,10 @@ beforeLoadCallback = () => {markButton('random')}
 afterLoadCallback = (puzzleId) => {
     unmarkButton('random')
 
-    var chessLink = `https://www.chess.com/analysis?pgn=${pgn}`
+    var chessLink = `https://www.chess.com/analysis?pgn=${tactic.pgn}`
     document.getElementById('analyze_chess').href = encodeURI(chessLink)
 
-    var lichessLink = `https://lichess.org/analysis/${fen}`
+    var lichessLink = `https://lichess.org/analysis/${tactic.fen}`
     document.getElementById('analyze_lichess').href = encodeURI(lichessLink)
 
     if (favorites[puzzleId] == true) {

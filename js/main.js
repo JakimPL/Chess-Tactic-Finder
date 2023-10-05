@@ -13,7 +13,6 @@ var tactic = null
 var player = null
 var game = null
 var pgn = null
-var fen = null
 
 var currentPuzzleId = -1
 
@@ -133,7 +132,7 @@ function getMoves(game) {
 function getConfig(tactic) {
     return {
         draggable: true,
-        position: tactic.fen,
+        position: tactic.base_fen,
         onDragStart: onDragStart,
         onDrop: onDrop,
         onSnapEnd: onSnapEnd
@@ -178,9 +177,8 @@ function backward() {
 function reset() {
     player = null
     tactic = new Tactic(pgn)
-    game = new Chess(tactic.fen)
+    game = new Chess(tactic.base_fen)
     board = Chessboard('board', getConfig(tactic))
-    fen = game.fen()
 
     if (game.turn() == 'w') {
         board.flip()
