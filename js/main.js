@@ -312,7 +312,7 @@ function save(hash, value) {
     if (useLocalStorage) {
         if (!(hash in progress)) {
             progress[hash] = targetValue
-            localStorage.setItem('progress', JSON.stringify(progress))
+            storage.set('progress')
             progressCallback(hash, targetValue, moves)
             updateSuccessRateCallback()
         }

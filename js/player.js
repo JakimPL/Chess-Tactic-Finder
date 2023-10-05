@@ -4,6 +4,7 @@ const $status = $('#status')
 const $moveHistory = $('#moveHistory')
 const $panel = $('#panel')
 
+var storage = new Storage()
 var localConfiguration = {}
 var progressLoaded = $.Deferred()
 var puzzlesLoaded = $.Deferred()
@@ -110,7 +111,7 @@ $('#favorite').on('click', function() {
             markButton('favorite')
         }
 
-        localStorage.setItem('favorites', JSON.stringify(favorites))
+        storage.set('favorites', favorites)
     }
 })
 
@@ -136,7 +137,7 @@ $('#random').on('click', function() {
 $('#progressClear').on('click', function(event) {
     if (confirm('Are you sure you want to clear the progress? This cannot be undone.')) {
         progress = {}
-        localStorage.setItem('progress', JSON.stringify(progress))
+        storage.set('progress', progress)
         updateSolvedStates()
         updateSuccessRate()
     }
@@ -184,7 +185,7 @@ function readProgress(file) {
         if (data != null) {
             try {
                 progress = data
-                localStorage.setItem('progress', JSON.stringify(progress))
+                storage.set('progress', progress)
                 updateSolvedStates()
                 updateSuccessRate()
                 alert('Progress imported successfully.')
@@ -255,11 +256,11 @@ function saveLocalConfiguration() {
         }
     }
 
-    localStorage.setItem('configuration', JSON.stringify(localConfiguration))
+    storage.set('configuration', localConfiguration)
 }
 
 function loadLocalConfiguration() {
-    var localStorageConfiguration = JSON.parse(localStorage.getItem('configuration'))
+    var localStorageConfiguration = storage.get('configuration')
     if (localStorageConfiguration != null) {
         localConfiguration = localStorageConfiguration
         for (const element of $('.board_settings')) {
@@ -290,24 +291,13 @@ function loadConfiguration() {
     })
 }
 
-function loadItemFromStorage(key) {
-    if (key in localStorage) {
-        item = JSON.parse(localStorage.getItem(key))
-    } else {
-        item = {}
-        localStorage.setItem(key, JSON.stringify(item))
-    }
-
-    return item
-}
-
 function loadFavorites() {
-    favorites = loadItemFromStorage('favorites')
+    favorites = storage.get('favorites')
 }
 
 function loadProgress() {
     if (useLocalStorage) {
-        progress = loadItemFromStorage('progress')
+        progress = storage.get('progress')
         progressLoaded.resolve()
     } else {
         fetch(progressPath, {cache: 'no-cache'})
