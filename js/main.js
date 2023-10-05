@@ -175,14 +175,6 @@ function backward() {
     updateStatus()
 }
 
-function setPanel(text) {
-    if (text == null) {
-        $panel.html('&nbsp')
-    } else {
-        $panel.html(text)
-    }
-}
-
 function reset() {
     player = null
     tactic = new Tactic(pgn)

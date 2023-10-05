@@ -439,6 +439,14 @@ async function refreshPuzzleTable(filteredPuzzles) {
     }
 }
 
+function setPanel(text) {
+    if (text == null) {
+        $panel.html('&nbsp')
+    } else {
+        $panel.html(text)
+    }
+}
+
 panelTextCallback = setPanel
 statusTextCallback = (text) => {$status.html(text)}
 moveHistoryTextCallback = (text) => {$moveHistory.html(text)}
@@ -462,7 +470,8 @@ afterLoadCallback = (puzzleId) => {
     }
 }
 
-progress = new Progress(() => {
+progress = new Progress(
+    () => {
         progressLoaded.resolve()
         updateSuccessRate()
     }, (key, value, moves) => {
