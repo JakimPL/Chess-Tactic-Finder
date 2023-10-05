@@ -45,7 +45,6 @@
     },
     "tactic_player": {
         "hard_progress": true,
-        "count_moves_instead_of_puzzles": false,
-        "use_local_storage": true
+        "count_moves_instead_of_puzzles": false
     }
 }

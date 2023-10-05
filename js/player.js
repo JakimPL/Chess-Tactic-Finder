@@ -136,8 +136,7 @@ $('#random').on('click', function() {
 
 $('#progressClear').on('click', function(event) {
     if (confirm('Are you sure you want to clear the progress? This cannot be undone.')) {
-        progress = {}
-        storage.set('progress', progress)
+        progress.clear()
         updateSolvedStates()
         updateSuccessRate()
     }
@@ -146,11 +145,7 @@ $('#progressClear').on('click', function(event) {
 $('#progressExport').on('click', function(event) {
     event.preventDefault()
     var element = document.createElement('a')
-    if (useLocalStorage) {
-        var data = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(progress))
-    } else {
-        var data = progressPath
-    }
+    data = progress.link()
 
     element.setAttribute('href', data)
     element.setAttribute('download', 'progress.json')
@@ -184,8 +179,7 @@ function readProgress(file) {
         var data = JSON.parse(event.target.result)
         if (data != null) {
             try {
-                progress = data
-                storage.set('progress', progress)
+                progress.update(data)
                 updateSolvedStates()
                 updateSuccessRate()
                 alert('Progress imported successfully.')
@@ -205,7 +199,7 @@ function updateNumberOfPuzzles(puzzles) {
 }
 
 function updateSuccessRate() {
-    var [correct, total, rate] = calculateSuccessRate(progress)
+    var [correct, total, rate] = calculateSuccessRate()
     rate = parseFloat(100 * rate).toFixed(2)
     var successRateText = `Success rate: ${correct}/${total} (${rate}%).`
     $('#success_rate').html(successRateText)
@@ -223,8 +217,8 @@ function updateSolvedStatus(hash, value, moves) {
 }
 
 function updateSolvedStates() {
-    for (const hash in progress) {
-        var value = progress[hash]
+    for (const hash in progress.container) {
+        var value = progress.get(hash)
         var index = hashes[hash]
         if (index in puzzles) {
             var moves = puzzles[index].moves
@@ -283,30 +277,15 @@ function loadConfiguration() {
     .then(response => response.json())
     .then(json => {
         configuration = json
-        progressPath = configuration['paths']['progress']
+        progress.path = configuration['paths']['progress']
         puzzlesPath = configuration['paths']['gathered_puzzles']
         hardEvaluation = !configuration['tactic_player']['count_moves_instead_of_puzzles']
-        useLocalStorage = configuration['tactic_player']['use_local_storage']
         refresh()
     })
 }
 
 function loadFavorites() {
     favorites = storage.get('favorites')
-}
-
-function loadProgress() {
-    if (useLocalStorage) {
-        progress = storage.get('progress')
-        progressLoaded.resolve()
-    } else {
-        fetch(progressPath, {cache: 'no-cache'})
-        .then(response => response.json())
-        .then(json => {
-            progress = json
-            progressLoaded.resolve()
-        })
-    }
 }
 
 function loadPuzzles() {
@@ -366,7 +345,7 @@ function filterPuzzles(puzzles) {
         var hardness = parseFloat(puzzle.hardness)
         if (
             puzzleTypes.includes(puzzle.puzzleType)
-            && (!onlyUnsolved || !(puzzle.hash in progress))
+            && (!onlyUnsolved || !(puzzle.hash in progress.container))
             && puzzle.moves >= minMoves
             && puzzle.moves <= maxMoves
             && hardness >= minHardness
@@ -416,7 +395,7 @@ function createPuzzleTable(puzzles) {
 
         var path = getPuzzlePath(puzzle)
         var link = `javascript:loadPGN('${path}', '${puzzle.hash}')`
-        var solved = getSolvedSymbol(progress[puzzle.hash], puzzle.moves)
+        var solved = getSolvedSymbol(progress.get(puzzle.hash), puzzle.moves)
         var puzzleId = `puzzle${puzzle.hash}`
         var playSymbol = favorites[puzzle.hash] == true ? '★' : '▶'
 
@@ -463,10 +442,7 @@ async function refreshPuzzleTable(filteredPuzzles) {
 panelTextCallback = setPanel
 statusTextCallback = (text) => {$status.html(text)}
 moveHistoryTextCallback = (text) => {$moveHistory.html(text)}
-progressCallback = updateSolvedStatus
 loadPuzzlesCallback = loadPuzzles
-loadProgressCallback = loadProgress
-updateSuccessRateCallback = updateSuccessRate
 filterPuzzlesCallback = filterPuzzles
 
 beforeLoadCallback = () => {markButton('random')}
@@ -485,6 +461,15 @@ afterLoadCallback = (puzzleId) => {
         unmarkButton('favorite')
     }
 }
+
+progress = new Progress(() => {
+        progressLoaded.resolve()
+        updateSuccessRate()
+    }, (key, value, moves) => {
+        updateSolvedStatus(key, value, moves)
+        updateSuccessRate()
+    }
+)
 
 configuration = loadConfiguration()
 loadLocalConfiguration()

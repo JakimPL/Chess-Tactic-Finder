@@ -6,7 +6,13 @@ class Storage {
     get(key) {
         var item = {}
         if (key in localStorage) {
-            item = JSON.parse(localStorage.getItem(key))
+            var element = localStorage.getItem(key)
+            try {
+                item = JSON.parse(element)
+            }
+            catch (error) {
+                console.error(error)
+            }
         } else {
             localStorage.setItem(key, JSON.stringify(item))
         }

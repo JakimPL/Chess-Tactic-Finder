@@ -1,9 +1,7 @@
-var puzzlesPath = null
-var progressPath = null
 
 var puzzles = null
+var puzzlesPath = null
 var filteredPuzzles = null
-var progress = {}
 var favorites = {}
 var hashes = {}
 
@@ -26,10 +24,7 @@ var delayTime = 1000
 var panelTextCallback = null
 var statusTextCallback = null
 var moveHistoryText = null
-var progressCallback = null
 var loadPuzzlesCallback = null
-var loadProgressCallback = null
-var updateSuccessRateCallback = null
 var filterPuzzlesCallback = null
 
 var beforeLoadCallback = null
@@ -38,22 +33,6 @@ var afterLoadCallback = null
 var hideFirstMove = true
 var keepPlaying = true
 var hardEvaluation = true
-var useLocalStorage = true
-
-function delay(callback, time) {
-    var time = time == null ? delayTime : time
-    wait = true
-    action += 1
-    var currentAction = action
-    setTimeout(() => {
-        if (action == currentAction) {
-            callback()
-        }
-
-        wait = false
-        updateStatus()
-    }, time)
-}
 
 function getPuzzlePath(puzzle) {
     return puzzle.path.replace(/[\\/]+/g, '/').replace(/^([a-zA-Z]+:|\.\/)/, '')
@@ -95,14 +74,14 @@ function loadPGN(path, puzzleId, addToHistory) {
     })
 }
 
-function calculateSuccessRate(progress) {
-    if (puzzles == null || progress == null || hashes == null) {
+function calculateSuccessRate() {
+    if (puzzles == null || progress.container == null || hashes == null) {
         return [0, 0, 0.0]
     }
 
     var correct = 0
     var total = 0
-    for (const [hash, correctMoves] of Object.entries(progress)) {
+    for (const [hash, correctMoves] of Object.entries(progress.container)) {
         var puzzle = puzzles[hashes[hash]]
         if (puzzle != null) {
             if (hardEvaluation) {
@@ -308,33 +287,7 @@ function getMovesCount(number) {
 function save(hash, value) {
     var targetValue = getMovesCount(value)
     var moves = Math.floor(tactic.moves.length / 2)
-
-    if (useLocalStorage) {
-        if (!(hash in progress)) {
-            progress[hash] = targetValue
-            storage.set('progress')
-            progressCallback(hash, targetValue, moves)
-            updateSuccessRateCallback()
-        }
-    } else {
-        $.ajax({
-            url: `save/${hash}/${targetValue}`,
-            contentType: 'text/plain',
-            dataType: 'text',
-            type: 'GET',
-            success: (data) => {
-                if (data != 'None') {
-                    progress[hash] = parseInt(data)
-                    progressCallback(hash, targetValue, moves)
-                    updateSuccessRateCallback()
-                }
-            },
-            error: () => {
-                console.error('Invalid response from server.')
-                filterPuzzlesCallback(puzzles)
-            }
-        })
-    }
+    progress.saveItem(hash, targetValue, moves)
 }
 
 function refresh() {
@@ -343,7 +296,7 @@ function refresh() {
         type: 'GET',
         success: () => {
             loadPuzzlesCallback()
-            loadProgressCallback()
+            progress.load()
         },
         error: () => {
             console.error('Unable to refresh puzzles.')
