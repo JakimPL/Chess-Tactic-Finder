@@ -160,6 +160,7 @@ table#puzzles th:nth-child(7) {
     text-align: center;
     display: block;
     margin: 0 auto;
+    visibility: hidden;
 }
 
 #progress_bar {

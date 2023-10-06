@@ -106,7 +106,7 @@ function toggleInput(value) {
 }
 
 function setProgressBar(message) {
-    var progress = 24
+    var progress = 0
     if (message.includes('completed')) {
         progress = 100
     } else if (message.includes(' of ')) {
@@ -117,6 +117,11 @@ function setProgressBar(message) {
     }
 
     $('#progress_bar').css('width', progress + '%').attr('aria-valuenow', progress)
+    if (message.includes('No analysis')) {
+        $('#progress').css('visibility', 'hidden')
+    } else {
+        $('#progress').css('visibility', 'visible')
+    }
 }
 
 function getState() {
