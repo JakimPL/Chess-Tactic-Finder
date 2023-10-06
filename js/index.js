@@ -105,6 +105,20 @@ function toggleInput(value) {
     $('#tactic_player').prop('disabled', value)
 }
 
+function setProgressBar(message) {
+    var progress = 24
+    if (message.includes('completed')) {
+        progress = 100
+    } else if (message.includes(' of ')) {
+        const match = message.match(/\d+\sof\s(\d+)/).toString().split(' of ')
+        const n = parseInt(match[0])
+        const total = parseInt(match[1])
+        progress = parseFloat(100 * n) / total
+    }
+
+    $('#progress_bar').css('width', progress + '%').attr('aria-valuenow', progress)
+}
+
 function getState() {
     $.ajax({
         url: 'analysis_state',
@@ -112,14 +126,16 @@ function getState() {
         contentType: "application/json; charset=utf-8",
         success: (data) => {
             $('#analysis_state').html(data)
-            toggleInput(true)
+            toggleInput(false)
+            setProgressBar(data)
         },
         error: () => {
             $('#analysis_state').html('Failed to connect to the server.')
-            toggleInput(false)
+            toggleInput(true)
         }
     })
 }
 
 loadConfiguration()
+getState()
 setInterval(getState, 5000)

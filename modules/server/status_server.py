@@ -8,7 +8,7 @@ NO_ANALYSIS_MESSAGE = 'No analysis in progress.'
 class StatusServer:
     def __init__(self):
         self.listener: Listener = get_listener()
-        self.message: str = 'No analysis in progress.'
+        self.message: str = NO_ANALYSIS_MESSAGE
 
     def communicate(self):
         while True:
@@ -17,6 +17,9 @@ class StatusServer:
             while running:
                 try:
                     self.message = connection.recv()
+                    if 'Analysis completed.' in self.message:
+                        connection.close()
+                        running = False
                 except EOFError:
                     running = False
                     self.message = NO_ANALYSIS_MESSAGE

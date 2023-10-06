@@ -5,6 +5,7 @@ import os
 import chess
 import chess.pgn
 from chess import Board
+from chess.pgn import Headers
 from stockfish import Stockfish
 from tqdm import tqdm
 
@@ -34,6 +35,7 @@ SAVE_LAST_OPPONENT_MOVE = configuration['export']['save_last_opponent_move']
 def find_variations(
         moves,
         starting_position: str,
+        headers: Headers,
         stockfish_depth: int = STOCKFISH_DEPTH,
 ) -> tuple[list[Variations], [Tactic]]:
     stockfish = Stockfish(
@@ -137,7 +139,12 @@ def analyze(filename: str):
     variations_list = None
     tactic_list = None
     try:
-        variations_list, tactic_list = find_variations(moves, starting_position)
+        variations_list, tactic_list = find_variations(
+            moves,
+            starting_position,
+            headers
+        )
+
     except ValueError as error:
         print(f'Stockfish error: {error}')
     except KeyboardInterrupt:
@@ -164,23 +171,26 @@ if __name__ == '__main__':
     pgn_path = args.pgn
     stockfish_depth = args.depth
 
+    name = ''
     if pgn_path:
         print(f'Reading PGN file {pgn_path}...')
         with open(pgn_path, 'r') as file:
             pgn = file.read()
+            name = f"[{hashlib.md5(pgn.encode('utf-8')).hexdigest()[:6]}]"
 
         convert(pgn, INPUT_DIRECTORY)
 
     filenames = sorted(os.listdir(INPUT_DIRECTORY), key=lambda x: int(x.split('.')[0]))
 
     client = get_client()
-    client.send(f'Analysis of {len(filenames)} games started.')
+    client.send(f'{name} Analysis of {len(filenames)} games started.')
 
     success = True
     with tqdm(filenames) as bar:
         for filename in bar:
             try:
-                client.send('Analyzed {items} of {total} games ({percent:.2f}%).'.format(
+                client.send('{name} Analyzed {items} of {total} games ({percent:.2f}%)...'.format(
+                    name=name,
                     items=bar.n,
                     total=bar.total,
                     percent=100 * bar.n / bar.total if bar.total > 0 else 100
@@ -190,10 +200,10 @@ if __name__ == '__main__':
             except KeyboardInterrupt:
                 success = False
                 print('Interrupted.')
-                client.send('Analysis interrupted.')
+                client.send(f'{name} Analysis interrupted.')
                 break
 
     if success:
-        client.send('Analysis completed.')
+        client.send(f'{name} Analysis completed.')
 
     client.close()

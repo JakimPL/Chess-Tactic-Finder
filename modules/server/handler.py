@@ -60,6 +60,18 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(bytes(text, 'utf-8'))
 
+    def send_json(self, dictionary: dict):
+        json_string = json.dumps(dictionary)
+        self.send_response(200)
+        self.send_header('Content-type', 'application/json')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET')
+        self.send_header('Content-Length', str(len(json_string)))
+        self.end_headers()
+        self.wfile.write(bytes(json_string, 'utf-8'))
+
+
     def do_GET(self):
         parsed_url = urllib.parse.urlparse(self.path)
         if parsed_url.path == '/refresh':
@@ -68,8 +80,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.log_message(text)
             self.send_text(text)
         elif parsed_url.path == '/analysis_state':
-            text = Handler.status_server.message
-            self.send_text(text)
+            message = Handler.status_server.message
+            self.send_text(message)
         elif parsed_url.path == '/reinstall':
             self.log_message('Reinstalling...')
             if platform.system() == 'Windows':

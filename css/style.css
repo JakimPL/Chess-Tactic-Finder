@@ -1,3 +1,8 @@
+:root {
+    --light-square: #f0d9b5;
+    --dark-square: #b58863;
+}
+
 body {
     font-size: 10pt;
     font-family: "Noto Mono", sans-serif;
@@ -28,7 +33,7 @@ footer {
 
 button, input[type=number], input[type=button], input[type=submit] {
     font-size: 12px;
-    background-color: #f0d9b5;
+    background-color: var(--light-square);
     font-family: "Noto Mono", sans-serif;
     border: 2px;
     border-radius: 8px;
@@ -40,7 +45,7 @@ button, input[type=number], input[type=button], input[type=submit] {
 }
 
 button:active {
-    background-color: #b58863;
+    background-color: var(--dark-square);
     transform: translateY(1px);
 }
 
@@ -147,4 +152,18 @@ table#puzzles th:nth-child(7) {
     table#puzzles td:nth-child(6) {
         display: none;
     }
+}
+
+#progress {
+    width: 100%;
+    background-color: var(--light-square);
+    text-align: center;
+    display: block;
+    margin: 0 auto;
+}
+
+#progress_bar {
+    width: 0%;
+    height: 12px;
+    background-color: var(--dark-square);
 }
