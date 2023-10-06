@@ -78,7 +78,7 @@ def find_variations(
 
         move_string = f'{move_number}{"." if white else "..."} {board_move} {"   " if white else " "}'
         print(f'{move_string}\t{evaluation}')
-        message_callback(fen, move_string, str(evaluation))
+        message_callback(board.fen(), move_string, str(evaluation))
 
         tactic_finder = TacticFinder(stockfish, not white, starting_position=position, fens=fens)
         variations, tactic = tactic_finder.get_variations(headers=headers)
