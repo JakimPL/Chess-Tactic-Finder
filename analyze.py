@@ -6,6 +6,7 @@ import chess
 import chess.pgn
 from chess import Board
 from chess.pgn import Headers
+from typing import Callable
 from stockfish import Stockfish
 from tqdm import tqdm
 
@@ -17,6 +18,7 @@ from modules.finder.tactic import Tactic
 from modules.finder.tactic_finder import TacticFinder
 from modules.finder.variations import Variations
 from modules.server.connection import get_client
+from modules.server.message import Message
 
 configuration = load_configuration()
 
@@ -36,6 +38,7 @@ def find_variations(
         moves,
         starting_position: str,
         headers: Headers,
+        message_callback: Callable,
         stockfish_depth: int = STOCKFISH_DEPTH,
 ) -> tuple[list[Variations], [Tactic]]:
     stockfish = Stockfish(
@@ -73,7 +76,9 @@ def find_variations(
         board_move = board.san(board_move)
         board.push_san(move)
 
-        print(f'{move_number}{"." if white else "..."} {board_move} {"   " if white else " "}\t{evaluation}')
+        move_string = f'{move_number}{"." if white else "..."} {board_move} {"   " if white else " "}'
+        print(f'{move_string}\t{evaluation}')
+        message_callback(fen, move_string, str(evaluation))
 
         tactic_finder = TacticFinder(stockfish, not white, starting_position=position, fens=fens)
         variations, tactic = tactic_finder.get_variations(headers=headers)
@@ -115,7 +120,7 @@ def save_variations(
         print(game, file=open(pgn_path, 'w'), end='\n\n')
 
 
-def analyze(filename: str):
+def analyze(filename: str, client, bar):
     game_path = os.path.join(INPUT_DIRECTORY, filename)
     moves = get_moves(game_path)
     game = chess.pgn.read_game(open(game_path))
@@ -138,11 +143,33 @@ def analyze(filename: str):
 
     variations_list = None
     tactic_list = None
+
+    def message_callback(fen, move_string, evaluation):
+        text = '{name} Analyzed {items} of {total} games ({percent:.2f}%)...'.format(
+            name=name,
+            items=bar.n,
+            total=bar.total,
+            percent=100 * bar.n / bar.total if bar.total > 0 else 100
+        )
+
+        message = Message(
+            text=text,
+            analyzed=bar.n,
+            total=bar.total,
+            game_name=output_filename,
+            fen=fen,
+            last_move=move_string,
+            evaluation=str(evaluation)
+        )
+
+        client.send(message.encode())
+
     try:
         variations_list, tactic_list = find_variations(
             moves,
             starting_position,
-            headers
+            headers,
+            message_callback
         )
 
     except ValueError as error:
@@ -183,27 +210,20 @@ if __name__ == '__main__':
     filenames = sorted(os.listdir(INPUT_DIRECTORY), key=lambda x: int(x.split('.')[0]))
 
     client = get_client()
-    client.send(f'{name} Analysis of {len(filenames)} games started.')
+    client.send(Message(f'{name} Analysis of {len(filenames)} games started.', 0, len(filenames)).encode())
 
     success = True
     with tqdm(filenames) as bar:
         for filename in bar:
             try:
-                client.send('{name} Analyzed {items} of {total} games ({percent:.2f}%)...'.format(
-                    name=name,
-                    items=bar.n,
-                    total=bar.total,
-                    percent=100 * bar.n / bar.total if bar.total > 0 else 100
-                ))
-
-                analyze(filename)
+                analyze(filename, client, bar)
             except KeyboardInterrupt:
                 success = False
                 print('Interrupted.')
-                client.send(f'{name} Analysis interrupted.')
+                client.send(Message(f'{name} Analysis interrupted.', bar.n, len(filenames)).encode())
                 break
 
     if success:
-        client.send(f'{name} Analysis completed.')
+        client.send(Message(f'{name} Analysis completed.', len(filenames), len(filenames)).encode())
 
     client.close()

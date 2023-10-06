@@ -1,3 +1,5 @@
+var board = Chessboard('board')
+
 var configuration = null
 
 var installation = false
@@ -98,30 +100,20 @@ function loadConfiguration() {
     })
 }
 
-function toggleInput(value) {
-    $('#stockfish').prop('disabled', value)
-    $('#pgn_extract').prop('disabled', value)
-    $('#reinstall').prop('disabled', value)
-    $('#tactic_player').prop('disabled', value)
+function setInput(value) {
+    $('#stockfish').prop('disabled', !value)
+    $('#pgn_extract').prop('disabled', !value)
+    $('#reinstall').prop('disabled', !value)
+    $('#tactic_player').prop('disabled', !value)
 }
 
-function setProgressBar(message) {
-    var progress = 0
-    if (message.includes('completed')) {
-        progress = 100
-    } else if (message.includes(' of ')) {
-        const match = message.match(/\d+\sof\s(\d+)/).toString().split(' of ')
-        const n = parseInt(match[0])
-        const total = parseInt(match[1])
-        progress = parseFloat(100 * n) / total
-    }
+function setProgressVisibility(value) {
+    $('#progress').css('visibility', value ? 'visible' : 'hidden')
+}
 
+function setProgressBar(message, analyzed, total) {
+    var progress = parseFloat(100 * analyzed) / total
     $('#progress_bar').css('width', progress + '%').attr('aria-valuenow', progress)
-    if (message.includes('No analysis')) {
-        $('#progress').css('visibility', 'hidden')
-    } else {
-        $('#progress').css('visibility', 'visible')
-    }
 }
 
 function getState() {
@@ -130,17 +122,35 @@ function getState() {
         type: 'GET',
         contentType: "application/json; charset=utf-8",
         success: (data) => {
-            $('#analysis_state').html(data)
-            toggleInput(false)
-            setProgressBar(data)
+            setInput(true)
+            if (Object.keys(data).length === 0) {
+                $('#analysis_state').html('No analysis in progress.')
+                setProgressVisibility(false)
+                board.clear()
+            } else {
+                $('#analysis_state').html(data['text'])
+                $('#game_description').html(data['game_name'])
+                setProgressVisibility(true)
+                setProgressBar(data['text'], data['analyzed'], data['total'])
+
+                if (data['fen'] != null) {
+                    board.position(data['fen'])
+                }
+
+                if (data['last_move'] != null && data['evaluation'] != null) {
+                    $('#move').html(`${data['last_move']}${data['evaluation']}`)
+                }
+            }
         },
         error: () => {
             $('#analysis_state').html('Failed to connect to the server.')
-            toggleInput(true)
+            setProgressVisibility(false)
+            setInput(false)
+            board.clear()
         }
     })
 }
 
 loadConfiguration()
 getState()
-setInterval(getState, 5000)
+setInterval(getState, 2000)

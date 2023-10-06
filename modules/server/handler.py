@@ -81,7 +81,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.send_text(text)
         elif parsed_url.path == '/analysis_state':
             message = Handler.status_server.message
-            self.send_text(message)
+            dictionary = dict(urllib.parse.parse_qsl(message))
+            self.send_json(dictionary)
         elif parsed_url.path == '/reinstall':
             self.log_message('Reinstalling...')
             if platform.system() == 'Windows':
