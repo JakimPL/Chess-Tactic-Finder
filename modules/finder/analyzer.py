@@ -5,7 +5,6 @@ import chess
 import chess.pgn
 from chess import Board
 from chess.pgn import Headers
-from typing import Callable
 from stockfish import Stockfish
 
 from modules.configuration import load_configuration
@@ -15,7 +14,7 @@ from modules.finder.position import Position
 from modules.finder.tactic import Tactic
 from modules.finder.tactic_finder import TacticFinder
 from modules.finder.variations import Variations
-from modules.server.message import Message
+from modules.server.info import Info
 
 configuration = load_configuration()
 
@@ -35,23 +34,17 @@ class Analyzer:
     def __init__(
             self,
             filename: str,
-            client,
-            id: str,
-            analyzed: int,
-            total: int
+            info: Info
     ):
         self.filename = filename
-        self.client = client
-        self.id = id
-        self.analyzed = analyzed
-        self.total = total
+        self.info = info
 
     def find_variations(
             self,
             moves,
             starting_position: str,
             headers: Headers,
-            message_callback: Callable,
+            output_filename: str,
             stockfish_depth: int = STOCKFISH_DEPTH,
     ) -> tuple[list[Variations], [Tactic]]:
         stockfish = Stockfish(
@@ -91,7 +84,13 @@ class Analyzer:
 
             move_string = f'{move_number}{"." if white else "..."} {board_move} {"   " if white else " "}'
             print(f'{move_string}\t{evaluation}')
-            message_callback(board.fen(), move_string, str(evaluation))
+
+            self.info(
+                output_filename,
+                board.fen(),
+                move_string,
+                evaluation
+            )
 
             tactic_finder = TacticFinder(stockfish, not white, starting_position=position, fens=fens)
             variations, tactic = tactic_finder.get_variations(headers=headers)
@@ -156,32 +155,12 @@ class Analyzer:
         variations_list = None
         tactic_list = None
 
-        def message_callback(fen, move_string, evaluation):
-            text = '{name} Analyzed {items} of {total} games ({percent:.2f}%)...'.format(
-                name=self.id,
-                items=self.analyzed,
-                total=self.total,
-                percent=100 * self.analyzed / self.total if self.total > 0 else 100
-            )
-
-            message = Message(
-                text=text,
-                analyzed=self.analyzed,
-                total=self.total,
-                game_name=output_filename,
-                fen=fen,
-                last_move=move_string,
-                evaluation=str(evaluation)
-            )
-
-            self.client.send(message.encode())
-
         try:
             variations_list, tactic_list = self.find_variations(
                 moves,
                 starting_position,
                 headers,
-                message_callback
+                output_filename
             )
 
         except ValueError as error:
