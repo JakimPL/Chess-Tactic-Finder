@@ -14,7 +14,7 @@ from modules.finder.position import Position
 from modules.finder.tactic import Tactic
 from modules.finder.tactic_finder import TacticFinder
 from modules.finder.variations import Variations
-from modules.server.info import Info
+from modules.server.message_sender import MessageSender
 
 configuration = load_configuration()
 
@@ -34,10 +34,10 @@ class Analyzer:
     def __init__(
             self,
             filename: str,
-            info: Info
+            message_sender: MessageSender
     ):
         self.filename = filename
-        self.info = info
+        self.message_sender = message_sender
 
     def find_variations(
             self,
@@ -85,11 +85,11 @@ class Analyzer:
             move_string = f'{move_number}{"." if white else "..."} {board_move} {"   " if white else " "}'
             print(f'{move_string}\t{evaluation}')
 
-            self.info(
-                output_filename,
-                board.fen(),
-                move_string,
-                evaluation
+            self.message_sender(
+                filename=output_filename,
+                fen=board.fen(),
+                move_string=move_string,
+                evaluation=evaluation
             )
 
             tactic_finder = TacticFinder(stockfish, not white, starting_position=position, fens=fens)
@@ -157,10 +157,10 @@ class Analyzer:
 
         try:
             variations_list, tactic_list = self.find_variations(
-                moves,
-                starting_position,
-                headers,
-                output_filename
+                moves=moves,
+                starting_position=starting_position,
+                headers=headers,
+                output_filename=output_filename
             )
 
         except ValueError as error:

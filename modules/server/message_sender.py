@@ -8,7 +8,7 @@ from modules.server.message import Message
 
 
 @dataclass
-class Info:
+class MessageSender:
     client: Union[DummyClient, Client]
     id: str
     analyzed: int = 0
@@ -16,7 +16,7 @@ class Info:
 
     def __call__(
             self,
-            output_filename: str,
+            filename: str,
             fen: str,
             move_string: str,
             evaluation: Evaluation
@@ -32,7 +32,7 @@ class Info:
             text=text,
             analyzed=self.analyzed,
             total=self.total,
-            game_name=output_filename,
+            game_name=filename,
             fen=fen,
             last_move=move_string,
             evaluation=str(evaluation)

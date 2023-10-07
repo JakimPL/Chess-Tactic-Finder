@@ -8,7 +8,7 @@ from modules.configuration import load_configuration
 from modules.converter import convert
 from modules.finder.analyzer import Analyzer
 from modules.server.connection import get_client
-from modules.server.info import Info
+from modules.server.message_sender import MessageSender
 from modules.server.message import Message
 
 configuration = load_configuration()
@@ -51,7 +51,7 @@ if __name__ == '__main__':
         for filename in bar:
             analyzer = Analyzer(
                 filename=filename,
-                info=Info(
+                message_sender=MessageSender(
                     client=client,
                     id=name,
                     analyzed=bar.n,
@@ -63,8 +63,8 @@ if __name__ == '__main__':
                 analyzer()
             except KeyboardInterrupt:
                 success = False
-                print('Interrupted.')
                 client.send(Message(f'{name} Analysis interrupted.', bar.n, len(filenames)).encode())
+                print('Interrupted.')
                 break
 
     if success:
