@@ -5,7 +5,7 @@ from anytree import Node
 from chess.pgn import Headers
 from stockfish import Stockfish
 
-from modules.finder.analysis import calculate_material_balance
+from modules.finder.auxiliary import calculate_material_balance
 from modules.configuration import load_configuration
 from modules.finder.evaluation import Evaluation
 from modules.finder.outcome import Outcome
