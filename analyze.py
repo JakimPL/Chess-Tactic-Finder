@@ -37,7 +37,10 @@ if __name__ == '__main__':
 
         convert(pgn, INPUT_DIRECTORY)
 
-    filenames = sorted(os.listdir(INPUT_DIRECTORY), key=lambda x: int(x.split('.')[0]))
+    filenames = sorted(
+        [filename for filename in os.listdir(INPUT_DIRECTORY) if filename != '.gitkeep'],
+        key=lambda x: int(x.split('.')[0])
+    )
 
     client = get_client()
     client.send(Message(f'{name} Analysis of {len(filenames)} games started.', 0, len(filenames)).encode())
