@@ -1,3 +1,4 @@
+from urllib import parse
 from multiprocessing.connection import Listener
 
 from modules.server.connection import get_listener
@@ -17,7 +18,8 @@ class StatusServer:
             while running:
                 try:
                     self.message = connection.recv()
-                    if 'Analysis completed.' in self.message:
+                    text = parse.parse_qsl(self.message)[0][1]
+                    if 'Analysis completed' in text:
                         connection.close()
                         running = False
                 except EOFError:
