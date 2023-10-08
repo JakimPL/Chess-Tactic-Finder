@@ -63,8 +63,13 @@ if __name__ == '__main__':
                 analyzer()
             except KeyboardInterrupt:
                 success = False
-                client.send(Message(f'{name} Analysis interrupted.', bar.n, len(filenames)).encode())
                 print('Interrupted.')
+                client.send(Message(f'{name} Analysis interrupted.', bar.n, len(filenames)).encode())
+                break
+            except FileNotFoundError:
+                success = False
+                print('Stockfish is not properly installed.')
+                client.send(Message(f'{name} Stockfish error.', bar.n, len(filenames)).encode())
                 break
 
     if success:
