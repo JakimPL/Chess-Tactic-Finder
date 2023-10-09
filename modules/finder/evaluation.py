@@ -32,7 +32,7 @@ class Evaluation:
 
     def __repr__(self):
         if self.value == 0.0:
-            return " 0.00"
+            return " 0.00" if isinstance(self.value, float) else " #0"
 
         sign = "+" if self.value > 0 else "-"
         if self.mate:

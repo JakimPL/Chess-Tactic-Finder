@@ -103,8 +103,8 @@ class Analyzer:
 
         return variations_list, tactic_list
 
+    @staticmethod
     def save_variations(
-            self,
             variations_list: list[Variations],
             tactic_list: list[Tactic],
             directory: str,
