@@ -89,11 +89,11 @@ button:active {
     font-size: 11px;
 }
 
-#puzzlesList {
+#games_list {
     display: inline-block;
 }
 
-#puzzles {
+#games {
     text-align: center;
     white-space: nowrap;
     font-size: 9px;
@@ -104,38 +104,38 @@ table {
     border-collapse: collapse;
 }
 
-table#puzzles th:nth-child(4),
-table#puzzles th:nth-child(5),
-table#puzzles th:nth-child(6),
-table#puzzles td:nth-child(4),
-table#puzzles td:nth-child(5),
-table#puzzles td:nth-child(6) {
+table#games th:nth-child(4),
+table#games th:nth-child(5),
+table#games th:nth-child(6),
+table#games td:nth-child(4),
+table#games td:nth-child(5),
+table#games td:nth-child(6) {
     /* display: none; */
     width: 100px;
     max-width: 100px;
 }
 
-table#puzzles td:nth-child(1),
-table#puzzles td:nth-child(2),
-table#puzzles td:nth-child(3),
-table#puzzles td:nth-child(8),
-table#puzzles td:nth-child(9),
-table#puzzles th:nth-child(1),
-table#puzzles th:nth-child(2),
-table#puzzles th:nth-child(3),
-table#puzzles th:nth-child(8),
-table#puzzles th:nth-child(9) {
+table#games td:nth-child(1),
+table#games td:nth-child(2),
+table#games td:nth-child(3),
+table#games td:nth-child(8),
+table#games td:nth-child(9),
+table#games th:nth-child(1),
+table#games th:nth-child(2),
+table#games th:nth-child(3),
+table#games th:nth-child(8),
+table#games th:nth-child(9) {
     width: 40px;
 }
 
-table#puzzles td:nth-child(10),
-table#puzzles th:nth-child(10) {
+table#games td:nth-child(10),
+table#games th:nth-child(10) {
     width: 80px;
     text-align: left;
 }
 
-table#puzzles td:nth-child(7),
-table#puzzles th:nth-child(7) {
+table#games td:nth-child(7),
+table#games th:nth-child(7) {
     width: 130px;
 }
 
@@ -144,12 +144,12 @@ table#puzzles th:nth-child(7) {
         width: 100%;
     }
 
-    table#puzzles th:nth-child(4),
-    table#puzzles th:nth-child(5),
-    table#puzzles th:nth-child(6),
-    table#puzzles td:nth-child(4),
-    table#puzzles td:nth-child(5),
-    table#puzzles td:nth-child(6) {
+    table#games th:nth-child(4),
+    table#games th:nth-child(5),
+    table#games th:nth-child(6),
+    table#games td:nth-child(4),
+    table#games td:nth-child(5),
+    table#games td:nth-child(6) {
         display: none;
     }
 }

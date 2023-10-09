@@ -71,7 +71,6 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(bytes(json_string, 'utf-8'))
 
-
     def do_GET(self):
         parsed_url = urllib.parse.urlparse(self.path)
         if parsed_url.path == '/refresh':
@@ -117,28 +116,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def do_POST(self):
         parsed_url = urllib.parse.urlparse(self.path)
         if parsed_url.path == '/analyze':
-            self.log_message('Analyzing...')
-            length = int(self.headers['Content-Length'])
-            pgn = self.rfile.read(length).decode('utf-8')
-
-            with open(INPUT_PGN_FILE, 'w') as file:
-                file.write(pgn)
-
-            if platform.system() == 'Windows':
-                path = os.path.join('shell', 'bat', 'analyze.bat')
-                command = f'{path} {INPUT_PGN_FILE}'
-                run_windows(command)
-
-            elif platform.system() == 'Linux':
-                path = os.path.join('shell', 'sh', 'analyze.sh')
-                command = f'{path} {INPUT_PGN_FILE}'
-                run_linux(command)
-
-            else:
-                raise NotImplementedError(f'Platform {platform.system()} is not supported')
-
-            result = 'Analysis started.'
-            self.send_text(result)
+            self.analyze('analyze')
+        if parsed_url.path == '/review':
+            self.analyze('review')
         elif parsed_url.path == '/save_configuration':
             self.log_message('Saving configuration...')
             length = int(self.headers['Content-Length'])
@@ -149,6 +129,30 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
     def list_directory(self, path):
         self.send_error(404)
+
+    def analyze(self, mode: str):
+        self.log_message('Analyzing...')
+        length = int(self.headers['Content-Length'])
+        pgn = self.rfile.read(length).decode('utf-8')
+
+        with open(INPUT_PGN_FILE, 'w') as file:
+            file.write(pgn)
+
+        if platform.system() == 'Windows':
+            path = os.path.join('shell', 'bat', 'analyze.bat')
+            command = f'{path} {mode}.py {INPUT_PGN_FILE}'
+            run_windows(command)
+
+        elif platform.system() == 'Linux':
+            path = os.path.join('shell', 'sh', 'analyze.sh')
+            command = f'{path} {mode}.py {INPUT_PGN_FILE}'
+            run_linux(command)
+
+        else:
+            raise NotImplementedError(f'Platform {platform.system()} is not supported')
+
+        result = 'Analysis started.'
+        self.send_text(result)
 
     def log_message(self, format, *args):
         message = format % args

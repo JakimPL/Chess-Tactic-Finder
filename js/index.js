@@ -18,36 +18,12 @@ $('#pgn_extract').on('change', function() {
     saveConfiguration(configuration)
 })
 
-$('#start').on('click', function() {
-    if (analysis) {
-        return
-    }
+$('#analyze').on('click', function() {
+    run('analyze')
+})
 
-    var reader = new FileReader()
-    var fileElement = document.getElementById('pgn')
-    var file = fileElement.files[0]
-
-    if (file == null) {
-        alert('No file selected.')
-        return
-    }
-
-    reader.readAsText(file)
-    reader.onload = function(event) {
-        var pgn = event.target.result
-        analysis = true
-        $.ajax({
-            url: 'analyze',
-            type: 'POST',
-            data: pgn,
-            success: () => {
-                analysis = false
-            },
-            error: () => {
-                analysis = false
-            }
-        })
-    }
+$('#review').on('click', function() {
+    run('review')
 })
 
 $('#reinstall').on('click', function() {
@@ -151,6 +127,38 @@ function getState() {
     })
 }
 
+function run(argument) {
+    if (analysis) {
+        return
+    }
+
+    var reader = new FileReader()
+    var fileElement = document.getElementById('pgn')
+    var file = fileElement.files[0]
+
+    if (file == null) {
+        alert('No file selected.')
+        return
+    }
+
+    reader.readAsText(file)
+    reader.onload = function(event) {
+        var pgn = event.target.result
+        analysis = true
+        $.ajax({
+            url: argument,
+            type: 'POST',
+            data: pgn,
+            success: () => {
+                analysis = false
+            },
+            error: () => {
+                analysis = false
+            }
+        })
+    }
+}
+
 loadConfiguration()
 getState()
-setInterval(getState, 2000)
+setInterval(getState, 1000)

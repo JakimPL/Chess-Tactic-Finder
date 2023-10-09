@@ -40,6 +40,7 @@ if __name__ == '__main__':
                 message_sender=MessageSender(
                     client=client,
                     id=name,
+                    text='Analyzed',
                     analyzed=bar.n,
                     total=bar.total,
                 )

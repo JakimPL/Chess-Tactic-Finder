@@ -11,6 +11,7 @@ from modules.server.message import Message
 class MessageSender:
     client: Union[DummyClient, Client]
     id: str
+    text: str
     analyzed: int = 0
     total: int = 0
 
@@ -21,8 +22,9 @@ class MessageSender:
             move_string: str,
             evaluation: Evaluation
     ):
-        text = '{name} Analyzed {items} of {total} games ({percent:.2f}%)...'.format(
+        text = '{name} {text} {items} of {total} games ({percent:.2f}%)...'.format(
             name=self.id,
+            text=self.text,
             items=self.analyzed,
             total=self.total,
             percent=100 * self.analyzed / self.total if self.total > 0 else 100
