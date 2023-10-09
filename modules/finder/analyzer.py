@@ -1,4 +1,3 @@
-import hashlib
 import os
 
 import chess
@@ -8,18 +7,17 @@ from chess.pgn import Headers
 from stockfish import Stockfish
 
 from modules.configuration import load_configuration
-from modules.converter import get_moves
 from modules.finder.evaluation import Evaluation
 from modules.finder.position import Position
 from modules.finder.tactic import Tactic
 from modules.finder.tactic_finder import TacticFinder
 from modules.finder.variations import Variations
-from modules.server.message_sender import MessageSender
+from modules.processor import Processor
 
 configuration = load_configuration()
 
 INPUT_DIRECTORY = configuration['paths']['processed']
-OUTPUT_DIRECTORY = configuration['paths']['output']
+OUTPUT_DIRECTORY = configuration['paths']['tactics']
 STOCKFISH_PATH = configuration['paths']['stockfish']
 
 STOCKFISH_DEPTH = configuration['stockfish']['depth']
@@ -30,15 +28,7 @@ IGNORE_FIRST_MOVE = configuration['export']['ignore_first_move']
 SAVE_LAST_OPPONENT_MOVE = configuration['export']['save_last_opponent_move']
 
 
-class Analyzer:
-    def __init__(
-            self,
-            filename: str,
-            message_sender: MessageSender
-    ):
-        self.filename = filename
-        self.message_sender = message_sender
-
+class Analyzer(Processor):
     def find_variations(
             self,
             moves,
@@ -64,8 +54,9 @@ class Analyzer:
         fens = set()
 
         for idx, move in enumerate(moves):
-            move_number = idx // 2 + 1
-            white = idx % 2 == 0
+            move_number = (idx + 1 - int(board.turn)) // 2 + 1
+            white = board.turn
+
             best_moves = stockfish.get_top_moves(STOCKFISH_TOP_MOVES)
             evaluation = Evaluation.from_stockfish(best_moves[0])
 
@@ -133,23 +124,12 @@ class Analyzer:
 
     def __call__(self):
         game_path = os.path.join(INPUT_DIRECTORY, self.filename)
-        moves = get_moves(game_path)
-        game = chess.pgn.read_game(open(game_path))
-        game_hash = hashlib.md5(str(game).encode()).hexdigest()
-        headers = game.headers
-        starting_position = headers.get('FEN')
+        data = self.preprocess(game_path, OUTPUT_DIRECTORY)
 
-        output_filename = f"{headers.get('White', '_')} vs {headers.get('Black', '_')} ({headers.get('Date', '___')}) [{game_hash}]"
-        directory = os.path.join(OUTPUT_DIRECTORY, output_filename)
-        in_progress_file = os.path.join(directory, '.progress')
-        if os.path.isdir(directory):
-            if not os.path.exists(in_progress_file):
-                print(f'Tactics for {output_filename} are already found.')
-                return
-        else:
-            os.mkdir(directory)
+        if data is None:
+            return
 
-        open(in_progress_file, 'a').close()
+        moves, headers, starting_position, output_filename, directory, in_progress_file = data
         print(f'Finding tactics for: {output_filename}')
 
         variations_list = None

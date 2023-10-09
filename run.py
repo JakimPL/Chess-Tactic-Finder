@@ -10,7 +10,7 @@ from modules.server.handler import Handler
 
 configuration = load_configuration()
 
-INPUT_DIRECTORY = configuration['paths']['output']
+INPUT_DIRECTORY = configuration['paths']['tactics']
 GATHERED_PUZZLES_PATH = configuration['paths']['gathered_puzzles']
 PROGRESS_PATH = configuration['paths']['progress']
 SOCKET_PATH = configuration['paths']['unix_socket']

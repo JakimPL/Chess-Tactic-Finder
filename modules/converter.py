@@ -1,3 +1,4 @@
+import hashlib
 import os
 import re
 import subprocess
@@ -15,7 +16,7 @@ PGN_EXTRACT_PATH = configuration['paths']['pgn_extract']
 TEMP_FILE = configuration['paths']['temp_file']
 
 
-def convert(pgn: str, output_path: str, temp_file: str = TEMP_FILE):
+def extract_games(pgn: str, output_path: str, temp_file: str = TEMP_FILE):
     absolute_path = os.path.abspath(temp_file)
     with open(absolute_path, "w") as file:
         file.write(pgn)
@@ -53,3 +54,21 @@ def get_moves(path: str):
 
     assert len(moves), "No moves in the PGN file"
     return moves[0].lower().split()[:-1]
+
+
+def convert(pgn_path: str) -> tuple[str, list[str]]:
+    name = ''
+    if pgn_path:
+        print(f'Reading PGN file {pgn_path}...')
+        with open(pgn_path, 'r') as file:
+            pgn = file.read()
+            name = f"[{hashlib.md5(pgn.encode('utf-8')).hexdigest()[:6]}]"
+
+        extract_games(pgn, INPUT_DIRECTORY)
+
+    filenames = sorted(
+        [filename for filename in os.listdir(INPUT_DIRECTORY) if filename != '.gitkeep'],
+        key=lambda x: int(x.split('.')[0])
+    )
+
+    return name, filenames

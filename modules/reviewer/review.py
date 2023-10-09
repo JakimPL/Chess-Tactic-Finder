@@ -1,12 +1,14 @@
 from dataclasses import dataclass
 from typing import Optional
 
+from chess.pgn import Headers
+
 from modules.reviewer.reviewed_move import ReviewedMove
 
 
 @dataclass
 class Review:
-    pgn: str
+    headers: Headers
     moves: Optional[list[ReviewedMove]] = None
 
     def add_move(self, move: ReviewedMove):
@@ -18,6 +20,6 @@ class Review:
 
     def to_json(self) -> dict:
         return {
-            'pgn': self.pgn,
+            'headers': self.headers.__dict__,
             'moves': [move.to_json() for move in self.moves]
         }

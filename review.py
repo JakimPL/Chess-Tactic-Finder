@@ -4,7 +4,7 @@ from tqdm import tqdm
 
 from modules.configuration import load_configuration
 from modules.converter import convert
-from modules.finder.analyzer import Analyzer
+from modules.reviewer.reviewer import Reviewer
 from modules.server.connection import get_client
 from modules.server.message import Message
 from modules.server.message_sender import MessageSender
@@ -17,8 +17,8 @@ STOCKFISH_DEPTH = configuration['stockfish']['depth']
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        prog='ChessTacticFinder',
-        description='A tool for finding tactics out of PGN files.'
+        prog='ChessGameReviewer',
+        description='A tool for reviewing chess games.'
     )
 
     parser.add_argument('pgn', type=str, nargs='?', help='Path to the PGN file.')
@@ -30,12 +30,12 @@ if __name__ == '__main__':
     name, filenames = convert(pgn_path)
 
     client = get_client()
-    client.send(Message(f'{name} Analysis of {len(filenames)} games started.', 0, len(filenames)).encode())
+    client.send(Message(f'{name} Review of {len(filenames)} games started.', 0, len(filenames)).encode())
 
     success = True
     with tqdm(filenames) as bar:
         for filename in bar:
-            analyzer = Analyzer(
+            reviewer = Reviewer(
                 filename=filename,
                 message_sender=MessageSender(
                     client=client,
@@ -46,11 +46,11 @@ if __name__ == '__main__':
             )
 
             try:
-                analyzer()
+                reviewer()
             except KeyboardInterrupt:
                 success = False
                 print('Interrupted.')
-                client.send(Message(f'{name} Analysis interrupted.', bar.n, len(filenames)).encode())
+                client.send(Message(f'{name} Review interrupted.', bar.n, len(filenames)).encode())
                 break
             except FileNotFoundError:
                 success = False
@@ -59,6 +59,6 @@ if __name__ == '__main__':
                 break
 
     if success:
-        client.send(Message(f'{name} Analysis completed.', len(filenames), len(filenames)).encode())
+        client.send(Message(f'{name} Review completed.', len(filenames), len(filenames)).encode())
 
     client.close()
