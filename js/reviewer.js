@@ -26,6 +26,11 @@ $('#forward').on('click', function() {
     forward()
 })
 
+$('#flip').on('click', function() {
+    board.flip()
+    setEvaluation()
+})
+
 $('#copyFEN').on('click', function() {
     if (chess == null) {
         return
@@ -123,6 +128,8 @@ function startGame(pgn) {
 }
 
 function setEvaluationBar(value, scale) {
+    const orientation = board.orientation() == 'black'
+    scale = orientation ? -scale : scale
     var height = scale == null ? 50 : Math.max(0, Math.min(100, 50 - scale * 50))
     $('#evaluation_bar').css('height', height + '%').attr('aria-valuenow', height)
     if (scale >= 0) {
@@ -132,6 +139,9 @@ function setEvaluationBar(value, scale) {
         $('#evaluation_bar').html(value)
         $('#evaluation_value').html('')
     }
+
+    document.getElementById('evaluation').style.backgroundColor = orientation ? darkSquareColor : lightSquareColor
+    document.getElementById('evaluation_bar').style.backgroundColor = orientation ? lightSquareColor : darkSquareColor
 }
 
 function setEvaluation() {
