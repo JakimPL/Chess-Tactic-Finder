@@ -24,4 +24,7 @@ chessboard-1.0.0.min.js
 jquery-3.4.1.min.js
 parser.js
 sorttable.js
+chessboard-arrows.js
+
 chessboard-1.0.0.min.css
+chessboard-arrows.css

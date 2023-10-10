@@ -1,4 +1,4 @@
-var board = Chessboard('board')
+var board = Chessboard('game_board')
 
 var configuration = null
 

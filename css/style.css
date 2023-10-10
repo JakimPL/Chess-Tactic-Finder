@@ -73,7 +73,7 @@ button:active {
     display: block;
 }
 
-#board {
+#game_board {
     margin: 0 auto;
     width: min(100%, 360px);
 }

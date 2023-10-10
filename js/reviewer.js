@@ -1,4 +1,4 @@
-board = Chessboard('board')
+board = Chessboard('game_board')
 
 const $panel = $('#panel')
 
@@ -122,7 +122,7 @@ function startGame(pgn) {
     game = new Game(pgn)
     fen = game.fen
     chess = new Chess(game.fen)
-    board = Chessboard('board', {
+    board = Chessboard('game_board', {
         position: game.fen
     })
 }

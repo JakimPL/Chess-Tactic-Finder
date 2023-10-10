@@ -172,7 +172,7 @@ function reset() {
     player = null
     tactic = new Tactic(pgn)
     game = new Chess(tactic.base_fen)
-    board = Chessboard('board', getConfig(tactic))
+    board = Chessboard('game_board', getConfig(tactic))
 
     if (game.turn() == 'w') {
         board.flip()

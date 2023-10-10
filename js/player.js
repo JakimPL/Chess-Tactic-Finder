@@ -1,4 +1,4 @@
-board = Chessboard('board')
+board = Chessboard('game_board')
 
 const $status = $('#status')
 const $moveHistory = $('#moveHistory')
