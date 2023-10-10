@@ -1,4 +1,4 @@
-board = Chessboard('game_board')
+board = Chessboard('game_board', 'start')
 
 const $panel = $('#panel')
 

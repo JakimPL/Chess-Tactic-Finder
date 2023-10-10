@@ -183,6 +183,5 @@ The Tactic Player module is solely based on two JavaScript libraries:
 
 * [chessboard.js](https://chessboardjs.com/) for the board
 * [chess.js](https://github.com/jhlywa/chess.js/tree/master) for the game logic
-* [chessboard-arrows.js](https://github.com/mcba1n/chessboard-arrows/tree/master) for game arrrows
 
 with a help of a [`sorttable`](https://www.kryogenix.org/code/browser/sorttable/) library for sorting tables.
