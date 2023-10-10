@@ -182,13 +182,6 @@ table#games th:nth-child(7) {
     clear: both;
 }
 
-#evaluation_value {
-    position: absolute;
-    width: 100%;
-    left: 0;
-    bottom: 0;
-}
-
 #evaluation {
     display: block;
     float: block;
@@ -210,6 +203,13 @@ table#games th:nth-child(7) {
     height: 50%;
     width: 100%;
     background-color: var(--dark-square);
+}
+
+#evaluation_value {
+    position: absolute;
+    width: 100%;
+    left: 0;
+    bottom: 0;
 }
 
 #moves_list_table {
