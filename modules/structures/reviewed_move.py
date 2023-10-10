@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from modules.finder.evaluation import Evaluation
-from modules.reviewer.move_classification import MoveClassification
+from modules.structures.evaluation import Evaluation
+from modules.structures.move_classification import MoveClassification
 
 
 @dataclass

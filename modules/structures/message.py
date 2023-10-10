@@ -1,5 +1,5 @@
-from dataclasses import dataclass
 import urllib.parse
+from dataclasses import dataclass
 
 
 @dataclass

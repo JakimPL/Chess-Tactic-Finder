@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from modules.finder.evaluation import Evaluation
-from modules.finder.outcome import Outcome
+from modules.structures.evaluation import Evaluation
+from modules.structures.outcome import Outcome
 
 
 @dataclass

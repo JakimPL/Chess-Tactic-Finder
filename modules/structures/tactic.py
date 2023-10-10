@@ -6,9 +6,9 @@ import chess.pgn
 from chess.pgn import Headers
 
 from modules.converter import create_game_from_board
-from modules.finder.evaluation import Evaluation
 from modules.picklable import Picklable
-from modules.finder.position import Position
+from modules.structures.evaluation import Evaluation
+from modules.structures.position import Position
 
 TACTIC_TYPES_ORDER = [
     '', 'mating net', 'insufficient material', 'material advantage',

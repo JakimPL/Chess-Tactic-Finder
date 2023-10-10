@@ -3,10 +3,10 @@ from hashlib import md5
 from typing import Optional
 
 from modules.configuration import load_configuration
-from modules.finder.tactic import Tactic
-from modules.finder.variations import Variations
 from modules.json import json_save, json_load
-from modules.reviewer.review import Review
+from modules.structures.review import Review
+from modules.structures.tactic import Tactic
+from modules.structures.variations import Variations
 
 configuration = load_configuration()
 

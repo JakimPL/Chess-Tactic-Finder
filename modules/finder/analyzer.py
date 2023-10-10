@@ -7,12 +7,12 @@ from chess.pgn import Headers
 from stockfish import Stockfish
 
 from modules.configuration import load_configuration
-from modules.finder.evaluation import Evaluation
-from modules.finder.position import Position
-from modules.finder.tactic import Tactic
 from modules.finder.tactic_finder import TacticFinder
-from modules.finder.variations import Variations
 from modules.processor import Processor
+from modules.structures.evaluation import Evaluation
+from modules.structures.position import Position
+from modules.structures.tactic import Tactic
+from modules.structures.variations import Variations
 
 configuration = load_configuration()
 

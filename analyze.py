@@ -6,8 +6,8 @@ from modules.configuration import load_configuration
 from modules.converter import convert
 from modules.finder.analyzer import Analyzer
 from modules.server.connection import get_client
-from modules.server.message import Message
-from modules.server.message_sender import MessageSender
+from modules.structures.message import Message
+from modules.structures.message_sender import MessageSender
 
 configuration = load_configuration()
 

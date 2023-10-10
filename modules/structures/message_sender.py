@@ -2,9 +2,9 @@ from dataclasses import dataclass
 from multiprocessing.connection import Client
 from typing import Union
 
-from modules.finder.evaluation import Evaluation
 from modules.server.client import DummyClient
-from modules.server.message import Message
+from modules.structures.evaluation import Evaluation
+from modules.structures.message import Message
 
 
 @dataclass

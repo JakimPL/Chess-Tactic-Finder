@@ -5,12 +5,12 @@ from chess import Board
 from stockfish import Stockfish
 
 from modules.configuration import load_configuration
-from modules.finder.evaluation import Evaluation
 from modules.json import json_save
 from modules.processor import Processor
-from modules.reviewer.move_classification import MoveClassification
-from modules.reviewer.review import Review
-from modules.reviewer.reviewed_move import ReviewedMove
+from modules.structures.evaluation import Evaluation
+from modules.structures.move_classification import MoveClassification
+from modules.structures.review import Review
+from modules.structures.reviewed_move import ReviewedMove
 
 configuration = load_configuration()
 

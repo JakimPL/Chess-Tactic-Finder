@@ -8,10 +8,10 @@ from anytree.exporter import JsonExporter
 from anytree.importer import JsonImporter
 from chess.pgn import Headers
 
-from modules.finder.position import Position
-from modules.finder.tactic import Tactic
 from modules.header import get_headers
 from modules.picklable import Picklable
+from modules.structures.position import Position
+from modules.structures.tactic import Tactic
 
 
 def get_node_history(node: Node) -> list[Position]:

@@ -1,16 +1,16 @@
+import base64
+import io
 from dataclasses import dataclass
 from typing import Optional
-import io
+
 import chess
+import matplotlib.pyplot as plt
 from chess.pgn import Headers
-import base64
 
 from modules.converter import create_game_from_board
 from modules.header import get_headers
 from modules.picklable import Picklable
-from modules.reviewer.reviewed_move import ReviewedMove
-
-import matplotlib.pyplot as plt
+from modules.structures.reviewed_move import ReviewedMove
 
 MAX_EVALUATION = 10.0
 
@@ -80,7 +80,6 @@ class Review(Picklable):
         plt.axis('off')
         plt.ylim([-1, 1])
         plt.margins(x=0, y=0)
-        plt.tight_layout()
 
         bytes_io = io.BytesIO()
         plt.savefig(bytes_io, format='png')

@@ -4,7 +4,7 @@ import os
 import chess.pgn
 
 from modules.converter import get_moves
-from modules.server.message_sender import MessageSender
+from modules.structures.message_sender import MessageSender
 
 
 class Processor:
