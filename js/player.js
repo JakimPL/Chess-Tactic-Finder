@@ -41,7 +41,7 @@ $('#refresh').on('click', function() {
 })
 
 $('#reset').on('click', function() {
-    setPanel()
+    setPanel($panel)
     reset()
 })
 
@@ -50,8 +50,8 @@ $('#hint').on('click', function() {
         if (!tactic.solved && tactic.nextMove != null) {
             move = game.move(tactic.nextMove)
             game.undo()
-            setPanel('Hint: ' + getFullPieceName(move.piece))
-            delay(() => {setPanel()})
+            setPanel($panel, 'Hint: ' + getFullPieceName(move.piece))
+            delay(() => {setPanel($panel)})
         }
     }
 })
@@ -59,8 +59,8 @@ $('#hint').on('click', function() {
 $('#solution').on('click', function() {
     if (tactic !== null) {
         if (!tactic.solved && tactic.nextMove != null) {
-            setPanel('Hint: ' + tactic.nextMove)
-            delay(() => {setPanel()})
+            setPanel($panel, 'Hint: ' + tactic.nextMove)
+            delay(() => {setPanel($panel)})
         }
     }
 })
@@ -73,14 +73,14 @@ $('#copyFEN').on('click', function() {
     var fen = game.fen()
     if (fen != null && fen != '') {
         navigator.clipboard.writeText(fen)
-        setPanel('FEN copied to clipboard!')
+        setPanel($panel, 'FEN copied to clipboard!')
     }
 })
 
 $('#copyPGN').on('click', function() {
     if (pgn != null && pgn != '') {
         navigator.clipboard.writeText(pgn)
-        setPanel('PGN copied to clipboard!')
+        setPanel($panel, 'PGN copied to clipboard!')
     }
 })
 
@@ -289,10 +289,6 @@ function loadConfiguration() {
     })
 }
 
-function loadFavorites() {
-    favorites = storage.get('favorites')
-}
-
 function loadPuzzles() {
     fetch(puzzlesPath, {cache: 'no-cache'})
     .then(response => response.json())
@@ -365,25 +361,6 @@ function filterPuzzles(puzzles) {
     updateSolvedStates()
 }
 
-function createPuzzleTableRowEntry(tr, text, link, id) {
-    var td = document.createElement('td')
-    if (id != null) {
-        td.id = id
-    }
-
-    var textNode = document.createTextNode(text)
-    if (link != null) {
-        var a = document.createElement('a')
-        a.href = link
-        a.appendChild(textNode)
-        td.appendChild(a)
-    } else {
-        td.appendChild(textNode)
-    }
-
-    tr.appendChild(td)
-}
-
 function createPuzzleTable(puzzles) {
     clearTable('games_list_table')
     const tableObject = document.getElementById('games_list_table')
@@ -391,7 +368,7 @@ function createPuzzleTable(puzzles) {
         var tr = document.createElement('tr')
         tr.id = `row${puzzle.hash}`
 
-        var path = getPuzzlePath(puzzle)
+        var path = getPath(puzzle.path)
         var link = `javascript:loadPGN('${path}', '${puzzle.hash}')`
         var solved = getSolvedSymbol(progress.get(puzzle.hash), puzzle.moves)
         var puzzleId = `puzzle${puzzle.hash}`
@@ -401,16 +378,16 @@ function createPuzzleTable(puzzles) {
             tr.style.backgroundColor = '#b58863'
         }
 
-        createPuzzleTableRowEntry(tr, playSymbol, link)
-        createPuzzleTableRowEntry(tr, solved, null, puzzleId)
-        createPuzzleTableRowEntry(tr, puzzle.whiteToMove ? '◉' : '○')
-        createPuzzleTableRowEntry(tr, puzzle.white)
-        createPuzzleTableRowEntry(tr, puzzle.black)
-        createPuzzleTableRowEntry(tr, puzzle.date)
-        createPuzzleTableRowEntry(tr, puzzle.puzzleType)
-        createPuzzleTableRowEntry(tr, puzzle.moves)
-        createPuzzleTableRowEntry(tr, puzzle.hardness.toFixed(2))
-        createPuzzleTableRowEntry(tr, puzzle.initialEvaluation)
+        createTableRowEntry(tr, playSymbol, link)
+        createTableRowEntry(tr, solved, null, puzzleId)
+        createTableRowEntry(tr, puzzle.whiteToMove ? '◉' : '○')
+        createTableRowEntry(tr, puzzle.white)
+        createTableRowEntry(tr, puzzle.black)
+        createTableRowEntry(tr, puzzle.date)
+        createTableRowEntry(tr, puzzle.puzzleType)
+        createTableRowEntry(tr, puzzle.moves)
+        createTableRowEntry(tr, puzzle.hardness.toFixed(2))
+        createTableRowEntry(tr, puzzle.initialEvaluation)
         tableObject.appendChild(tr)
     }
 
@@ -437,15 +414,7 @@ async function refreshPuzzleTable(filteredPuzzles) {
     }
 }
 
-function setPanel(text) {
-    if (text == null || text == '') {
-        $panel.html('&nbsp')
-    } else {
-        $panel.html(text)
-    }
-}
-
-panelTextCallback = setPanel
+panelTextCallback = (text) => {setPanel($panel, text)}
 statusTextCallback = (text) => {$status.html(text)}
 moveHistoryTextCallback = (text) => {$moveHistory.html(text)}
 loadPuzzlesCallback = loadPuzzles

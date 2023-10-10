@@ -1,3 +1,7 @@
+function getPath(path) {
+    return path.replace(/[\\/]+/g, '/').replace(/^([a-zA-Z]+:|\.\/)/, '')
+}
+
 function markButton(button) {
     document.getElementById(button).style.backgroundColor = '#b58863'
 }
@@ -21,9 +25,40 @@ function delay(callback, time) {
     }, time)
 }
 
-function clearTable() {
-    const node = document.getElementById('games_list_table')
+function setPanel(element, text) {
+    if (text == null || text == '') {
+        element.html('&nbsp')
+    } else {
+        element.html(text)
+    }
+}
+
+function clearTable(table) {
+    const node = document.getElementById(table)
     while (node.firstChild) {
         node.removeChild(node.lastChild)
     }
+}
+
+function createTableRowEntry(tr, text, link, id) {
+    var td = document.createElement('td')
+    if (id != null) {
+        td.id = id
+    }
+
+    var textNode = document.createTextNode(text)
+    if (link != null) {
+        var a = document.createElement('a')
+        a.href = link
+        a.appendChild(textNode)
+        td.appendChild(a)
+    } else {
+        td.appendChild(textNode)
+    }
+
+    tr.appendChild(td)
+}
+
+function loadFavorites() {
+    favorites = storage.get('favorites')
 }

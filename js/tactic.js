@@ -41,22 +41,22 @@ class Tactic {
     }
 
     get_fen() {
-        var game = new Chess(this.base_fen)
-        game.move(this.moves[0])
+        var chess = new Chess(this.base_fen)
+        chess.move(this.moves[0])
 
-        this.turn = game.turn()
+        this.turn = chess.turn()
 
-        var fen = game.fen()
+        var fen = chess.fen()
         return fen
     }
 
     get_pgn() {
-        var game = new Chess(this.fen)
+        var chess = new Chess(this.fen)
         for (const move of this.moves.slice(1)) {
-            game.move(move)
+            chess.move(move)
         }
 
-        var pgn = game.pgn()
+        var pgn = chess.pgn()
         return pgn
     }
 }

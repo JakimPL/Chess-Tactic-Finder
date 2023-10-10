@@ -110,7 +110,7 @@ def gather_reviews(paths: list[str]) -> list[dict]:
             'blackElo': black[1],
             'date': date,
             'actualResult': actual_result,
-            'path': path,
+            'path': path.replace('.rev', '.json'),
             'hash': md5(path.encode()).hexdigest()
         })
 

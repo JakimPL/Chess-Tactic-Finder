@@ -1,4 +1,3 @@
-
 var puzzles = null
 var puzzlesPath = null
 var filteredPuzzles = null
@@ -13,8 +12,7 @@ var tactic = null
 var player = null
 var game = null
 var pgn = null
-
-var currentPuzzleId = -1
+var currentPuzzleId = null
 
 var action = 0
 var wait = false
@@ -33,10 +31,6 @@ var hideFirstMove = true
 var keepPlaying = true
 var hardEvaluation = true
 
-function getPuzzlePath(puzzle) {
-    return puzzle.path.replace(/[\\/]+/g, '/').replace(/^([a-zA-Z]+:|\.\/)/, '')
-}
-
 function loadNextPuzzle() {
     filterPuzzles(puzzles)
     if (filteredPuzzles == null) {
@@ -46,7 +40,7 @@ function loadNextPuzzle() {
     }
 
     var puzzle = filteredPuzzles[(Math.floor(Math.random() * (filteredPuzzles.length)))]
-    var path = getPuzzlePath(puzzle)
+    var path = getPath(puzzle.path)
     loadPGN(path, puzzle.hash)
 }
 

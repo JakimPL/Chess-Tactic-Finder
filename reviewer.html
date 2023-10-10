@@ -15,6 +15,8 @@
     <script src="/js/import/chess.js" integrity="sha384-s3XgLpvmHyscVpijnseAmye819Ee3yaGa8NxstkJVyA6nuDFjt59u1QvuEl/mecz" crossorigin="anonymous"></script>
     <script src="/js/import/parser.js"></script>
     <script src="/js/import/sorttable.js"></script>
+    <script src="/js/storage.js"></script>
+    <script src="/js/game.js"></script>
     <script src="/js/common.js"></script>
 </head>
 
@@ -28,6 +30,7 @@
             <button id="forward" type="button">&#9654;</button>
         </div>
         <div class="buttons">
+            <button id="favorite" type="button">&#9733; Mark as favorite</button>
             <button id="copyFEN" type="button">Copy FEN</button>
             <button id="copyPGN" type="button">Copy PGN</button>
         </div>
@@ -42,15 +45,16 @@
     <div class="column" id="games_panel">
         <h2><a href="javascript: refresh()">&#10227;</a> Games</h2>
         <div>
-            <div id="number_of_games"><p>0 games in total.</p></div>
-            <div id="reviews_list">
-                <table id="reviews" class="sortable">
+            <div id="number_of_reviews"><p>0 reviews in total.</p></div>
+            <div id="games_list">
+                <table id="games" class="sortable">
                     <thead>
                         <tr>
                             <th>Load</th>
                             <th>White</th>
                             <th>Black</th>
                             <th>Date</th>
+                            <th>Result</th>
                             <th>Moves</th>
                             <th>White accuracy</th>
                             <th>Black accuracy</th>
@@ -58,7 +62,7 @@
                     </thead>
                     <tbody id="reviews_list_table">
                         <tr>
-                            <td colspan="10">loading...</td>
+                            <td colspan="8">loading...</td>
                         </tr>
                     </tbody>
                 </table>
