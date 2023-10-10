@@ -59,7 +59,6 @@ function loadReview(path, reviewId) {
         pgn = reviews[hashes[reviewId]].pgn
 
         startGame(pgn)
-
         setLinks(pgn, fen)
         setButton('favorite', favorites[reviewId] == true)
         displayMoves(game.moves, review)
@@ -98,18 +97,35 @@ function startGame(pgn) {
     board = Chessboard('board', {
         position: game.fen
     })
+
+    setEvaluation()
 }
 
 function setEvaluation() {
     var reviewedMove = review['moves'][game.moveIndex]
     if (reviewedMove != null) {
         const evaluation = reviewedMove['evaluation']
-        const scaledEvaluation = 0.4 * evaluation
-        const scale = scaledEvaluation / (1 + Math.abs(scaledEvaluation))
+
+        var scale = 0
+        var value = 0
+        if (!evaluation.includes('.')){
+            const integer = parseInt(evaluation)
+            if (integer == 0) {
+                const turn = reviewedMove['turn']
+                scale = turn ? 1 : -1
+            } else {
+                scale = evaluation > 0 ? 1 : -1
+            }
+            value = 'M' + Math.abs(evaluation)
+        } else {
+            const scaledEvaluation = 0.4 * evaluation
+            scale = scaledEvaluation / (1 + Math.abs(scaledEvaluation))
+            value = Math.abs(parseFloat(evaluation)).toFixed(1)
+        }
+
         var height = Math.max(0, Math.min(100, 50 - scale * 50))
 
         $('#evaluation_bar').css('height', height + '%').attr('aria-valuenow', height)
-        const value = Math.abs(parseFloat(evaluation)).toFixed(1)
         if (scale > 0) {
             $('#evaluation_value').html(value)
             $('#evaluation_bar').html('')
@@ -169,6 +185,10 @@ function highlightMove(moveIndex, color) {
 }
 
 function getMoveSymbol(move, turn, moveReview) {
+    if (move == null) {
+        return ''
+    }
+
     var piece = move.charAt(0)
     var symbol = move
     switch (piece) {
@@ -203,7 +223,6 @@ function displayMoves(moves) {
     const black = game.turn == 'b'
     const movesReview = review['moves']
     for (var i = 0; i < moves.length; i += 2) {
-
         var index = i - black
         var turn = index % 2 == 0
         var move = index >= 0 ? getMoveSymbol(moves[index], turn, movesReview[i]) : '...'

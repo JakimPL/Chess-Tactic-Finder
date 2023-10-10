@@ -68,6 +68,7 @@ class Reviewer(Processor):
 
             review.add_move(ReviewedMove(
                 move=move,
+                turn=white,
                 evaluation=evaluation,
                 best_moves=list(zip(best_moves, evaluations)),
                 move_classification=move_classification

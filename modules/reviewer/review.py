@@ -1,12 +1,17 @@
 from dataclasses import dataclass
 from typing import Optional
-
+import io
 import chess
 from chess.pgn import Headers
+import base64
 
 from modules.converter import create_game_from_board
 from modules.picklable import Picklable
 from modules.reviewer.reviewed_move import ReviewedMove
+
+import matplotlib.pyplot as plt
+
+MAX_EVALUATION = 10.0
 
 
 @dataclass
@@ -39,3 +44,38 @@ class Review(Picklable):
 
         assert board is not None, "board is empty"
         return create_game_from_board(self.headers, board)
+
+    def get_plot_values(self) -> tuple[list, list]:
+        scales = []
+        indices = []
+        for index, move in enumerate(self.moves):
+            if isinstance(move.evaluation.value, int):
+                if move.evaluation.value == 0:
+                    scale = 1.0 if move.turn else -1.0
+                else:
+                    scale = 1.0 if move.evaluation.value > 0 else -1.0
+            else:
+                scale = min(MAX_EVALUATION, max(-MAX_EVALUATION, move.evaluation.value)) / MAX_EVALUATION
+
+            scales.append(scale)
+            indices.append(1 + index / 2)
+
+        return indices, scales
+
+    def plot_evaluations(self):
+        indices, scales = self.get_plot_values()
+
+        fig = plt.figure(figsize=(2.0, 0.2), facecolor='#b58863')
+        fig.subplots_adjust(left=0, bottom=0, right=10, top=10, wspace=0, hspace=0)
+        plt.fill_between(indices, scales, -1, color='#f0d9b5')
+        plt.axhline(y=0.0, color='gray', linestyle='-')
+
+        plt.axis('off')
+        plt.ylim([-1, 1])
+        plt.margins(x=0, y=0)
+        plt.tight_layout()
+
+        bytes_io = io.BytesIO()
+        plt.savefig(bytes_io, format='png')
+        bytes_io.seek(0)
+        return base64.b64encode(bytes_io.read()).decode()
