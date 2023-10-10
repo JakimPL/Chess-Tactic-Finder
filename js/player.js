@@ -365,13 +365,6 @@ function filterPuzzles(puzzles) {
     updateSolvedStates()
 }
 
-function clearPuzzleTable() {
-    const node = document.getElementById('puzzleList')
-    while (node.firstChild) {
-        node.removeChild(node.lastChild)
-    }
-}
-
 function createPuzzleTableRowEntry(tr, text, link, id) {
     var td = document.createElement('td')
     if (id != null) {
@@ -392,8 +385,8 @@ function createPuzzleTableRowEntry(tr, text, link, id) {
 }
 
 function createPuzzleTable(puzzles) {
-    clearPuzzleTable()
-    const tableObject = document.getElementById('puzzleList')
+    clearTable('games_list_table')
+    const tableObject = document.getElementById('games_list_table')
     for (const puzzle of puzzles) {
         var tr = document.createElement('tr')
         tr.id = `row${puzzle.hash}`
@@ -421,7 +414,7 @@ function createPuzzleTable(puzzles) {
         tableObject.appendChild(tr)
     }
 
-    sorttable.makeSortable(document.getElementById('puzzles'))
+    sorttable.makeSortable(document.getElementById('games'))
 }
 
 async function refreshPuzzleTable(filteredPuzzles) {

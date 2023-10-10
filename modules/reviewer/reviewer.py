@@ -178,6 +178,7 @@ class Reviewer(Processor):
     @staticmethod
     def save_review(review: Review, directory: str):
         review_path = os.path.join(directory, 'review.json')
+        review.to_file(review_path.replace('.json', '.rev'))
         json_save(review.to_json(), review_path)
 
     def __call__(self, *args, **kwargs):

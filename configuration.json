@@ -31,6 +31,7 @@
         "temp_file": "temp/temp.pgn",
         "input_pgn": "temp/input.pgn",
         "gathered_puzzles": "json/puzzles.json",
+        "gathered_reviews": "json/reviews.json",
         "progress": "json/progress.json",
         "unix_socket": "./temp/http.socket",
         "log": "log.txt"

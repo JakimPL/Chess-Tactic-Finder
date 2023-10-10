@@ -3,6 +3,8 @@ import os
 import re
 import subprocess
 
+import chess
+import chess.pgn
 from modules.configuration import load_configuration
 
 UCI_MOVE_PATTERN = re.compile(r"[a-h][1-8][a-h][1-8]")
@@ -14,6 +16,15 @@ configuration = load_configuration()
 INPUT_DIRECTORY = configuration['paths']['processed']
 PGN_EXTRACT_PATH = configuration['paths']['pgn_extract']
 TEMP_FILE = configuration['paths']['temp_file']
+
+
+def create_game_from_board(headers: chess.pgn.Headers, board: chess.Board) -> chess.pgn.Game:
+    game = chess.pgn.Game.from_board(board)
+    for key, value in headers.items():
+        if key != 'FEN':
+            game.headers[key] = value
+
+    return game
 
 
 def extract_games(pgn: str, output_path: str, temp_file: str = TEMP_FILE):

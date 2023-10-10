@@ -5,10 +5,10 @@ import chess
 import chess.pgn
 from chess.pgn import Headers
 
+from modules.converter import create_game_from_board
 from modules.finder.evaluation import Evaluation
 from modules.picklable import Picklable
 from modules.finder.position import Position
-
 
 TACTIC_TYPES_ORDER = [
     '', 'mating net', 'insufficient material', 'material advantage',
@@ -48,14 +48,6 @@ class Tactic(Picklable):
             TACTIC_TYPES_ORDER.index(other.type), other.hardness, other.moves
         )
 
-    def create_game_from_board(self, board: chess.Board) -> chess.pgn.Game:
-        game = chess.pgn.Game.from_board(board)
-        for key, value in self.headers.items():
-            if key != 'FEN':
-                game.headers[key] = value
-
-        return game
-
     def to_pgn(
             self,
             ignore_first_move: bool = False,
@@ -76,7 +68,7 @@ class Tactic(Picklable):
                     board.push_san(position.move)
 
         assert board is not None, "board is empty"
-        return self.create_game_from_board(board)
+        return create_game_from_board(self.headers, board)
 
     @property
     def fen(self) -> str:

@@ -20,3 +20,10 @@ function delay(callback, time) {
         updateStatus()
     }, time)
 }
+
+function clearTable() {
+    const node = document.getElementById('games_list_table')
+    while (node.firstChild) {
+        node.removeChild(node.lastChild)
+    }
+}
