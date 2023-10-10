@@ -8,6 +8,7 @@ from stockfish import Stockfish
 
 from modules.configuration import load_configuration
 from modules.finder.tactic_finder import TacticFinder
+from modules.json import json_save
 from modules.processor import Processor
 from modules.structures.evaluation import Evaluation
 from modules.structures.position import Position
@@ -113,6 +114,10 @@ class Analyzer(Processor):
             variations_filename = f'{prefix}.vars'
             variations_path = os.path.join(directory, variations_filename)
             variations.to_file(variations_path)
+
+            json_filename = f'{prefix}.json'
+            json_path = os.path.join(directory, json_filename)
+            json_save(variations.to_json(), json_path)
 
             tactic_filename = f'{prefix}.tactic'
             tactic_path = os.path.join(directory, tactic_filename)

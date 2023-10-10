@@ -2,6 +2,8 @@ board = Chessboard('board')
 
 const $panel = $('#panel')
 
+var emptyImage = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='
+
 var pgn = null
 var fen = null
 var review = null
@@ -44,6 +46,8 @@ $('#copyPGN').on('click', function() {
 })
 
 function loadReview(path, reviewId) {
+    document.getElementById('evaluation_chart').src = emptyImage
+    setEvaluationBar('0.0', 0)
     fetch(path)
     .then(response => {
         if (!response.ok) {
@@ -62,6 +66,9 @@ function loadReview(path, reviewId) {
         setLinks(pgn, fen)
         setButton('favorite', favorites[reviewId] == true)
         displayMoves(game.moves, review)
+
+        setEvaluation()
+        loadChart(path)
     })
 }
 
@@ -90,6 +97,22 @@ function loadReviews() {
     })
 }
 
+function loadChart(path) {
+$.ajax({
+        url: 'get_chart',
+        type: 'POST',
+        data: path,
+        contentType: 'text/plain; charset=utf-8',
+        success: (data) => {
+            image = `data:image/png;base64,${data}`
+            document.getElementById('evaluation_chart').src = image
+        },
+        error: () => {
+            console.error('Unable to load a chart.')
+        }
+    })
+}
+
 function startGame(pgn) {
     game = new Game(pgn)
     fen = game.fen
@@ -97,8 +120,18 @@ function startGame(pgn) {
     board = Chessboard('board', {
         position: game.fen
     })
+}
 
-    setEvaluation()
+function setEvaluationBar(value, scale) {
+    var height = scale == null ? 50 : Math.max(0, Math.min(100, 50 - scale * 50))
+    $('#evaluation_bar').css('height', height + '%').attr('aria-valuenow', height)
+    if (scale >= 0) {
+        $('#evaluation_value').html(value)
+        $('#evaluation_bar').html('')
+    } else {
+        $('#evaluation_bar').html(value)
+        $('#evaluation_value').html('')
+    }
 }
 
 function setEvaluation() {
@@ -123,16 +156,7 @@ function setEvaluation() {
             value = Math.abs(parseFloat(evaluation)).toFixed(1)
         }
 
-        var height = Math.max(0, Math.min(100, 50 - scale * 50))
-
-        $('#evaluation_bar').css('height', height + '%').attr('aria-valuenow', height)
-        if (scale > 0) {
-            $('#evaluation_value').html(value)
-            $('#evaluation_bar').html('')
-        } else {
-            $('#evaluation_bar').html(value)
-            $('#evaluation_value').html('')
-        }
+        setEvaluationBar(value, scale)
     }
 }
 

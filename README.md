@@ -129,7 +129,8 @@ _Chess Tactic Finder_ is primarily based on Stockfish, a UCI chess engine. Stock
   
 Besides that, the package relies on the following packages:  
 * `anytree`
-* `chess`  
+* `chess`
+* `matplotlib`
 * `stockfish`  
 * `tqdm`
   

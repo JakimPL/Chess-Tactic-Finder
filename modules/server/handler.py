@@ -7,9 +7,11 @@ import subprocess
 import urllib.parse
 
 from modules.configuration import load_configuration, save_configuration
+from modules.json import json_load
 from modules.server.auxiliary import refresh, get_value, save_progress
 from modules.server.status_server import StatusServer
 from modules.server.run import run_windows, run_linux
+from modules.structures.review import Review
 
 configuration = load_configuration()
 INPUT_PGN_FILE = configuration['paths']['input_pgn']
@@ -117,8 +119,15 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         parsed_url = urllib.parse.urlparse(self.path)
         if parsed_url.path == '/analyze':
             self.analyze('analyze')
-        if parsed_url.path == '/review':
+        elif parsed_url.path == '/review':
             self.analyze('review')
+        elif parsed_url.path == '/get_chart':
+            length = int(self.headers['Content-Length'])
+            path = self.rfile.read(length).decode('utf-8')
+            dictionary = json_load(path)
+            review = Review.from_json(dictionary)
+            graph_data = review.plot_evaluations()
+            self.send_text(graph_data)
         elif parsed_url.path == '/save_configuration':
             self.log_message('Saving configuration...')
             length = int(self.headers['Content-Length'])

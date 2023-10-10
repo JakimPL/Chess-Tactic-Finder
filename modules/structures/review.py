@@ -2,15 +2,19 @@ import base64
 import io
 from dataclasses import dataclass
 from typing import Optional
-
+from PIL import Image
 import chess
-import matplotlib.pyplot as plt
 from chess.pgn import Headers
+
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
 from modules.converter import create_game_from_board
 from modules.header import get_headers
 from modules.picklable import Picklable
 from modules.structures.reviewed_move import ReviewedMove
+
 
 MAX_EVALUATION = 10.0
 
@@ -72,8 +76,8 @@ class Review(Picklable):
     def plot_evaluations(self):
         indices, scales = self.get_plot_values()
 
-        fig = plt.figure(figsize=(2.0, 0.2), facecolor='#b58863')
-        fig.subplots_adjust(left=0, bottom=0, right=10, top=10, wspace=0, hspace=0)
+        fig = plt.figure(figsize=(len(indices) * 0.2, 2.0), facecolor='#b58863')
+        fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
         plt.fill_between(indices, scales, -1, color='#f0d9b5')
         plt.axhline(y=0.0, color='gray', linestyle='-')
 
@@ -83,5 +87,11 @@ class Review(Picklable):
 
         bytes_io = io.BytesIO()
         plt.savefig(bytes_io, format='png')
+        pil_img = Image.open(bytes_io)
+        pil_img = pil_img.rotate(-90, expand=True)
+
+        bytes_io = io.BytesIO()
+        pil_img.save(bytes_io, format='png')
+
         bytes_io.seek(0)
         return base64.b64encode(bytes_io.read()).decode()
