@@ -12,6 +12,19 @@ class ReviewedMove:
     best_moves: list[tuple[str, Evaluation]]
     move_classification: MoveClassification
 
+    @staticmethod
+    def from_json(dictionary: dict):
+        return ReviewedMove(
+            move=dictionary['move'],
+            turn=dictionary['turn'],
+            evaluation=Evaluation.from_string(dictionary['evaluation']),
+            best_moves=[
+                (move, Evaluation.from_string(evaluation))
+                for move, evaluation in dictionary['best_moves']
+            ],
+            move_classification=MoveClassification.from_json(dictionary['classification'])
+        )
+
     def to_json(self) -> dict:
         return {
             'move': self.move,

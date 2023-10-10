@@ -10,6 +10,7 @@ from chess.pgn import Headers
 
 from modules.finder.position import Position
 from modules.finder.tactic import Tactic
+from modules.header import get_headers
 from modules.picklable import Picklable
 
 
@@ -67,9 +68,7 @@ class Variations(Picklable):
             if isinstance(node.name, dict):
                 node.name = Position.from_json(node.name)
 
-        headers = Headers()
-        headers._tag_roster = dictionary['headers']['_tag_roster']
-        headers._others = dictionary['headers']['_others']
+        headers = get_headers(dictionary['headers'])
         return Variations(
             root=root,
             headers=headers

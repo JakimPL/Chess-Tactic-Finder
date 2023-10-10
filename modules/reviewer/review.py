@@ -6,6 +6,7 @@ from chess.pgn import Headers
 import base64
 
 from modules.converter import create_game_from_board
+from modules.header import get_headers
 from modules.picklable import Picklable
 from modules.reviewer.reviewed_move import ReviewedMove
 
@@ -25,6 +26,12 @@ class Review(Picklable):
             self.moves = [move]
         else:
             self.moves.append(move)
+
+    @staticmethod
+    def from_json(dictionary: dict):
+        headers = get_headers(dictionary['headers'])
+        moves = [ReviewedMove.from_json(move) for move in dictionary['moves']]
+        return Review(headers=headers, moves=moves)
 
     def to_json(self) -> dict:
         return {

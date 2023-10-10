@@ -57,3 +57,10 @@ class Evaluation:
             if evaluation["type"] == "cp"
             else evaluation["value"]
         )
+
+    @staticmethod
+    def from_string(string: str):
+        try:
+            return Evaluation(int(string))
+        except ValueError:
+            return Evaluation(float(string))
