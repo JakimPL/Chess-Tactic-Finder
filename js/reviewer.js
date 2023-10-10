@@ -17,15 +17,11 @@ var hashes = {}
 var favorites = {}
 
 $('#backward').on('click', function() {
-    if (game !== null) {
-        backward()
-    }
+    backward()
 })
 
 $('#forward').on('click', function() {
-    if (game !== null) {
-        forward()
-    }
+    forward()
 })
 
 $('#copyFEN').on('click', function() {
@@ -66,7 +62,7 @@ function loadReview(path, reviewId) {
 
         setLinks(pgn, fen)
         setButton('favorite', favorites[reviewId] == true)
-        displayMoves(game.moves)
+        displayMoves(game.moves, review)
     })
 }
 
@@ -104,53 +100,114 @@ function startGame(pgn) {
     })
 }
 
+function setEvaluation() {
+    var reviewedMove = review['moves'][game.moveIndex]
+    if (reviewedMove != null) {
+        const evaluation = reviewedMove['evaluation']
+        const scaledEvaluation = 0.4 * evaluation
+        const scale = scaledEvaluation / (1 + Math.abs(scaledEvaluation))
+        var height = Math.max(0, Math.min(100, 50 - scale * 50))
+
+        $('#evaluation_bar').css('height', height + '%').attr('aria-valuenow', height)
+        const value = Math.abs(parseFloat(evaluation)).toFixed(1)
+        if (scale > 0) {
+            $('#evaluation_value').html(value)
+            $('#evaluation_bar').html('')
+        } else {
+            $('#evaluation_bar').html(value)
+            $('#evaluation_value').html('')
+        }
+    }
+}
+
+function setFEN(previousMoveIndex) {
+    var fen = game.getFEN()
+    highlightMove(previousMoveIndex, null)
+    chess.load(fen)
+    board.position(fen)
+    highlightMove(game.moveIndex, darkSquareColor)
+    setEvaluation()
+}
+
 function forward() {
-    var nextMove = game.forward()
-    if (nextMove != null) {
-        chess.move(nextMove)
-        board.position(chess.fen())
+    if (game !== null) {
+        var previousMoveIndex = game.moveIndex
+        var nextMove = game.forward()
+        if (nextMove != null) {
+            highlightMove(previousMoveIndex, null)
+            chess.move(nextMove)
+            board.position(chess.fen())
+            highlightMove(game.moveIndex, darkSquareColor)
+            setEvaluation()
+        }
     }
 }
 
 function backward() {
-    game.backward()
-    var fen = game.getFEN()
-    chess.load(fen)
-    board.position(fen)
+    if (game !== null) {
+        var previousMoveIndex = game.moveIndex
+        game.backward()
+        setFEN(previousMoveIndex)
+    }
 }
 
 function goTo(moveIndex) {
-    var nextMove = game.goTo(moveIndex)
-    if (nextMove != null) {
-        var fen = game.getFEN()
-        chess.load(fen)
-        board.position(fen)
+    if (game !== null) {
+        var previousMoveIndex = game.moveIndex
+        var nextMove = game.goTo(moveIndex)
+        if (nextMove != null) {
+            setFEN(previousMoveIndex)
+        }
     }
 }
 
-function getMoveSymbol(move, turn) {
-    // replace a piece symbol with UNICODE symbol, e.g. Ke1 to ♔e1
-    var piece = move.charAt(0)
-    switch (piece) {
-        case 'K': return (turn ? '♔' : '♚') + move.slice(1)
-        case 'Q': return (turn ? '♕' : '♛') + move.slice(1)
-        case 'R': return (turn ? '♖' : '♜') + move.slice(1)
-        case 'B': return (turn ? '♗' : '♝') + move.slice(1)
-        case 'N': return (turn ? '♘' : '♞') + move.slice(1)
-        default: return move
+function highlightMove(moveIndex, color) {
+    var move = document.getElementById(`half_move${moveIndex}`)
+    if (move != null) {
+        move.style.backgroundColor = color
     }
+}
+
+function getMoveSymbol(move, turn, moveReview) {
+    var piece = move.charAt(0)
+    var symbol = move
+    switch (piece) {
+        case 'K': symbol = turn ? '♔' : '♚'; break
+        case 'Q': symbol = turn ? '♕' : '♛'; break
+        case 'R': symbol = turn ? '♖' : '♜'; break
+        case 'B': symbol = turn ? '♗' : '♝'; break
+        case 'N': symbol = turn ? '♘' : '♞'; break
+    }
+
+    if (move != symbol) {
+        symbol += move.slice(1)
+    }
+
+    if (moveReview != null) {
+        var moveType = moveReview['classification']['type']
+        switch (moveType) {
+            case 'brilliant': symbol += '!!'; break
+            case 'great': symbol += '!'; break
+            case 'inaccuracy': symbol += '?'; break
+            case 'mistake': symbol += '?'; break
+            case 'blunder': symbol += '??'; break
+        }
+    }
+
+    return symbol
 }
 
 function displayMoves(moves) {
     clearTable('moves_list_table')
     const tableObject = document.getElementById('moves_list_table')
     const black = game.turn == 'b'
+    const movesReview = review['moves']
     for (var i = 0; i < moves.length; i += 2) {
 
         var index = i - black
         var turn = index % 2 == 0
-        var move = index >= 0 ? getMoveSymbol(moves[index], turn) : '...'
-        var nextMove = getMoveSymbol(moves[index + 1], !turn)
+        var move = index >= 0 ? getMoveSymbol(moves[index], turn, movesReview[i]) : '...'
+        var nextMove = getMoveSymbol(moves[index + 1], !turn, movesReview[i + 1])
         var tr = document.createElement('tr')
         tr.id = `row${i}`
 
@@ -175,7 +232,7 @@ function createReviewsTable(reviews) {
         var playSymbol = favorites[review.hash] == true ? '★' : '▶'
 
         if (favorites[review.hash]) {
-            tr.style.backgroundColor = '#b58863'
+            tr.style.backgroundColor = darkSquareColor
         }
 
         createTableRowEntry(tr, playSymbol, link, reviewId)
@@ -208,3 +265,14 @@ function refresh() {
 
 loadConfiguration()
 loadFavorites()
+
+document.onkeydown = function checkKey(event) {
+    event = event || window.event;
+
+    if (event.keyCode == '37') {
+        backward()
+    } else if (event.keyCode == '39') {
+        forward()
+    }
+}
+

@@ -169,6 +169,49 @@ table#games th:nth-child(7) {
     background-color: var(--dark-square);
 }
 
+#board_with_evaluation {
+    text-align: center;
+    display: flex;
+    width: min(100%, 400px);
+    margin: 0 auto;
+}
+
+#board_with_evaluation:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+#evaluation_value {
+    position: absolute;
+    width: 100%;
+    left: 0;
+    bottom: 0;
+}
+
+#evaluation {
+    display: block;
+    float: block;
+
+    width: 18px;
+    height: 352px;
+
+    font-size: 7px;
+    font-weight: bold;
+
+    border: 2px solid black;
+    margin: 0px 8px 0px 8px;
+    background-color: var(--light-square);
+
+    position: relative;
+}
+
+#evaluation_bar {
+    height: 50%;
+    width: 100%;
+    background-color: var(--dark-square);
+}
+
 #moves_list_table {
     font-size: 11px;
     table-layout: fixed;
@@ -182,4 +225,8 @@ table#games th:nth-child(7) {
 
 table#moves_list_table tr:nth-child(even) {
     background-color: var(--light-square);
+}
+
+table#moves_list_table td:nth-child(n+2) {
+    font-weight: bold;
 }

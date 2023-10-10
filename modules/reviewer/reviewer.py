@@ -93,10 +93,11 @@ class Reviewer(Processor):
     def classify_move(
             move: str,
             evaluation: Evaluation,
+            evaluations: list[Evaluation],
             best_evaluation: Evaluation,
             best_moves: list[str]
     ) -> MoveClassification:
-        if len(best_moves) == 1:
+        if len(evaluations) == 1:
             return MoveClassification('forced', best_evaluation.mate)
         else:
             if best_evaluation.mate:
@@ -121,9 +122,8 @@ class Reviewer(Processor):
                         return MoveClassification('mistake', True)
                     elif evaluation.value < best_evaluation.value:
                         return MoveClassification('inaccuracy', True)
-                    elif evaluation.value == best_evaluation.value:
+                    elif evaluation.value >= best_evaluation.value:
                         return MoveClassification('best', True)
-
             else:
                 if move in best_moves:
                     return MoveClassification('best', False)
@@ -170,7 +170,7 @@ class Reviewer(Processor):
         if not evaluation.mate and not best_evaluation.mate and evaluation.value >= best_evaluation.value:
             best_choices.append(move)
 
-        move_classification = Reviewer.classify_move(move, evaluation, best_evaluation, best_choices)
+        move_classification = Reviewer.classify_move(move, evaluation, evaluations, best_evaluation, best_choices)
         assert isinstance(move_classification, MoveClassification), 'expected a move classification'
 
         return move_classification

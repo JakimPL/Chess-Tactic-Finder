@@ -1,13 +1,16 @@
+var lightSquareColor = '#f0d9b5'
+var darkSquareColor = '#b58863'
+
 function getPath(path) {
     return path.replace(/[\\/]+/g, '/').replace(/^([a-zA-Z]+:|\.\/)/, '')
 }
 
 function markButton(button) {
-    document.getElementById(button).style.backgroundColor = '#b58863'
+    document.getElementById(button).style.backgroundColor = darkSquareColor
 }
 
 function unmarkButton(button) {
-    document.getElementById(button).style.backgroundColor = '#f0d9b5'
+    document.getElementById(button).style.backgroundColor = lightSquareColor
 }
 
 function delay(callback, time) {

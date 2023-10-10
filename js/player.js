@@ -375,7 +375,7 @@ function createPuzzleTable(puzzles) {
         var playSymbol = favorites[puzzle.hash] == true ? '★' : '▶'
 
         if (favorites[puzzle.hash]) {
-            tr.style.backgroundColor = '#b58863'
+            tr.style.backgroundColor = darkSquareColor
         }
 
         createTableRowEntry(tr, playSymbol, link)
