@@ -19,7 +19,7 @@ body::-webkit-scrollbar {
 }
 
 a:link, a:hover, a:visited, a:active {
-   text-decoration: none;
+    text-decoration: none;
 }
 
 input {
@@ -167,4 +167,19 @@ table#games th:nth-child(7) {
     width: 0%;
     height: 12px;
     background-color: var(--dark-square);
+}
+
+#moves_list_table {
+    font-size: 11px;
+    table-layout: fixed;
+    width: 150px;
+    text-decoration: none;
+}
+
+#moves_list_table a:link,  a:hover, a:visited, a:active {
+    color: black;
+}
+
+table#moves_list_table tr:nth-child(even) {
+    background-color: var(--light-square);
 }

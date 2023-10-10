@@ -25,6 +25,22 @@ function delay(callback, time) {
     }, time)
 }
 
+function setButton(buttonId, value) {
+    if (value) {
+        markButton(buttonId)
+    } else {
+        unmarkButton(buttonId)
+    }
+}
+
+function setLinks(pgn, fen) {
+    var chessLink = `https://www.chess.com/analysis?pgn=${pgn}`
+    document.getElementById('analyze_chess').href = encodeURI(chessLink)
+
+    var lichessLink = `https://lichess.org/analysis/${fen}`
+    document.getElementById('analyze_lichess').href = encodeURI(lichessLink)
+}
+
 function setPanel(element, text) {
     if (text == null || text == '') {
         element.html('&nbsp')

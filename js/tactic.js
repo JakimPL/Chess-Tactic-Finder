@@ -5,8 +5,8 @@ class Tactic {
         this.base_fen = this.gameJSON['str']['FEN']
         this.moves = this.gameJSON['moves']
         this.turn = ''
-        this.fen = this.get_fen()
-        this.pgn = this.get_pgn()
+        this.fen = this.getFEN()
+        this.pgn = this.getPGN()
 
         this.moveIndex = 0
         this.firstMove = this.moves[0]
@@ -40,7 +40,7 @@ class Tactic {
         return null
     }
 
-    get_fen() {
+    getFEN() {
         var chess = new Chess(this.base_fen)
         chess.move(this.moves[0])
 
@@ -50,7 +50,7 @@ class Tactic {
         return fen
     }
 
-    get_pgn() {
+    getPGN() {
         var chess = new Chess(this.fen)
         for (const move of this.moves.slice(1)) {
             chess.move(move)

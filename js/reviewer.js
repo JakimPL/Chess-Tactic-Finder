@@ -64,17 +64,9 @@ function loadReview(path, reviewId) {
 
         startGame(pgn)
 
-        var chessLink = `https://www.chess.com/analysis?pgn=${pgn}`
-        document.getElementById('analyze_chess').href = encodeURI(chessLink)
-
-        var lichessLink = `https://lichess.org/analysis/${fen}`
-        document.getElementById('analyze_lichess').href = encodeURI(lichessLink)
-
-        if (favorites[reviewId] == true) {
-            markButton('favorite')
-        } else {
-            unmarkButton('favorite')
-        }
+        setLinks(pgn, fen)
+        setButton('favorite', favorites[reviewId] == true)
+        displayMoves(game.moves)
     })
 }
 
@@ -105,6 +97,7 @@ function loadReviews() {
 
 function startGame(pgn) {
     game = new Game(pgn)
+    fen = game.fen
     chess = new Chess(game.fen)
     board = Chessboard('board', {
         position: game.fen
@@ -120,9 +113,53 @@ function forward() {
 }
 
 function backward() {
-    chess.undo()
     game.backward()
-    board.position(chess.fen())
+    var fen = game.getFEN()
+    chess.load(fen)
+    board.position(fen)
+}
+
+function goTo(moveIndex) {
+    var nextMove = game.goTo(moveIndex)
+    if (nextMove != null) {
+        var fen = game.getFEN()
+        chess.load(fen)
+        board.position(fen)
+    }
+}
+
+function getMoveSymbol(move, turn) {
+    // replace a piece symbol with UNICODE symbol, e.g. Ke1 to ♔e1
+    var piece = move.charAt(0)
+    switch (piece) {
+        case 'K': return (turn ? '♔' : '♚') + move.slice(1)
+        case 'Q': return (turn ? '♕' : '♛') + move.slice(1)
+        case 'R': return (turn ? '♖' : '♜') + move.slice(1)
+        case 'B': return (turn ? '♗' : '♝') + move.slice(1)
+        case 'N': return (turn ? '♘' : '♞') + move.slice(1)
+        default: return move
+    }
+}
+
+function displayMoves(moves) {
+    clearTable('moves_list_table')
+    const tableObject = document.getElementById('moves_list_table')
+    const black = game.turn == 'b'
+    for (var i = 0; i < moves.length; i += 2) {
+
+        var index = i - black
+        var turn = index % 2 == 0
+        var move = index >= 0 ? getMoveSymbol(moves[index], turn) : '...'
+        var nextMove = getMoveSymbol(moves[index + 1], !turn)
+        var tr = document.createElement('tr')
+        tr.id = `row${i}`
+
+        var moveId = i / 2 + 1
+        createTableRowEntry(tr, moveId, null, `move${moveId}`)
+        createTableRowEntry(tr, move, `javascript:goTo(${index})`, `half_move${index}`)
+        createTableRowEntry(tr, nextMove, `javascript:goTo(${index + 1})`, `half_move${index + 1}`)
+        tableObject.appendChild(tr)
+    }
 }
 
 function createReviewsTable(reviews) {

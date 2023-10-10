@@ -423,18 +423,8 @@ filterPuzzlesCallback = filterPuzzles
 beforeLoadCallback = () => {markButton('random')}
 afterLoadCallback = (puzzleId) => {
     unmarkButton('random')
-
-    var chessLink = `https://www.chess.com/analysis?pgn=${tactic.pgn}`
-    document.getElementById('analyze_chess').href = encodeURI(chessLink)
-
-    var lichessLink = `https://lichess.org/analysis/${tactic.fen}`
-    document.getElementById('analyze_lichess').href = encodeURI(lichessLink)
-
-    if (favorites[puzzleId] == true) {
-        markButton('favorite')
-    } else {
-        unmarkButton('favorite')
-    }
+    setLinks(tactic.pgn, tactic.fen)
+    setButton('favorite', favorites[puzzleId] == true)
 }
 
 progress = new Progress(
