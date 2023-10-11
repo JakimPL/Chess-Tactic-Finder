@@ -188,7 +188,7 @@ function setEvaluation() {
 
 function setFEN(previousMoveIndex) {
     var fen = game.getFEN()
-    highlightMove(previousMoveIndex, null)
+    highlightMove(previousMoveIndex, getMoveColor(getMoveType(review['moves'][previousMoveIndex])))
     chess.load(fen)
     board.position(fen)
     highlightMove(game.moveIndex, darkSquareColor)
@@ -200,7 +200,7 @@ function forward() {
         var previousMoveIndex = game.moveIndex
         var nextMove = game.forward()
         if (nextMove != null) {
-            highlightMove(previousMoveIndex, null)
+            highlightMove(previousMoveIndex, getMoveColor(getMoveType(review['moves'][previousMoveIndex])))
             chess.move(nextMove)
             board.position(chess.fen())
             highlightMove(game.moveIndex, darkSquareColor)
@@ -234,7 +234,7 @@ function highlightMove(moveIndex, color) {
     }
 }
 
-function getMoveSymbol(move, turn, moveReview) {
+function getMoveSymbol(move, turn) {
     if (move == null) {
         return ''
     }
@@ -253,18 +253,38 @@ function getMoveSymbol(move, turn, moveReview) {
         symbol += move.slice(1)
     }
 
-    if (moveReview != null) {
-        var moveType = moveReview['classification']['type']
-        switch (moveType) {
-            case 'brilliant': symbol += '!!'; break
-            case 'great': symbol += '!'; break
-            case 'inaccuracy': symbol += '?!'; break
-            case 'mistake': symbol += '?'; break
-            case 'blunder': symbol += '??'; break
-        }
+    return symbol
+}
+
+function getMoveType(moveReview) {
+    if (moveReview == null) {
+        return ''
     }
 
-    return symbol
+    if (moveReview['classification'] == null) {
+        return ''
+    }
+
+    var moveType = moveReview['classification']['type']
+    switch (moveType) {
+        case 'brilliant': return '!!';
+        case 'great': return '!';
+        case 'inaccuracy': return '?!';
+        case 'mistake': return '?';
+        case 'blunder': return '??';
+        default: return '';
+    }
+}
+
+function getMoveColor(moveType) {
+    switch (moveType) {
+        case '!!': return '#1baca6';
+        case '!': return '#5c8bb0';
+        case '?!': return '#f0c15c';
+        case '?': return '#e58f2a';
+        case '??': return '#ca3431';
+        default: return null;
+    }
 }
 
 function displayMoves(moves) {
@@ -275,15 +295,20 @@ function displayMoves(moves) {
     for (var i = 0; i < moves.length; i += 2) {
         var index = i - black
         var turn = index % 2 == 0
-        var move = index >= 0 ? getMoveSymbol(moves[index], turn, movesReview[i]) : '...'
-        var nextMove = getMoveSymbol(moves[index + 1], !turn, movesReview[i + 1])
+
+        var moveType = getMoveType(movesReview[i])
+        var nextMoveType = getMoveType(movesReview[i + 1])
+
+        var move = index >= 0 ? getMoveSymbol(moves[index], turn) + moveType : '...'
+        var nextMove = getMoveSymbol(moves[index + 1], !turn, movesReview[i + 1]) + getMoveType(movesReview[i + 1])
+
         var tr = document.createElement('tr')
         tr.id = `row${i}`
 
         var moveId = i / 2 + 1
         createTableRowEntry(tr, moveId, null, `move${moveId}`)
-        createTableRowEntry(tr, move, `javascript:goTo(${index})`, `half_move${index}`)
-        createTableRowEntry(tr, nextMove, `javascript:goTo(${index + 1})`, `half_move${index + 1}`)
+        createTableRowEntry(tr, move, `javascript:goTo(${index})`, `half_move${index}`, getMoveColor(moveType))
+        createTableRowEntry(tr, nextMove, `javascript:goTo(${index + 1})`, `half_move${index + 1}`, getMoveColor(nextMoveType))
         tableObject.appendChild(tr)
     }
 }

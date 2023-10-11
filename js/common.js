@@ -59,7 +59,7 @@ function clearTable(table) {
     }
 }
 
-function createTableRowEntry(tr, text, link, id) {
+function createTableRowEntry(tr, text, link, id, backgroundColor) {
     var td = document.createElement('td')
     if (id != null) {
         td.id = id
@@ -75,7 +75,12 @@ function createTableRowEntry(tr, text, link, id) {
         td.appendChild(textNode)
     }
 
+    if (backgroundColor != null) {
+        td.style.backgroundColor = backgroundColor
+    }
+
     tr.appendChild(td)
+    return td
 }
 
 function loadFavorites() {
