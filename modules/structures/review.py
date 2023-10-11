@@ -7,6 +7,7 @@ import chess
 from chess.pgn import Headers
 
 import matplotlib
+
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
@@ -14,7 +15,6 @@ from modules.converter import create_game_from_board
 from modules.header import get_headers
 from modules.picklable import Picklable
 from modules.structures.reviewed_move import ReviewedMove
-
 
 MAX_EVALUATION = 10.0
 
@@ -66,7 +66,8 @@ class Review(Picklable):
                 else:
                     scale = 1.0 if move.evaluation.value > 0 else -1.0
             else:
-                scale = min(MAX_EVALUATION, max(-MAX_EVALUATION, move.evaluation.value)) / MAX_EVALUATION
+                value = 0.4 * move.evaluation.value
+                scale = value / (1 + abs(value))
 
             scales.append(scale)
             indices.append(1 + index / 2)
