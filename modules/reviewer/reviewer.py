@@ -60,8 +60,8 @@ class Reviewer(Processor):
             best_moves = [move['Move'] for move in top_moves]
             evaluations = [Evaluation.from_stockfish(move) for move in top_moves]
             stockfish.make_moves_from_current_position([move])
-
             evaluation = Evaluation.from_evaluation(stockfish.get_evaluation())
+
             move_classification = self.review_move(
                 board.turn, move, evaluation, best_moves, evaluations
             )
@@ -85,7 +85,7 @@ class Reviewer(Processor):
                 filename=output_filename,
                 fen=board.fen(),
                 move_string=move_string,
-                evaluation=evaluation
+                evaluation=Evaluation.from_evaluation(stockfish.get_evaluation())
             )
 
         return review

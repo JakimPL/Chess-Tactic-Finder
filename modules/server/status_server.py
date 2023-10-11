@@ -19,7 +19,7 @@ class StatusServer:
                 try:
                     self.message = connection.recv()
                     text = parse.parse_qsl(self.message)[0][1]
-                    if 'completed' in text or 'Stockfish error' in text:
+                    if 'completed' in text or 'interrupted' in text or 'Stockfish error' in text:
                         connection.close()
                         running = False
                 except EOFError:

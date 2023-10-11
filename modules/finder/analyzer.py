@@ -54,14 +54,13 @@ class Analyzer(Processor):
         tactic_list = []
         fens = set()
 
+        evaluation = Evaluation.from_evaluation(stockfish.get_evaluation())
         for idx, move in enumerate(moves):
             move_number = (idx + 1 - int(board.turn)) // 2 + 1
             white = board.turn
 
-            best_moves = stockfish.get_top_moves(STOCKFISH_TOP_MOVES)
-            evaluation = Evaluation.from_stockfish(best_moves[0])
-
             fen = stockfish.get_fen_position()
+
             position = Position(
                 move=move,
                 color=not white,
@@ -70,6 +69,7 @@ class Analyzer(Processor):
             )
 
             stockfish.make_moves_from_current_position([move])
+            evaluation = Evaluation.from_evaluation(stockfish.get_evaluation())
             board_move = chess.Move.from_uci(move)
             board_move = board.san(board_move)
             board.push_san(move)
