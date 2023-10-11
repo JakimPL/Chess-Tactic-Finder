@@ -74,6 +74,9 @@ function loadReview(path, reviewId) {
 
         setEvaluation()
         loadChart(path)
+
+        var gameInfo = getGameInfo(review)
+        $('#game_info').html(gameInfo)
     })
 }
 
@@ -116,6 +119,19 @@ $.ajax({
             console.error('Unable to load a chart.')
         }
     })
+}
+
+function getGameInfo(review) {
+    const mainHeaders = review.headers._tag_roster
+    const secondaryHeaders = review.headers._others
+    const whitePlayer = mainHeaders.White != null ? mainHeaders.White : '???'
+    const blackPlayer = mainHeaders.Black != null ? mainHeaders.Black : '???'
+    const whiteElo = secondaryHeaders.WhiteElo != null ? secondaryHeaders.WhiteElo : '?'
+    const blackElo = secondaryHeaders.BlackElo != null ? secondaryHeaders.BlackElo : '?'
+    const white = `<b>${whitePlayer}</b> (${whiteElo})`
+    const black = `<b>${blackPlayer}</b> (${blackElo})`
+    var gameInfo = `${white} vs ${black}, ${mainHeaders.Date} (${mainHeaders.Result})`
+    return gameInfo
 }
 
 function startGame(pgn) {
@@ -242,7 +258,7 @@ function getMoveSymbol(move, turn, moveReview) {
         switch (moveType) {
             case 'brilliant': symbol += '!!'; break
             case 'great': symbol += '!'; break
-            case 'inaccuracy': symbol += '?'; break
+            case 'inaccuracy': symbol += '?!'; break
             case 'mistake': symbol += '?'; break
             case 'blunder': symbol += '??'; break
         }
@@ -293,7 +309,7 @@ function createReviewsTable(reviews) {
         createTableRowEntry(tr, review.black)
         createTableRowEntry(tr, review.date)
         createTableRowEntry(tr, review.actualResult)
-        createTableRowEntry(tr, review.moves.length)
+        createTableRowEntry(tr, Math.ceil((!review.moves[0].turn + review.moves.length) / 2))
         createTableRowEntry(tr, '100%')
         createTableRowEntry(tr, '100%')
         tableObject.appendChild(tr)
