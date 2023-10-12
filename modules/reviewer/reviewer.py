@@ -7,6 +7,7 @@ from stockfish import Stockfish
 from modules.configuration import load_configuration
 from modules.json import json_save
 from modules.processor import Processor
+from modules.reviewer.auxiliary import win
 from modules.structures.evaluation import Evaluation
 from modules.structures.move_classification import MoveClassification
 from modules.structures.review import Review
@@ -23,11 +24,13 @@ STOCKFISH_PARAMETERS = configuration['stockfish']['parameters']
 STOCKFISH_TOP_MOVES = configuration['stockfish']['top_moves']
 
 BEST_MOVE_TOLERANCE = 0.02
-GOOD_MOVE_TOLERANCE = 0.50
-INACCURACY_TOLERANCE = 0.85
-MISTAKE_TOLERANCE = 1.20
-BLUNDER_TOLERANCE = 1.50
+GOOD_MOVE_TOLERANCE = 0.02
+INACCURACY_TOLERANCE = 0.05
+MISTAKE_TOLERANCE = 0.10
+BLUNDER_TOLERANCE = 0.20
 MATE_DISTANCE_THRESHOLD = 5
+
+
 
 
 class Reviewer(Processor):
@@ -137,14 +140,15 @@ class Reviewer(Processor):
                         else:
                             return MoveClassification('mistake', True, 'stepped into a mate')
                 else:
-                    # miss logic?
-                    if evaluation.value < best_evaluation.value - BLUNDER_TOLERANCE and evaluation.value < 7.5:
+                    win_difference = win(best_evaluation.value) - win(evaluation.value)
+                    # great/brilliant/miss logic
+                    if win_difference > BLUNDER_TOLERANCE and evaluation.value < 7.5:
                         return MoveClassification('blunder', False)
-                    elif evaluation.value < best_evaluation.value - MISTAKE_TOLERANCE and evaluation.value < 5.0:
+                    elif win_difference > MISTAKE_TOLERANCE and evaluation.value < 5.0:
                         return MoveClassification('mistake', False)
-                    elif evaluation.value < best_evaluation.value - INACCURACY_TOLERANCE:
+                    elif win_difference > INACCURACY_TOLERANCE:
                         return MoveClassification('inaccuracy', False)
-                    elif evaluation.value < best_evaluation.value - GOOD_MOVE_TOLERANCE:
+                    elif win_difference > GOOD_MOVE_TOLERANCE:
                         return MoveClassification('good', False)
                     else:
                         return MoveClassification('excellent', False)
