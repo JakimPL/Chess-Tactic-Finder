@@ -7,6 +7,7 @@ from chess.pgn import Headers
 from stockfish import Stockfish
 
 from modules.configuration import load_configuration
+from modules.converter import uci_to_san
 from modules.finder.tactic_finder import TacticFinder
 from modules.json import json_save
 from modules.processor import Processor
@@ -70,8 +71,7 @@ class Analyzer(Processor):
 
             stockfish.make_moves_from_current_position([move])
             evaluation = Evaluation.from_evaluation(stockfish.get_evaluation())
-            board_move = chess.Move.from_uci(move)
-            board_move = board.san(board_move)
+            board_move = uci_to_san(board, move)
             board.push_san(move)
 
             move_string = f'{move_number}{"." if white else "..."} {board_move} {"   " if white else " "}'

@@ -5,6 +5,7 @@ import subprocess
 
 import chess
 import chess.pgn
+
 from modules.configuration import load_configuration
 
 UCI_MOVE_PATTERN = re.compile(r"[a-h][1-8][a-h][1-8]")
@@ -83,3 +84,7 @@ def convert(pgn_path: str) -> tuple[str, list[str]]:
     )
 
     return name, filenames
+
+
+def uci_to_san(board: chess.Board, move: str) -> str:
+    return board.san(chess.Move.from_uci(move))

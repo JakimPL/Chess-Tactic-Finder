@@ -1,13 +1,13 @@
 import os
 
-import chess
 from chess import Board
 from stockfish import Stockfish
 
 from modules.configuration import load_configuration
+from modules.converter import uci_to_san
 from modules.json import json_save
 from modules.processor import Processor
-from modules.reviewer.auxiliary import win, get_win_difference
+from modules.reviewer.auxiliary import get_win_difference
 from modules.structures.evaluation import Evaluation
 from modules.structures.move_classification import MoveClassification
 from modules.structures.review import Review
@@ -23,14 +23,12 @@ STOCKFISH_DEPTH = configuration['stockfish']['depth']
 STOCKFISH_PARAMETERS = configuration['stockfish']['parameters']
 STOCKFISH_TOP_MOVES = configuration['stockfish']['top_moves']
 
-BEST_MOVE_TOLERANCE = 0.02
-GOOD_MOVE_TOLERANCE = 0.02
-INACCURACY_TOLERANCE = 0.05
-MISTAKE_TOLERANCE = 0.10
-BLUNDER_TOLERANCE = 0.20
-MATE_DISTANCE_THRESHOLD = 5
-
-
+BEST_MOVE_PAWN_TOLERANCE = configuration['review']['best_move_centipawn_tolerance'] / 100
+GOOD_MOVE_THRESHOLD = configuration['review']['good_move_threshold']
+INACCURACY_THRESHOLD = configuration['review']['inaccuracy_threshold']
+MISTAKE_THRESHOLD = configuration['review']['mistake_threshold']
+BLUNDER_THRESHOLD = configuration['review']['blunder_threshold']
+MATE_DISTANCE_THRESHOLD = configuration['review']['mate_distance_threshold']
 
 
 class Reviewer(Processor):
@@ -69,16 +67,16 @@ class Reviewer(Processor):
                 board.turn, move, evaluation, best_moves, evaluations
             )
 
+            best_san_moves = [uci_to_san(board, best_move) for best_move in best_moves]
             review.add_move(ReviewedMove(
                 move=move,
                 turn=white,
                 evaluation=evaluation,
-                best_moves=list(zip(best_moves, evaluations)),
+                best_moves=list(zip(best_san_moves, evaluations)),
                 move_classification=move_classification
             ))
 
-            board_move = chess.Move.from_uci(move)
-            board_move = board.san(board_move)
+            board_move = uci_to_san(board, move)
             board.push_san(move)
 
             move_string = f'{move_number}{"." if white else "..."} {board_move} {"   " if white else " "}'
@@ -134,7 +132,7 @@ class Reviewer(Processor):
                 win_difference = get_win_difference(evaluation, best_evaluation)
                 if move in best_moves:
                     if significant_difference:
-                        # add: not a simple recapture
+                        # TODO: check if this is not trivial recapture/promotion or escaping an attacked piece
                         return MoveClassification('great', False)
                     else:
                         return MoveClassification('best', False)
@@ -147,15 +145,16 @@ class Reviewer(Processor):
                         else:
                             return MoveClassification('mistake', True, 'Stepped into a mate.')
                 else:
-                    if win_difference > BLUNDER_TOLERANCE and evaluation.value < 7.5:
+                    if win_difference > BLUNDER_THRESHOLD and evaluation.value < 7.5:
                         return MoveClassification('blunder', False)
                     elif significant_difference and abs(evaluation.value) < 5.0:
-                        return MoveClassification('miss', False, 'Missed a good move.')
-                    elif win_difference > MISTAKE_TOLERANCE and evaluation.value < 5.0:
+                        # TODO: check if the previous move was an inaccuracy/mistake/blunder
+                        return MoveClassification('miss', False, 'Missed only one good move.')
+                    elif win_difference > MISTAKE_THRESHOLD and evaluation.value < 5.0:
                         return MoveClassification('mistake', False)
-                    elif win_difference > INACCURACY_TOLERANCE:
+                    elif win_difference > INACCURACY_THRESHOLD:
                         return MoveClassification('inaccuracy', False)
-                    elif win_difference > GOOD_MOVE_TOLERANCE:
+                    elif win_difference > GOOD_MOVE_THRESHOLD:
                         return MoveClassification('good', False)
                     else:
                         return MoveClassification('excellent', False)
@@ -175,7 +174,7 @@ class Reviewer(Processor):
         for best_move, move_evaluation in zip(best_moves, evaluations):
             if any([
                 best_evaluation.mate and move_evaluation.mate and move_evaluation.value <= best_evaluation.value,
-                not best_evaluation.mate and not move_evaluation.mate and move_evaluation.value >= best_evaluation.value - BEST_MOVE_TOLERANCE
+                not best_evaluation.mate and not move_evaluation.mate and move_evaluation.value >= best_evaluation.value - BEST_MOVE_PAWN_TOLERANCE
             ]):
                 best_choices.append(best_move)
 

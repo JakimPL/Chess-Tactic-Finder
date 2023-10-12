@@ -30,6 +30,6 @@ class ReviewedMove:
             'move': self.move,
             'turn': self.turn,
             'evaluation': str(self.evaluation.value),
-            'best_moves': [(move, evaluation.value) for move, evaluation in self.best_moves],
+            'best_moves': [(move, str(evaluation.value)) for move, evaluation in self.best_moves],
             'classification': self.move_classification.__dict__
         }

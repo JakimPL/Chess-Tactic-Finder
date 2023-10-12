@@ -7,6 +7,14 @@
         "repetition_threshold": 2,
         "min_relative_material_balance": 3
     },
+    "review": {
+        "best_move_centipawn_tolerance": 2,
+        "good_move_threshold": 0.02,
+        "inaccuracy_threshold": 0.05,
+        "mistake_threshold": 0.10,
+        "blunder_threshold": 0.20,
+        "mate_distance_threshold": 5
+    },
     "stockfish": {
         "depth": 18,
         "top_moves": 5,
