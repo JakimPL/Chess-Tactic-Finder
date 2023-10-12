@@ -160,17 +160,22 @@ function setEvaluationBar(value, scale) {
     document.getElementById('evaluation_bar').style.backgroundColor = orientation ? lightSquareColor : darkSquareColor
 }
 
+function setEngineLines() {
+    const bestMoves = review.moves[game.moveIndex]['best_moves']
+    // to implement
+}
+
 function setEvaluation() {
-    var reviewedMove = review['moves'][game.moveIndex]
+    var reviewedMove = review.moves[game.moveIndex]
     if (reviewedMove != null) {
-        const evaluation = reviewedMove['evaluation']
+        const evaluation = reviewedMove.evaluation
 
         var scale = 0
         var value = 0
         if (!evaluation.includes('.')){
             const integer = parseInt(evaluation)
             if (integer == 0) {
-                const turn = reviewedMove['turn']
+                const turn = reviewedMove.turn
                 scale = turn ? 1 : -1
             } else {
                 scale = evaluation > 0 ? 1 : -1
@@ -188,11 +193,13 @@ function setEvaluation() {
 
 function setFEN(previousMoveIndex) {
     var fen = game.getFEN()
-    highlightMove(previousMoveIndex, getMoveColor(getMoveType(review['moves'][previousMoveIndex])))
+    const moveType = review.moves[previousMoveIndex] != null ? getMoveType(review.moves[previousMoveIndex].classification) : null
+    highlightMove(previousMoveIndex, getMoveColor(moveType))
     chess.load(fen)
     board.position(fen)
     highlightMove(game.moveIndex, darkSquareColor)
     setEvaluation()
+    setEngineLines()
 }
 
 function forward() {
@@ -200,11 +207,13 @@ function forward() {
         var previousMoveIndex = game.moveIndex
         var nextMove = game.forward()
         if (nextMove != null) {
-            highlightMove(previousMoveIndex, getMoveColor(getMoveType(review['moves'][previousMoveIndex])))
+            const moveType = review.moves[previousMoveIndex] != null ? getMoveType(review.moves[previousMoveIndex].classification) : null
+            highlightMove(previousMoveIndex, getMoveColor(moveType))
             chess.move(nextMove)
             board.position(chess.fen())
             highlightMove(game.moveIndex, darkSquareColor)
             setEvaluation()
+            setEngineLines()
         }
     }
 }
@@ -256,21 +265,18 @@ function getMoveSymbol(move, turn) {
     return symbol
 }
 
-function getMoveType(moveReview) {
-    if (moveReview == null) {
+function getMoveType(moveClassification) {
+    if (moveClassification == null) {
         return ''
     }
 
-    if (moveReview['classification'] == null) {
-        return ''
-    }
-
-    var moveType = moveReview['classification']['type']
+    var moveType = moveClassification.type
     switch (moveType) {
         case 'brilliant': return '!!';
         case 'great': return '!';
         case 'inaccuracy': return '?!';
         case 'mistake': return '?';
+        case 'miss': return '?';
         case 'blunder': return '??';
         default: return '';
     }
@@ -291,24 +297,32 @@ function displayMoves(moves) {
     clearTable('moves_list_table')
     const tableObject = document.getElementById('moves_list_table')
     const black = game.turn == 'b'
-    const movesReview = review['moves']
+    const movesReview = review.moves
     for (var i = 0; i < moves.length; i += 2) {
         var index = i - black
         var turn = index % 2 == 0
 
-        var moveType = getMoveType(movesReview[i])
-        var nextMoveType = getMoveType(movesReview[i + 1])
+        const moveClassification = movesReview[i].classification
+        const nextMoveClassification = (i + 1 < movesReview.length) ? movesReview[i + 1].classification : null
+
+        var moveType = getMoveType(moveClassification)
+        var nextMoveType = getMoveType(nextMoveClassification)
+        var moveDescription = moveClassification.description
+        var nextMoveDescription = nextMoveClassification != null ? nextMoveClassification.description : ''
 
         var move = index >= 0 ? getMoveSymbol(moves[index], turn) + moveType : '...'
-        var nextMove = getMoveSymbol(moves[index + 1], !turn, movesReview[i + 1]) + getMoveType(movesReview[i + 1])
+        var nextMove = getMoveSymbol(moves[index + 1], !turn) + nextMoveType
 
         var tr = document.createElement('tr')
         tr.id = `row${i}`
 
         var moveId = i / 2 + 1
-        createTableRowEntry(tr, moveId, null, `move${moveId}`)
+        createTableRowEntry(tr, `${moveId}.`, null, `move${moveId}`)
         createTableRowEntry(tr, move, `javascript:goTo(${index})`, `half_move${index}`, getMoveColor(moveType))
         createTableRowEntry(tr, nextMove, `javascript:goTo(${index + 1})`, `half_move${index + 1}`, getMoveColor(nextMoveType))
+        createTableRowEntry(tr, moveDescription)
+        createTableRowEntry(tr, nextMoveDescription)
+
         tableObject.appendChild(tr)
     }
 }
@@ -335,8 +349,8 @@ function createReviewsTable(reviews) {
         createTableRowEntry(tr, review.date)
         createTableRowEntry(tr, review.actualResult)
         createTableRowEntry(tr, Math.ceil((!review.moves[0].turn + review.moves.length) / 2))
-        createTableRowEntry(tr, '100%')
-        createTableRowEntry(tr, '100%')
+        createTableRowEntry(tr, 'N/A')
+        createTableRowEntry(tr, 'N/A')
         tableObject.appendChild(tr)
     }
 

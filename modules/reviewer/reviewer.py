@@ -7,7 +7,7 @@ from stockfish import Stockfish
 from modules.configuration import load_configuration
 from modules.json import json_save
 from modules.processor import Processor
-from modules.reviewer.auxiliary import win
+from modules.reviewer.auxiliary import win, get_win_difference
 from modules.structures.evaluation import Evaluation
 from modules.structures.move_classification import MoveClassification
 from modules.structures.review import Review
@@ -102,7 +102,7 @@ class Reviewer(Processor):
             best_moves: list[str]
     ) -> MoveClassification:
         if len(evaluations) == 1:
-            return MoveClassification('forced', best_evaluation.mate)
+            return MoveClassification('forced', best_evaluation.mate, 'Forced.')
         else:
             if best_evaluation.mate:
                 if best_evaluation.value > 0:
@@ -111,16 +111,16 @@ class Reviewer(Processor):
                             if evaluation.value < best_evaluation.value:
                                 return MoveClassification('best', True)
                             elif evaluation.value > best_evaluation.value + MATE_DISTANCE_THRESHOLD:
-                                return MoveClassification('mistake', True)
+                                return MoveClassification('mistake', True, 'Delayed a mate.')
                             elif evaluation.value >= best_evaluation.value:
-                                return MoveClassification('inaccuracy', True)
+                                return MoveClassification('inaccuracy', True, 'Delayed a mate.')
                         else:
-                            return MoveClassification('blunder', True, 'stepped into a mate')
+                            return MoveClassification('blunder', True, 'Stepped into a mate.')
                     else:
-                        if evaluation.value > 3:
-                            return MoveClassification('miss', True, 'missed mate')
+                        if evaluation.value > 3.0:
+                            return MoveClassification('miss', True, 'A missed mate.')
                         else:
-                            return MoveClassification('blunder', True, 'missed mate')
+                            return MoveClassification('blunder', True, 'A missed mate.')
                 else:
                     if evaluation.value < best_evaluation.value - MATE_DISTANCE_THRESHOLD:
                         return MoveClassification('mistake', True)
@@ -129,21 +129,28 @@ class Reviewer(Processor):
                     elif evaluation.value >= best_evaluation.value:
                         return MoveClassification('best', True)
             else:
+                second_best_win_difference = get_win_difference(evaluations[1], best_evaluation)
+                significant_difference = second_best_win_difference > 0.1
+                win_difference = get_win_difference(evaluation, best_evaluation)
                 if move in best_moves:
-                    return MoveClassification('best', False)
+                    if significant_difference:
+                        # add: not a simple recapture
+                        return MoveClassification('great', False)
+                    else:
+                        return MoveClassification('best', False)
                 elif evaluation.mate:
                     if evaluation.value >= 0:
                         raise ValueError('invalid evaluation')
                     else:
                         if best_evaluation.value > -5:
-                            return MoveClassification('blunder', True, 'stepped into a mate')
+                            return MoveClassification('blunder', True, 'Stepped into a mate.')
                         else:
-                            return MoveClassification('mistake', True, 'stepped into a mate')
+                            return MoveClassification('mistake', True, 'Stepped into a mate.')
                 else:
-                    win_difference = win(best_evaluation.value) - win(evaluation.value)
-                    # great/brilliant/miss logic
                     if win_difference > BLUNDER_TOLERANCE and evaluation.value < 7.5:
                         return MoveClassification('blunder', False)
+                    elif significant_difference and abs(evaluation.value) < 5.0:
+                        return MoveClassification('miss', False, 'Missed a good move.')
                     elif win_difference > MISTAKE_TOLERANCE and evaluation.value < 5.0:
                         return MoveClassification('mistake', False)
                     elif win_difference > INACCURACY_TOLERANCE:

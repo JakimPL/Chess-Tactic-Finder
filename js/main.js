@@ -20,7 +20,6 @@ var delayTime = 1000
 
 var panelTextCallback = null
 var statusTextCallback = null
-var moveHistoryText = null
 var loadPuzzlesCallback = null
 var filterPuzzlesCallback = null
 
@@ -260,7 +259,6 @@ function updateStatus() {
 	}
 
     statusTextCallback(statusText)
-    moveHistoryText = getMoves(game)
     checkIfSolved()
 }
 

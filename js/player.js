@@ -1,7 +1,6 @@
 board = Chessboard('game_board')
 
 const $status = $('#status')
-const $moveHistory = $('#moveHistory')
 const $panel = $('#panel')
 
 var storage = new Storage()
@@ -416,7 +415,6 @@ async function refreshPuzzleTable(filteredPuzzles) {
 
 panelTextCallback = (text) => {setPanel($panel, text)}
 statusTextCallback = (text) => {$status.html(text)}
-moveHistoryTextCallback = (text) => {$moveHistory.html(text)}
 loadPuzzlesCallback = loadPuzzles
 filterPuzzlesCallback = filterPuzzles
 
