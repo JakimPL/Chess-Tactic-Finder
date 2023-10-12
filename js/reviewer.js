@@ -72,7 +72,7 @@ function loadReview(path, reviewId) {
         setButton('favorite', favorites[reviewId] == true)
         displayMoves(game.moves, review)
 
-        setEvaluation()
+        clearTable('engine_lines_table')
         loadChart(path)
 
         var gameInfo = getGameInfo(review)
@@ -162,7 +162,14 @@ function setEvaluationBar(value, scale) {
 
 function setEngineLines() {
     const bestMoves = review.moves[game.moveIndex]['best_moves']
-    // to implement
+    clearTable('engine_lines_table')
+    const tableObject = document.getElementById('engine_lines_table')
+    for (const bestMove of bestMoves) {
+        var tr = document.createElement('tr')
+        createTableRowEntry(tr, bestMove[0])
+        createTableRowEntry(tr, parseFloat(bestMove[1]).toFixed(2))
+        tableObject.appendChild(tr)
+    }
 }
 
 function setEvaluation() {

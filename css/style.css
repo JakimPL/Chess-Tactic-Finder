@@ -238,7 +238,6 @@ table#games th:nth-child(7) {
 #moves_list_table {
     font-size: 11px;
     table-layout: fixed;
-    width: 150px;
     text-decoration: none;
 }
 
@@ -254,6 +253,24 @@ table#moves_list_table tr:nth-child(even) {
     background-color: var(--light-square);
 }
 
-table#moves_list_table td:nth-child(n+2) {
+table#moves_list_table td:nth-child(1) {
+    width: 30px;
+}
+
+table#moves_list_table td:nth-child(2),
+table#moves_list_table td:nth-child(3) {
+    width: 50px;
     font-weight: bold;
+}
+
+table#moves_list_table td:nth-child(4),
+table#moves_list_table td:nth-child(5) {
+    width: 150px;
+}
+
+#engine_lines_table {
+    font-size: 10px;
+    table-layout: fixed;
+    text-decoration: none;
+    width: 100px;
 }
