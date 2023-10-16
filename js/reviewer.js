@@ -167,7 +167,20 @@ function setEngineLines() {
     for (const bestMove of bestMoves) {
         var tr = document.createElement('tr')
         createTableRowEntry(tr, bestMove[0])
-        createTableRowEntry(tr, parseFloat(bestMove[1]).toFixed(2))
+        if (bestMove[0] == game.moves[game.moveIndex]) {
+            tr.style.backgroundColor = darkSquareColor
+        }
+
+        var value = "0.0"
+        if (bestMove[1].includes('.')) {
+            value = parseFloat(bestMove[1]).toFixed(2)
+        } else {
+            value = `#${parseInt(bestMove[1])}`
+        }
+
+        createTableRowEntry(tr, value)
+
+
         tableObject.appendChild(tr)
     }
 }
