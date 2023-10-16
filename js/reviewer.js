@@ -50,6 +50,20 @@ $('#copyPGN').on('click', function() {
     }
 })
 
+$('#favorite').on('click', function() {
+    if (currentReviewId !== null) {
+        if (favorites[currentReviewId] == true) {
+            favorites[currentReviewId] = false
+            unmarkButton('favorite')
+        } else {
+            favorites[currentReviewId] = true
+            markButton('favorite')
+        }
+
+        storage.set('favorites', favorites)
+    }
+})
+
 function loadReview(path, reviewId) {
     document.getElementById('evaluation_chart').src = emptyImage
     setEvaluationBar('0.0', 0)
