@@ -77,6 +77,7 @@ function loadReview(path, reviewId) {
 
         var gameInfo = getGameInfo(review)
         $('#game_info').html(gameInfo)
+        window.scrollTo(0, 0);
     })
 }
 
@@ -179,8 +180,6 @@ function setEngineLines() {
         }
 
         createTableRowEntry(tr, value)
-
-
         tableObject.appendChild(tr)
     }
 }

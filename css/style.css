@@ -93,6 +93,7 @@ button:active {
     display: block;
     float: right;
     bottom: 0px;
+    max-width: 100%;
 }
 
 #games_list {
@@ -177,8 +178,8 @@ table#games th:nth-child(7) {
     display: block;
     float: block;
 
+    min-width: 18px;
     width: 18px;
-    height: 352px;
 
     font-size: 7px;
     font-weight: bold;
