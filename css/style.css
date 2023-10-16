@@ -73,20 +73,26 @@ button:active {
     display: block;
 }
 
+#board_panel {
+    position: fixed;
+    overflow-y: hidden;
+    display: block;
+    float: left;
+    max-width: 40%;
+}
+
 #game_board {
     margin: 0 auto;
     width: min(100%, 360px);
-}
-
-#board_panel {
-    min-width: min(100%, 360px);
-    overflow-y: hidden;
 }
 
 #games_panel {
     height: 100%;
     overflow: auto;
     font-size: 11px;
+    display: block;
+    float: right;
+    bottom: 0px;
 }
 
 #games_list {
@@ -137,21 +143,6 @@ table#games th:nth-child(10) {
 table#games td:nth-child(7),
 table#games th:nth-child(7) {
     width: 130px;
-}
-
-@media screen and (orientation: portrait) {
-    .column {
-        width: 100%;
-    }
-
-    table#games th:nth-child(4),
-    table#games th:nth-child(5),
-    table#games th:nth-child(6),
-    table#games td:nth-child(4),
-    table#games td:nth-child(5),
-    table#games td:nth-child(6) {
-        display: none;
-    }
 }
 
 #progress {
@@ -214,7 +205,6 @@ table#games th:nth-child(7) {
 
 #moves {
     text-align: center;
-    display: flex;
     overflow: hidden;
 }
 
@@ -273,4 +263,29 @@ table#moves_list_table td:nth-child(5) {
     table-layout: fixed;
     text-decoration: none;
     width: 100px;
+}
+
+@media screen and (orientation: portrait) {
+    .column {
+        width: 100%;
+    }
+
+    table#games th:nth-child(4),
+    table#games th:nth-child(5),
+    table#games th:nth-child(6),
+    table#games td:nth-child(4),
+    table#games td:nth-child(5),
+    table#games td:nth-child(6) {
+        display: none;
+    }
+
+    #board_panel {
+        position: sticky;
+        display: inline;
+        max-width: 100%;
+    }
+
+    #games_panel {
+        display: inline;
+    }
 }
