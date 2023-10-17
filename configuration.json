@@ -9,11 +9,20 @@
     },
     "review": {
         "best_move_centipawn_tolerance": 2,
+        "blunder_centipawn_threshold": 750,
+        "miss_centipawn_threshold": 500,
+        "mistake_centipawn_threshold": 500,
+        "missed_mate_blunder_centipawn_threshold": 300,
+        "mate_stepped_blunder_centipawn_threshold": -500,
+        "mate_stepped_mistake_centipawn_threshold": -1500,
+        "significant_difference_threshold": 0.1,
         "good_move_threshold": 0.02,
         "inaccuracy_threshold": 0.05,
         "mistake_threshold": 0.10,
         "blunder_threshold": 0.20,
-        "mate_distance_threshold": 5
+        "mate_distance_threshold": 5,
+        "one_way_to_mate_distance_min": 4,
+        "one_way_to_mate_distance_max": 10
     },
     "stockfish": {
         "depth": 18,

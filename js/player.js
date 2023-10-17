@@ -368,7 +368,7 @@ function createPuzzleTable(puzzles) {
         tr.id = `row${puzzle.hash}`
 
         var path = getPath(puzzle.path)
-        var link = `javascript:loadPGN('${path}', '${puzzle.hash}')`
+        var link = new Link(`javascript:loadPGN('${path}', '${puzzle.hash}')`)
         var solved = getSolvedSymbol(progress.get(puzzle.hash), puzzle.moves)
         var puzzleId = `puzzle${puzzle.hash}`
         var playSymbol = favorites[puzzle.hash] == true ? '★' : '▶'

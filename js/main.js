@@ -272,9 +272,9 @@ function save(hash, value) {
     progress.saveItem(hash, targetValue, moves)
 }
 
-function refresh() {
+function refresh(gather) {
     $.ajax({
-        url: 'refresh',
+        url: gather == true ? 'refresh?gather=true' : 'refresh',
         type: 'GET',
         success: () => {
             loadPuzzlesCallback()

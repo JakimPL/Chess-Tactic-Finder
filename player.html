@@ -15,6 +15,7 @@
     <script src="/js/import/chess.js" integrity="sha384-s3XgLpvmHyscVpijnseAmye819Ee3yaGa8NxstkJVyA6nuDFjt59u1QvuEl/mecz" crossorigin="anonymous"></script>
     <script src="/js/import/parser.js"></script>
     <script src="/js/import/sorttable.js"></script>
+    <script src="/js/link.js"></script>
     <script src="/js/color.js"></script>
     <script src="/js/storage.js"></script>
     <script src="/js/history.js"></script>
@@ -75,7 +76,7 @@
         </div>
     </div>
     <div class="column" id="games_panel">
-        <h2><a href="javascript: refresh()">&#10227;</a> Games</h2>
+        <h2><a href="#games" onclick="javascript: refresh(true)">&#10227;</a> Games</h2>
         <p>All <code>checkmate</code> and <code>mating net</code> puzzles require to find the shortest route. Sometimes, there may be more one way to checkmate but only one should be the shortest. Unfortunately, in some cases Stockfish misevaluated the checkmate counters in a puzzle, yielding a puzzle that is not well posed.</p>
         <div class="row">
             <div><h3>Puzzle options</h3>

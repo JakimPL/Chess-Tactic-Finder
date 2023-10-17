@@ -392,13 +392,16 @@ function displayMoves(moves) {
         const evenRow = index % 4 == 0
         const rowClass = `row_${evenRow ? 'even' : 'odd'}`
 
-        const moveClassification = movesReview[i].classification
+        const halfMoveIndex = `half_move${index}`
+        const halfNextMoveIndex = `half_move${index + 1}`
+
+        const moveClassification = movesReview[i] != null ? movesReview[i].classification : null
         const nextMoveClassification = (i + 1 < movesReview.length) ? movesReview[i + 1].classification : null
 
         const moveType = getMoveType(moveClassification)
         const nextMoveType = getMoveType(nextMoveClassification)
 
-        const moveDescription = moveClassification.description
+        const moveDescription = moveClassification != null ? moveClassification.description : ''
         const nextMoveDescription = nextMoveClassification != null ? nextMoveClassification.description : ''
 
         var moveColor = getMoveColor(moveType)
@@ -415,10 +418,13 @@ function displayMoves(moves) {
         var tr = document.createElement('tr')
         tr.id = `row${i}`
 
+        var moveLink = new Link(null, () => {goTo(index)})
+        var nextMoveLink = new Link(null, () => {goTo(index + 1)})
+
         var moveId = i / 2 + 1
         createTableRowEntry(tr, `${moveId}.`, null, `move${moveId}`)
-        createTableRowEntry(tr, move, `javascript:goTo(${index})`, `half_move${index}`, rowClass, moveColor)
-        createTableRowEntry(tr, nextMove, `javascript:goTo(${index + 1})`, `half_move${index + 1}`, rowClass, nextMoveColor)
+        createTableRowEntry(tr, move, moveLink, halfMoveIndex, rowClass, moveColor)
+        createTableRowEntry(tr, nextMove, nextMoveLink, halfNextMoveIndex, rowClass, nextMoveColor)
         createTableRowEntry(tr, moveDescription)
         createTableRowEntry(tr, nextMoveDescription)
         tableObject.appendChild(tr)
@@ -433,7 +439,8 @@ function createReviewsTable(reviews) {
         tr.id = `row${review.hash}`
 
         var path = getPath(review.path)
-        var link = `javascript:loadReview('${path}', '${review.hash}')`
+        var link = new Link(`javascript:loadReview('${path}', '${review.hash}')`)
+
         var reviewId = `review${review.hash}`
         var playSymbol = favorites[review.hash] == true ? '★' : '▶'
 
@@ -455,9 +462,9 @@ function createReviewsTable(reviews) {
     sorttable.makeSortable(document.getElementById('games'))
 }
 
-function refresh() {
+function refresh(gather) {
     $.ajax({
-        url: 'refresh',
+        url: gather == true ? 'refresh?gather=true' : 'refresh',
         type: 'GET',
         success: () => {
             loadReviews()

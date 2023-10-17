@@ -65,7 +65,15 @@ function createTableRowEntry(tr, text, link, id, rowClass, backgroundColor) {
     var textNode = document.createTextNode(text)
     if (link != null) {
         var a = document.createElement('a')
-        a.href = link
+        if (link.code != null) {
+            a.onclick = link.code
+            a.style.cursor = 'pointer'
+        }
+
+        if (link.link != null) {
+            a.href = link.link
+        }
+
         a.appendChild(textNode)
         td.appendChild(a)
     } else {
