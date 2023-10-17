@@ -168,6 +168,17 @@ function startGame(pgn) {
     })
 }
 
+function evaluationToString(evaluation) {
+    var value = 0.0
+    if (evaluation.includes('.')) {
+        value = parseFloat(evaluation).toFixed(2)
+    } else {
+        value = `M${parseInt(evaluation)}`
+    }
+
+    return value.toString()
+}
+
 function setEvaluationBar(value, scale) {
     const orientation = board.orientation() == 'black'
     scale = orientation ? -scale : scale
@@ -194,21 +205,36 @@ function setEngineLines() {
     const bestMoves = move['best_moves']
     clearTable('engine_lines_table')
     const tableObject = document.getElementById('engine_lines_table')
+    const gameMove = review.moves[game.moveIndex]
+    bestChoice = false
     for (const bestMove of bestMoves) {
         var tr = document.createElement('tr')
         createTableRowEntry(tr, bestMove[0])
         if (bestMove[0] == game.moves[game.moveIndex]) {
             tr.style.backgroundColor = darkSquareColor
+            bestChoice = true
         }
 
-        var value = "0.0"
-        if (bestMove[1].includes('.')) {
-            value = parseFloat(bestMove[1]).toFixed(2)
-        } else {
-            value = `#${parseInt(bestMove[1])}`
-        }
-
+        var value = evaluationToString(bestMove[1])
         createTableRowEntry(tr, value)
+        tableObject.appendChild(tr)
+    }
+
+    if (!bestChoice && gameMove.move != null) {
+        var tr = document.createElement('tr')
+        createTableRowEntry(tr, game.moves[game.moveIndex])
+        createTableRowEntry(tr, evaluationToString(gameMove.evaluation))
+        tr.style.backgroundColor = darkSquareColor
+        tableObject.appendChild(tr)
+    }
+
+    const remainingRows = 5 - bestMoves.length + bestChoice
+    for (var i = 0; i < remainingRows; i++) {
+        var tr = document.createElement('tr')
+        var td = document.createElement('td')
+        td.rowspan = remainingRows
+        td.innerHTML = '&nbsp'
+        tr.appendChild(td)
         tableObject.appendChild(tr)
     }
 }
