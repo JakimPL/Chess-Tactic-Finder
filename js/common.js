@@ -1,14 +1,3 @@
-var lightSquareColor = '#f0d9b5'
-var darkSquareColor = '#b58863'
-
-var brilliantMoveColor = '#1baca6'
-var greatMoveColor = '#5c8bb0'
-var bestMoveColor = '#95bb4a'
-var inaccuracyColor = '#e8a825'
-var mistakeColor = '#e87a25'
-var missColor = '#ee6b55'
-var blunderColor = '#ca3431'
-
 function getPath(path) {
     return path.replace(/[\\/]+/g, '/').replace(/^([a-zA-Z]+:|\.\/)/, '')
 }
@@ -67,7 +56,7 @@ function clearTable(table) {
     }
 }
 
-function createTableRowEntry(tr, text, link, id, backgroundColor) {
+function createTableRowEntry(tr, text, link, id, rowClass, backgroundColor) {
     var td = document.createElement('td')
     if (id != null) {
         td.id = id
@@ -87,6 +76,10 @@ function createTableRowEntry(tr, text, link, id, backgroundColor) {
         td.style.backgroundColor = backgroundColor
     }
 
+    if (rowClass != null) {
+        td.classList.add(rowClass)
+    }
+
     tr.appendChild(td)
     return td
 }
@@ -96,11 +89,15 @@ function loadFavorites() {
 }
 
 function colorSquare(square, color) {
+    if (square == null || color == null) {
+        return
+    }
+
     var $square = $(`.square-${square}`)
 
-    var background = color
+    var background = color.lightSquare
     if ($square.hasClass('black-3c85d')) {
-        background = color
+        background = color.darkSquare
     }
 
     $square.css('background', background)

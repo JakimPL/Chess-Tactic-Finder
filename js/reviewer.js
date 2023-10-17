@@ -280,9 +280,9 @@ function setFEN(previousMoveIndex) {
     board.position(fen)
 
     move = review.moves[game.moveIndex]
-    moveColor = getMoveColor(getMoveType(move.classification))
-    highlightMove(game.moveIndex, darkSquareColor)
+    highlightMove(game.moveIndex, highlightColor)
     if (move != null) {
+        moveColor = getMoveColor(getMoveType(move.classification))
         colorSquare(move.move.slice(0, 2), moveColor)
         colorSquare(move.move.slice(2, 4), moveColor)
     }
@@ -320,9 +320,11 @@ function goTo(moveIndex) {
 }
 
 function highlightMove(moveIndex, color) {
-    var move = document.getElementById(`half_move${moveIndex}`)
-    if (move != null) {
-        move.style.backgroundColor = color
+    var moveElement = document.getElementById(`half_move${moveIndex}`)
+    if (moveElement != null) {
+        var $moveElement = $(moveElement)
+        const backgroundColor = color == null ? null : $moveElement.hasClass('row_odd') ? color.darkSquare : color.lightSquare
+        moveElement.style.backgroundColor = backgroundColor
     }
 }
 
@@ -385,16 +387,27 @@ function displayMoves(moves) {
     const black = game.turn == 'b'
     const movesReview = review.moves
     for (var i = 0; i < moves.length; i += 2) {
-        var index = i - black
-        var turn = index % 2 == 0
+        const index = i - black
+        const turn = index % 2 == 0
+        const evenRow = index % 4 == 0
+        const rowClass = `row_${evenRow ? 'even' : 'odd'}`
 
         const moveClassification = movesReview[i].classification
         const nextMoveClassification = (i + 1 < movesReview.length) ? movesReview[i + 1].classification : null
 
-        var moveType = getMoveType(moveClassification)
-        var nextMoveType = getMoveType(nextMoveClassification)
-        var moveDescription = moveClassification.description
-        var nextMoveDescription = nextMoveClassification != null ? nextMoveClassification.description : ''
+        const moveType = getMoveType(moveClassification)
+        const nextMoveType = getMoveType(nextMoveClassification)
+
+        const moveDescription = moveClassification.description
+        const nextMoveDescription = nextMoveClassification != null ? nextMoveClassification.description : ''
+
+        var moveColor = getMoveColor(moveType)
+        moveColor = moveColor == null ? null : moveColor
+        moveColor = moveColor == null ? null : evenRow ? moveColor.lightSquare : moveColor.darkSquare
+
+        var nextMoveColor = getMoveColor(nextMoveType)
+        nextMoveColor = nextMoveColor == null ? null : nextMoveColor
+        nextMoveColor = nextMoveColor == null ? null : evenRow ? nextMoveColor.lightSquare : nextMoveColor.darkSquare
 
         var move = index >= 0 ? getMoveSymbol(moves[index], turn) + moveType : '...'
         var nextMove = getMoveSymbol(moves[index + 1], !turn) + nextMoveType
@@ -404,8 +417,8 @@ function displayMoves(moves) {
 
         var moveId = i / 2 + 1
         createTableRowEntry(tr, `${moveId}.`, null, `move${moveId}`)
-        createTableRowEntry(tr, move, `javascript:goTo(${index})`, `half_move${index}`, getMoveColor(moveType))
-        createTableRowEntry(tr, nextMove, `javascript:goTo(${index + 1})`, `half_move${index + 1}`, getMoveColor(nextMoveType))
+        createTableRowEntry(tr, move, `javascript:goTo(${index})`, `half_move${index}`, rowClass, moveColor)
+        createTableRowEntry(tr, nextMove, `javascript:goTo(${index + 1})`, `half_move${index + 1}`, rowClass, nextMoveColor)
         createTableRowEntry(tr, moveDescription)
         createTableRowEntry(tr, nextMoveDescription)
         tableObject.appendChild(tr)
