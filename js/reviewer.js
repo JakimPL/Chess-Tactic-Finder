@@ -197,7 +197,8 @@ function setEvaluationBar(value, scale) {
 }
 
 function setEngineLines() {
-    const move = review.moves[game.moveIndex]
+    const index = game.moveIndex + 1
+    const move = review.moves[index]
     if (move == null) {
         return
     }
@@ -205,12 +206,11 @@ function setEngineLines() {
     const bestMoves = move['best_moves']
     clearTable('engine_lines_table')
     const tableObject = document.getElementById('engine_lines_table')
-    const gameMove = review.moves[game.moveIndex]
     bestChoice = false
     for (const bestMove of bestMoves) {
         var tr = document.createElement('tr')
         createTableRowEntry(tr, bestMove[0])
-        if (bestMove[0] == game.moves[game.moveIndex]) {
+        if (bestMove[0] == game.moves[index]) {
             tr.style.backgroundColor = darkSquareColor
             bestChoice = true
         }
@@ -220,10 +220,11 @@ function setEngineLines() {
         tableObject.appendChild(tr)
     }
 
-    if (!bestChoice && gameMove.move != null) {
+    const reviewMove = review.moves[index]
+    if (!bestChoice && reviewMove.move != null) {
         var tr = document.createElement('tr')
-        createTableRowEntry(tr, game.moves[game.moveIndex])
-        createTableRowEntry(tr, evaluationToString(gameMove.evaluation))
+        createTableRowEntry(tr, game.moves[index])
+        createTableRowEntry(tr, evaluationToString(reviewMove.evaluation))
         tr.style.backgroundColor = darkSquareColor
         tableObject.appendChild(tr)
     }
