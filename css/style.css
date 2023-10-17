@@ -205,31 +205,24 @@ table#games th:nth-child(7) {
 }
 
 #moves {
-    text-align: center;
-    overflow: hidden;
+    display: flex;
+    align-items: stretch;
 }
 
 #moves_evaluation {
     display: flex;
-    width: 100px;
-    height: auto;
-    position: relative;
-    overflow: hidden;
+    align-items: stretch;
+    justify-content: center;
 }
 
 #evaluation_chart {
-    width: 100%;
-    height: 100%;
-    position: absolute;
     object-fit: cover;
-    top: 0;
-    left 0;
+    width: 100px;
+    max-width: 100%;
 }
 
 #moves_list_table {
-    font-size: 11px;
-    table-layout: fixed;
-    text-decoration: none;
+    flex: 1;
 }
 
 #moves_list_table a:link,  a:hover, a:visited, a:active {
