@@ -24,11 +24,23 @@ STOCKFISH_PARAMETERS = configuration['stockfish']['parameters']
 STOCKFISH_TOP_MOVES = configuration['stockfish']['top_moves']
 
 BEST_MOVE_PAWN_TOLERANCE = configuration['review']['best_move_centipawn_tolerance'] / 100
+SIGNIFICANT_DIFFERENCE_THRESHOLD = configuration['review']['significant_difference_threshold']
 GOOD_MOVE_THRESHOLD = configuration['review']['good_move_threshold']
 INACCURACY_THRESHOLD = configuration['review']['inaccuracy_threshold']
 MISTAKE_THRESHOLD = configuration['review']['mistake_threshold']
 BLUNDER_THRESHOLD = configuration['review']['blunder_threshold']
+
+
+BLUNDER_PAWN_THRESHOLD = configuration['review']['blunder_centipawn_threshold'] / 100
+MISS_PAWN_THRESHOLD = configuration['review']['miss_centipawn_threshold'] / 100
+MISTAKE_PAWN_THRESHOLD = configuration['review']['mistake_centipawn_threshold'] / 100
+MISSED_MATE_BLUNDER_PAWN_THRESHOLD = configuration['review']['missed_mate_blunder_centipawn_threshold'] / 100
+MATE_STEPPED_BLUNDER_PAWN_THRESHOLD = configuration['review']['mate_stepped_blunder_centipawn_threshold'] / 100
+MATE_STEPPED_MISTAKE_PAWN_THRESHOLD = configuration['review']['mate_stepped_mistake_centipawn_threshold'] / 100
+
 MATE_DISTANCE_THRESHOLD = configuration['review']['mate_distance_threshold']
+ONE_WAY_TO_MATE_DISTANCE_MIN = configuration['review']['one_way_to_mate_distance_min']
+ONE_WAY_TO_MATE_DISTANCE_MAX = configuration['review']['one_way_to_mate_distance_max']
 
 FOUND_THE_MATE = 'Found the mate.'
 MISSED_A_MATE = 'Missed a mate.'
@@ -113,7 +125,7 @@ class Reviewer(Processor):
                 if best_evaluation.value > 0:
                     if evaluation.mate:
                         if evaluation.value >= 0:
-                            only_one_way_to_mate = 4 <= best_evaluation.value >= 10 and not (evaluations[1].mate and evaluations[1].value > 0)
+                            only_one_way_to_mate = ONE_WAY_TO_MATE_DISTANCE_MIN <= best_evaluation.value <= ONE_WAY_TO_MATE_DISTANCE_MAX and not (evaluations[1].mate and evaluations[1].value > 0)
                             if evaluation.value < best_evaluation.value:
                                 if only_one_way_to_mate:
                                     return MoveClassification('great', True, FOUND_THE_MATE)
@@ -128,10 +140,10 @@ class Reviewer(Processor):
                         else:
                             return MoveClassification('blunder', True, STEPPED_INTO_A_MATE)
                     else:
-                        if evaluation.value > 3.0:
+                        if evaluation.value > MISSED_MATE_BLUNDER_PAWN_THRESHOLD:
                             return MoveClassification('miss', True, MISSED_A_MATE)
                         else:
-                            return MoveClassification('blunder', True, 'Missed a mate.')
+                            return MoveClassification('blunder', True, MISSED_A_MATE)
                 else:
                     if evaluation.value < best_evaluation.value - MATE_DISTANCE_THRESHOLD:
                         return MoveClassification('mistake', True)
@@ -141,7 +153,7 @@ class Reviewer(Processor):
                         return MoveClassification('best', True)
             else:
                 second_best_win_difference = get_win_difference(evaluations[1], best_evaluation)
-                significant_difference = second_best_win_difference > 0.1
+                significant_difference = second_best_win_difference > SIGNIFICANT_DIFFERENCE_THRESHOLD
                 win_difference = get_win_difference(evaluation, best_evaluation)
                 if move in best_moves:
                     if significant_difference:
@@ -153,19 +165,19 @@ class Reviewer(Processor):
                     if evaluation.value >= 0:
                         raise ValueError('invalid evaluation')
                     else:
-                        if best_evaluation.value > -3.0:
+                        if best_evaluation.value > MATE_STEPPED_BLUNDER_PAWN_THRESHOLD:
                             return MoveClassification('blunder', True, STEPPED_INTO_A_MATE)
-                        elif best_evaluation.value > -15.0:
+                        elif best_evaluation.value > MATE_STEPPED_MISTAKE_PAWN_THRESHOLD:
                             return MoveClassification('mistake', True, STEPPED_INTO_A_MATE)
                         else:
-                            return MoveClassification('great', True, STEPPED_INTO_A_MATE)
+                            return MoveClassification('excellent', True, STEPPED_INTO_A_MATE)
                 else:
-                    if win_difference > BLUNDER_THRESHOLD and evaluation.value < 7.5:
+                    if win_difference > BLUNDER_THRESHOLD and evaluation.value < BLUNDER_PAWN_THRESHOLD:
                         return MoveClassification('blunder', False)
-                    elif significant_difference and abs(evaluation.value) < 5.0:
+                    elif significant_difference and abs(evaluation.value) < MISS_PAWN_THRESHOLD:
                         move_type = 'miss' if history and history[-1].move_classification.type in ['inaccuracy', 'mistake', 'blunder'] else 'mistake'
                         return MoveClassification(move_type, False, MISSED_THE_ONLY_ONE_GOOD_MOVE)
-                    elif win_difference > MISTAKE_THRESHOLD and evaluation.value < 5.0:
+                    elif win_difference > MISTAKE_THRESHOLD and evaluation.value < MISTAKE_PAWN_THRESHOLD:
                         return MoveClassification('mistake', False)
                     elif win_difference > INACCURACY_THRESHOLD:
                         return MoveClassification('inaccuracy', False)
