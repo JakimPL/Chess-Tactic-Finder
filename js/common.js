@@ -94,3 +94,18 @@ function createTableRowEntry(tr, text, link, id, backgroundColor) {
 function loadFavorites() {
     favorites = storage.get('favorites')
 }
+
+function colorSquare(square, color) {
+    var $square = $(`.square-${square}`)
+
+    var background = color
+    if ($square.hasClass('black-3c85d')) {
+        background = color
+    }
+
+    $square.css('background', background)
+}
+
+function clearSquaresColors () {
+    $('.square-55d63').css('background', '')
+}

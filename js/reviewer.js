@@ -268,11 +268,25 @@ function setEvaluation() {
 
 function setFEN(previousMoveIndex) {
     var fen = game.getFEN()
-    const moveType = review.moves[previousMoveIndex] != null ? getMoveType(review.moves[previousMoveIndex].classification) : null
-    highlightMove(previousMoveIndex, getMoveColor(moveType))
+
+    var move = review.moves[previousMoveIndex]
+    var moveType = move != null ? getMoveType(move.classification) : null
+    var moveColor = getMoveColor(moveType)
+
+    clearSquaresColors()
+    highlightMove(previousMoveIndex, moveColor)
+
     chess.load(fen)
     board.position(fen)
+
+    move = review.moves[game.moveIndex]
+    moveColor = getMoveColor(getMoveType(move.classification))
     highlightMove(game.moveIndex, darkSquareColor)
+    if (move != null) {
+        colorSquare(move.move.slice(0, 2), moveColor)
+        colorSquare(move.move.slice(2, 4), moveColor)
+    }
+
     setEvaluation()
     setEngineLines()
 }
@@ -282,13 +296,7 @@ function forward() {
         var previousMoveIndex = game.moveIndex
         var nextMove = game.forward()
         if (nextMove != null) {
-            const moveType = review.moves[previousMoveIndex] != null ? getMoveType(review.moves[previousMoveIndex].classification) : null
-            highlightMove(previousMoveIndex, getMoveColor(moveType))
-            chess.move(nextMove)
-            board.position(chess.fen())
-            highlightMove(game.moveIndex, darkSquareColor)
-            setEvaluation()
-            setEngineLines()
+            setFEN(previousMoveIndex)
         }
     }
 }
