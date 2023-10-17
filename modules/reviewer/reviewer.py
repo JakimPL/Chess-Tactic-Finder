@@ -30,6 +30,12 @@ MISTAKE_THRESHOLD = configuration['review']['mistake_threshold']
 BLUNDER_THRESHOLD = configuration['review']['blunder_threshold']
 MATE_DISTANCE_THRESHOLD = configuration['review']['mate_distance_threshold']
 
+FOUND_THE_MATE = 'Found the mate.'
+MISSED_A_MATE = 'Missed a mate.'
+DELAYED_A_MATE = 'Delayed a mate.'
+STEPPED_INTO_A_MATE = 'Stepped into a mate.'
+MISSED_THE_ONLY_ONE_GOOD_MOVE = 'Missed the only one good move.'
+
 
 class Reviewer(Processor):
     def review_game(
@@ -64,7 +70,7 @@ class Reviewer(Processor):
             evaluation = Evaluation.from_evaluation(stockfish.get_evaluation())
 
             move_classification = self.review_move(
-                board.turn, move, evaluation, best_moves, evaluations
+                board.turn, move, evaluation, best_moves, evaluations, review.moves
             )
 
             best_san_moves = [uci_to_san(board, best_move) for best_move in best_moves]
@@ -97,7 +103,8 @@ class Reviewer(Processor):
             evaluation: Evaluation,
             evaluations: list[Evaluation],
             best_evaluation: Evaluation,
-            best_moves: list[str]
+            best_moves: list[str],
+            history: list[ReviewedMove] = None
     ) -> MoveClassification:
         if len(evaluations) == 1:
             return MoveClassification('forced', best_evaluation.mate, 'Forced.')
@@ -106,19 +113,25 @@ class Reviewer(Processor):
                 if best_evaluation.value > 0:
                     if evaluation.mate:
                         if evaluation.value >= 0:
+                            only_one_way_to_mate = 4 <= best_evaluation.value >= 10 and not (evaluations[1].mate and evaluations[1].value > 0)
                             if evaluation.value < best_evaluation.value:
-                                return MoveClassification('best', True)
+                                if only_one_way_to_mate:
+                                    return MoveClassification('great', True, FOUND_THE_MATE)
+                                else:
+                                    return MoveClassification('best', True)
                             elif evaluation.value > best_evaluation.value + MATE_DISTANCE_THRESHOLD:
-                                return MoveClassification('mistake', True, 'Delayed a mate.')
+                                return MoveClassification('mistake', True, DELAYED_A_MATE)
                             elif evaluation.value >= best_evaluation.value:
-                                return MoveClassification('inaccuracy', True, 'Delayed a mate.')
+                                return MoveClassification('inaccuracy', True, DELAYED_A_MATE)
+                            else:
+                                raise ValueError('invalid evaluation')
                         else:
-                            return MoveClassification('blunder', True, 'Stepped into a mate.')
+                            return MoveClassification('blunder', True, STEPPED_INTO_A_MATE)
                     else:
                         if evaluation.value > 3.0:
-                            return MoveClassification('miss', True, 'A missed mate.')
+                            return MoveClassification('miss', True, MISSED_A_MATE)
                         else:
-                            return MoveClassification('blunder', True, 'A missed mate.')
+                            return MoveClassification('blunder', True, 'Missed a mate.')
                 else:
                     if evaluation.value < best_evaluation.value - MATE_DISTANCE_THRESHOLD:
                         return MoveClassification('mistake', True)
@@ -140,16 +153,18 @@ class Reviewer(Processor):
                     if evaluation.value >= 0:
                         raise ValueError('invalid evaluation')
                     else:
-                        if best_evaluation.value > -5:
-                            return MoveClassification('blunder', True, 'Stepped into a mate.')
+                        if best_evaluation.value > -3.0:
+                            return MoveClassification('blunder', True, STEPPED_INTO_A_MATE)
+                        elif best_evaluation.value > -15.0:
+                            return MoveClassification('mistake', True, STEPPED_INTO_A_MATE)
                         else:
-                            return MoveClassification('mistake', True, 'Stepped into a mate.')
+                            return MoveClassification('great', True, STEPPED_INTO_A_MATE)
                 else:
                     if win_difference > BLUNDER_THRESHOLD and evaluation.value < 7.5:
                         return MoveClassification('blunder', False)
                     elif significant_difference and abs(evaluation.value) < 5.0:
-                        # TODO: check if the previous move was an inaccuracy/mistake/blunder
-                        return MoveClassification('miss', False, 'Missed only one good move.')
+                        move_type = 'miss' if history and history[-1].move_classification.type in ['inaccuracy', 'mistake', 'blunder'] else 'mistake'
+                        return MoveClassification(move_type, False, MISSED_THE_ONLY_ONE_GOOD_MOVE)
                     elif win_difference > MISTAKE_THRESHOLD and evaluation.value < 5.0:
                         return MoveClassification('mistake', False)
                     elif win_difference > INACCURACY_THRESHOLD:
@@ -164,7 +179,8 @@ class Reviewer(Processor):
             turn: bool,
             move, evaluation: Evaluation,
             best_moves: list[str],
-            evaluations: list[Evaluation]
+            evaluations: list[Evaluation],
+            history: list[ReviewedMove] = None
     ) -> MoveClassification:
         evaluation = -evaluation if not turn else evaluation
         evaluations = [-evaluation if not turn else evaluation for evaluation in evaluations]
@@ -181,7 +197,10 @@ class Reviewer(Processor):
         if not evaluation.mate and not best_evaluation.mate and evaluation.value >= best_evaluation.value:
             best_choices.append(move)
 
-        move_classification = Reviewer.classify_move(move, evaluation, evaluations, best_evaluation, best_choices)
+        move_classification = Reviewer.classify_move(
+            move, evaluation, evaluations, best_evaluation, best_choices, history
+        )
+
         assert isinstance(move_classification, MoveClassification), 'expected a move classification'
 
         return move_classification
