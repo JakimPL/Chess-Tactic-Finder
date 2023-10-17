@@ -3,6 +3,7 @@ board = Chessboard('game_board', 'start')
 const $panel = $('#panel')
 
 var emptyImage = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='
+var image = emptyImage
 
 var pgn = null
 var fen = null
@@ -64,6 +65,14 @@ $('#favorite').on('click', function() {
     }
 })
 
+function updateNumberOfReviews(reviews) {
+    if (reviews != null) {
+        var numberOfReviews = Object.keys(reviews).length
+        var numberOfReviewsText = `${numberOfReviews} reviews in total.`
+        $('#number_of_reviews').html(numberOfReviewsText)
+    }
+}
+
 function loadReview(path, reviewId) {
     document.getElementById('evaluation_chart').src = emptyImage
     setEvaluationBar('0.0', 0)
@@ -117,6 +126,7 @@ function loadReviews() {
         }
 
         createReviewsTable(reviews)
+        updateNumberOfReviews(reviews)
     })
 }
 
@@ -176,7 +186,12 @@ function setEvaluationBar(value, scale) {
 }
 
 function setEngineLines() {
-    const bestMoves = review.moves[game.moveIndex]['best_moves']
+    const move = review.moves[game.moveIndex]
+    if (move == null) {
+        return
+    }
+
+    const bestMoves = move['best_moves']
     clearTable('engine_lines_table')
     const tableObject = document.getElementById('engine_lines_table')
     for (const bestMove of bestMoves) {
@@ -355,7 +370,6 @@ function displayMoves(moves) {
         createTableRowEntry(tr, nextMove, `javascript:goTo(${index + 1})`, `half_move${index + 1}`, getMoveColor(nextMoveType))
         createTableRowEntry(tr, moveDescription)
         createTableRowEntry(tr, nextMoveDescription)
-
         tableObject.appendChild(tr)
     }
 }
