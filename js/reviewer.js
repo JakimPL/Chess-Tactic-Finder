@@ -349,9 +349,10 @@ function getMoveType(moveClassification) {
     switch (moveType) {
         case 'brilliant': return '!!';
         case 'great': return '!';
+        case 'best': return '★';
         case 'inaccuracy': return '?!';
         case 'mistake': return '?';
-        case 'miss': return '?';
+        case 'miss': return '×';
         case 'blunder': return '??';
         default: return '';
     }
@@ -359,11 +360,13 @@ function getMoveType(moveClassification) {
 
 function getMoveColor(moveType) {
     switch (moveType) {
-        case '!!': return '#1baca6';
-        case '!': return '#5c8bb0';
-        case '?!': return '#f0c15c';
-        case '?': return '#e58f2a';
-        case '??': return '#ca3431';
+        case '!!': return brilliantMoveColor;
+        case '!': return greatMoveColor;
+        case '★': return bestMoveColor;
+        case '?!': return inaccuracyColor;
+        case '?': return mistakeColor;
+        case '×': return missColor;
+        case '??': return blunderColor;
         default: return null;
     }
 }

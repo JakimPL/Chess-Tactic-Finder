@@ -1,6 +1,14 @@
 var lightSquareColor = '#f0d9b5'
 var darkSquareColor = '#b58863'
 
+var brilliantMoveColor = '#1baca6'
+var greatMoveColor = '#5c8bb0'
+var bestMoveColor = '#95bb4a'
+var inaccuracyColor = '#e8a825'
+var mistakeColor = '#e87a25'
+var missColor = '#ee6b55'
+var blunderColor = '#ca3431'
+
 function getPath(path) {
     return path.replace(/[\\/]+/g, '/').replace(/^([a-zA-Z]+:|\.\/)/, '')
 }
