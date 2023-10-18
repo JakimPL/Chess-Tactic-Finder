@@ -353,10 +353,19 @@ function goTo(moveIndex) {
 
 function highlightMove(moveIndex, color) {
     var moveElement = document.getElementById(`half_move${moveIndex}`)
+    var moveTypeElement = document.getElementById(`half_move${moveIndex}c`)
     if (moveElement != null) {
         var $moveElement = $(moveElement)
         const backgroundColor = color == null ? null : $moveElement.hasClass('row_odd') ? color.darkSquare : color.lightSquare
         moveElement.style.backgroundColor = backgroundColor
+        moveTypeElement.style.backgroundColor = backgroundColor
+            if (backgroundColor == darkSquareColor) {
+            moveElement.style.color = 'white'
+            moveTypeElement.style.color = 'white'
+        } else {
+            moveElement.style.color = null
+            moveTypeElement.style.color = null
+        }
     }
 }
 
@@ -444,8 +453,8 @@ function displayMoves(moves) {
         nextMoveColor = nextMoveColor == null ? null : nextMoveColor
         nextMoveColor = nextMoveColor == null ? null : evenRow ? nextMoveColor.lightSquare : nextMoveColor.darkSquare
 
-        var move = index >= 0 ? getMoveSymbol(moves[index], turn) + moveType : '...'
-        var nextMove = getMoveSymbol(moves[index + 1], !turn) + nextMoveType
+        var move = index >= 0 ? getMoveSymbol(moves[index], turn) : '...'
+        var nextMove = getMoveSymbol(moves[index + 1], !turn)
 
         var tr = document.createElement('tr')
         tr.id = `row${i}`
@@ -456,7 +465,9 @@ function displayMoves(moves) {
         var moveId = i / 2 + 1
         createTableRowEntry(tr, `${moveId}.`, null, `move${moveId}`)
         createTableRowEntry(tr, move, moveLink, halfMoveIndex, rowClass, moveColor)
+        createTableRowEntry(tr, moveType, moveLink, `${halfMoveIndex}c`, rowClass, moveColor)
         createTableRowEntry(tr, nextMove, nextMoveLink, halfNextMoveIndex, rowClass, nextMoveColor)
+        createTableRowEntry(tr, nextMoveType, nextMoveLink, `${halfNextMoveIndex}c`, rowClass, nextMoveColor)
         createTableRowEntry(tr, moveDescription)
         createTableRowEntry(tr, nextMoveDescription)
         tableObject.appendChild(tr)
