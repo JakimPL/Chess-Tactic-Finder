@@ -162,7 +162,10 @@ class Reviewer(Processor):
                         # TODO: check if this is not trivial recapture/promotion or escaping an attacked piece
                         return MoveClassification('great', False, accuracy)
                     else:
-                        return MoveClassification('best', False, accuracy)
+                        if evaluation.value == 0.0 and all([evaluation.value == 0.0 for evaluation in evaluations]):
+                            return MoveClassification('excellent', False, accuracy)
+                        else:
+                            return MoveClassification('best', False, accuracy)
                 elif evaluation.mate:
                     if evaluation.value >= 0:
                         raise ValueError('invalid evaluation')
