@@ -376,18 +376,17 @@ function getMoveSymbol(move, turn) {
 
     var piece = move.charAt(0)
     var symbol = move
+    var figurine = true
     switch (piece) {
         case 'K': symbol = turn ? '♔' : '♚'; break
         case 'Q': symbol = turn ? '♕' : '♛'; break
         case 'R': symbol = turn ? '♖' : '♜'; break
         case 'B': symbol = turn ? '♗' : '♝'; break
         case 'N': symbol = turn ? '♘' : '♞'; break
+        default: symbol = '⠀'; figurine = false; break
     }
 
-    if (move != symbol) {
-        symbol += move.slice(1)
-    }
-
+    symbol += move.slice(figurine)
     return symbol
 }
 
