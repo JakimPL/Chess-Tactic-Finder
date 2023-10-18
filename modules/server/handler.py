@@ -77,7 +77,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         parsed_url = urllib.parse.urlparse(self.path)
         if parsed_url.path == '/refresh':
             parameters = dict(urllib.parse.parse_qsl(parsed_url.query))
-            gather_games = parameters.get('gather_games', 'false') == 'true'
+            gather_games = parameters.get('gather', 'false') == 'true'
             refresh(self.log_message, gather_games=gather_games)
             text = 'Refreshed.'
             self.log_message(text)
