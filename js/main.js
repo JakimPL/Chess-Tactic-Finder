@@ -274,7 +274,7 @@ function save(hash, value) {
 
 function refresh(gather) {
     if (gather) {
-        clearTable('games_list')
+        clearTable('games_list_table', 10)
     }
 
     $.ajax({

@@ -509,7 +509,7 @@ function createReviewsTable(reviews) {
 
 function refresh(gather) {
     if (gather) {
-        clearTable('reviews_list_table')
+        clearTable('reviews_list_table', 8)
     }
 
     $.ajax({

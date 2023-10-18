@@ -49,10 +49,19 @@ function setPanel(element, text) {
     }
 }
 
-function clearTable(table) {
+function clearTable(table, loading) {
     const node = document.getElementById(table)
     while (node.firstChild) {
         node.removeChild(node.lastChild)
+    }
+
+    if (loading != null) {
+        var tr = document.createElement('tr')
+        var td = document.createElement('td')
+        td.colSpan = loading
+        td.innerHTML = 'loading...'
+        tr.appendChild(td)
+        node.appendChild(tr)
     }
 }
 
