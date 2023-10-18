@@ -273,6 +273,10 @@ function save(hash, value) {
 }
 
 function refresh(gather) {
+    if (gather) {
+        clearTable('games_list')
+    }
+
     $.ajax({
         url: gather == true ? 'refresh?gather=true' : 'refresh',
         type: 'GET',

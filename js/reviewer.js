@@ -143,7 +143,8 @@ function loadReviews() {
 }
 
 function loadChart(path) {
-$.ajax({
+$.ajax(
+    {
         url: 'get_chart',
         type: 'POST',
         data: path,
@@ -497,6 +498,10 @@ function createReviewsTable(reviews) {
 }
 
 function refresh(gather) {
+    if (gather) {
+        clearTable('reviews_list_table')
+    }
+
     $.ajax({
         url: gather == true ? 'refresh?gather=true' : 'refresh',
         type: 'GET',
