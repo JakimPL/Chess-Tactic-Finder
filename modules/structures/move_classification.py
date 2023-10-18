@@ -5,6 +5,7 @@ from dataclasses import dataclass
 class MoveClassification:
     type: str
     mate: bool
+    accuracy: float
     description: str = ''
 
     @staticmethod

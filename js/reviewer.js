@@ -18,6 +18,7 @@ var localConfiguration = {}
 var reviews = {}
 var hashes = {}
 var favorites = {}
+var accuracies = {}
 
 $('#backward').on('click', function() {
     backward()
@@ -123,6 +124,7 @@ function loadReviews() {
         for (var i = 0; i < reviews.length; i++) {
             var review = reviews[i]
             hashes[review.hash] = i
+            accuracies[review.hash] = calculateAccuracy(review)
         }
 
         createReviewsTable(reviews)
@@ -144,6 +146,25 @@ $.ajax({
             console.error('Unable to load a chart.')
         }
     })
+}
+
+function calculateAccuracy(review) {
+    var whiteMoves = 0
+    var blackMoves = 0
+    var whiteAccuracy = 0.0
+    var blackAccuracy = 0.0
+    for (const move of review.moves) {
+        var accuracy = parseFloat(move.classification.accuracy)
+        if (move.turn) {
+            whiteMoves++
+            whiteAccuracy += accuracy
+        } else {
+            blackMoves++
+            blackAccuracy += accuracy
+        }
+    }
+
+    return [whiteAccuracy / whiteMoves, blackAccuracy / blackMoves]
 }
 
 function getGameInfo(review) {
@@ -448,14 +469,17 @@ function createReviewsTable(reviews) {
             tr.style.backgroundColor = darkSquareColor
         }
 
+        var whiteAccuracy = (100 * accuracies[review.hash][0]).toFixed(2)
+        var blackAccuracy = (100 * accuracies[review.hash][1]).toFixed(2)
+
         createTableRowEntry(tr, playSymbol, link, reviewId)
         createTableRowEntry(tr, review.white)
         createTableRowEntry(tr, review.black)
         createTableRowEntry(tr, review.date)
         createTableRowEntry(tr, review.actualResult)
         createTableRowEntry(tr, Math.ceil((!review.moves[0].turn + review.moves.length) / 2))
-        createTableRowEntry(tr, 'N/A')
-        createTableRowEntry(tr, 'N/A')
+        createTableRowEntry(tr, `${whiteAccuracy}%`)
+        createTableRowEntry(tr, `${blackAccuracy}%`)
         tableObject.appendChild(tr)
     }
 

@@ -7,7 +7,7 @@ from modules.configuration import load_configuration
 from modules.converter import uci_to_san
 from modules.json import json_save
 from modules.processor import Processor
-from modules.reviewer.auxiliary import get_win_difference
+from modules.reviewer.auxiliary import get_win_difference, get_accuracy
 from modules.structures.evaluation import Evaluation
 from modules.structures.move_classification import MoveClassification
 from modules.structures.review import Review
@@ -112,14 +112,17 @@ class Reviewer(Processor):
     @staticmethod
     def classify_move(
             move: str,
+            turn: bool,
             evaluation: Evaluation,
             evaluations: list[Evaluation],
             best_evaluation: Evaluation,
             best_moves: list[str],
             history: list[ReviewedMove] = None
     ) -> MoveClassification:
+        win_difference = get_win_difference(evaluation, best_evaluation, turn)
+        accuracy = get_accuracy(win_difference)
         if len(evaluations) == 1:
-            return MoveClassification('forced', best_evaluation.mate, 'Forced.')
+            return MoveClassification('forced', best_evaluation.mate, accuracy, 'Forced.')
         else:
             if best_evaluation.mate:
                 if best_evaluation.value > 0:
@@ -128,63 +131,62 @@ class Reviewer(Processor):
                             only_one_way_to_mate = ONE_WAY_TO_MATE_DISTANCE_MIN <= best_evaluation.value <= ONE_WAY_TO_MATE_DISTANCE_MAX and not (evaluations[1].mate and evaluations[1].value > 0)
                             if evaluation.value < best_evaluation.value:
                                 if only_one_way_to_mate:
-                                    return MoveClassification('great', True, FOUND_THE_MATE)
+                                    return MoveClassification('great', True, accuracy, FOUND_THE_MATE)
                                 else:
-                                    return MoveClassification('best', True)
+                                    return MoveClassification('best', True, accuracy)
                             elif evaluation.value > best_evaluation.value + MATE_DISTANCE_THRESHOLD:
-                                return MoveClassification('mistake', True, DELAYED_A_MATE)
+                                return MoveClassification('mistake', True, accuracy, DELAYED_A_MATE)
                             elif evaluation.value >= best_evaluation.value:
-                                return MoveClassification('inaccuracy', True, DELAYED_A_MATE)
+                                return MoveClassification('inaccuracy', True, accuracy, DELAYED_A_MATE)
                             else:
                                 raise ValueError('invalid evaluation')
                         else:
-                            return MoveClassification('blunder', True, STEPPED_INTO_A_MATE)
+                            return MoveClassification('blunder', True, accuracy, STEPPED_INTO_A_MATE)
                     else:
                         if evaluation.value > MISSED_MATE_BLUNDER_PAWN_THRESHOLD:
-                            return MoveClassification('miss', True, MISSED_A_MATE)
+                            return MoveClassification('miss', True, accuracy, MISSED_A_MATE)
                         else:
-                            return MoveClassification('blunder', True, MISSED_A_MATE)
+                            return MoveClassification('blunder', True, accuracy, MISSED_A_MATE)
                 else:
                     if evaluation.value < best_evaluation.value - MATE_DISTANCE_THRESHOLD:
-                        return MoveClassification('mistake', True)
+                        return MoveClassification('mistake', True, accuracy)
                     elif evaluation.value < best_evaluation.value:
-                        return MoveClassification('inaccuracy', True)
+                        return MoveClassification('inaccuracy', True, accuracy)
                     elif evaluation.value >= best_evaluation.value:
-                        return MoveClassification('best', True)
+                        return MoveClassification('best', True, accuracy)
             else:
-                second_best_win_difference = get_win_difference(evaluations[1], best_evaluation)
+                second_best_win_difference = get_win_difference(evaluations[1], best_evaluation, turn)
                 significant_difference = second_best_win_difference > SIGNIFICANT_DIFFERENCE_THRESHOLD
-                win_difference = get_win_difference(evaluation, best_evaluation)
                 if move in best_moves:
                     if significant_difference:
                         # TODO: check if this is not trivial recapture/promotion or escaping an attacked piece
-                        return MoveClassification('great', False)
+                        return MoveClassification('great', False, accuracy)
                     else:
-                        return MoveClassification('best', False)
+                        return MoveClassification('best', False, accuracy)
                 elif evaluation.mate:
                     if evaluation.value >= 0:
                         raise ValueError('invalid evaluation')
                     else:
                         if best_evaluation.value > MATE_STEPPED_BLUNDER_PAWN_THRESHOLD:
-                            return MoveClassification('blunder', True, STEPPED_INTO_A_MATE)
+                            return MoveClassification('blunder', True, accuracy, STEPPED_INTO_A_MATE)
                         elif best_evaluation.value > MATE_STEPPED_MISTAKE_PAWN_THRESHOLD:
-                            return MoveClassification('mistake', True, STEPPED_INTO_A_MATE)
+                            return MoveClassification('mistake', True, accuracy, STEPPED_INTO_A_MATE)
                         else:
-                            return MoveClassification('excellent', True, STEPPED_INTO_A_MATE)
+                            return MoveClassification('excellent', True, accuracy, STEPPED_INTO_A_MATE)
                 else:
                     if win_difference > BLUNDER_THRESHOLD and evaluation.value < BLUNDER_PAWN_THRESHOLD:
-                        return MoveClassification('blunder', False)
+                        return MoveClassification('blunder', False, accuracy)
                     elif significant_difference and abs(evaluation.value) < MISS_PAWN_THRESHOLD:
                         move_type = 'miss' if history and history[-1].move_classification.type in ['inaccuracy', 'mistake', 'blunder'] else 'mistake'
-                        return MoveClassification(move_type, False, MISSED_THE_ONLY_ONE_GOOD_MOVE)
+                        return MoveClassification(move_type, False, accuracy, MISSED_THE_ONLY_ONE_GOOD_MOVE)
                     elif win_difference > MISTAKE_THRESHOLD and evaluation.value < MISTAKE_PAWN_THRESHOLD:
-                        return MoveClassification('mistake', False)
+                        return MoveClassification('mistake', False, accuracy)
                     elif win_difference > INACCURACY_THRESHOLD:
-                        return MoveClassification('inaccuracy', False)
+                        return MoveClassification('inaccuracy', False, accuracy)
                     elif win_difference > GOOD_MOVE_THRESHOLD:
-                        return MoveClassification('good', False)
+                        return MoveClassification('good', False, accuracy)
                     else:
-                        return MoveClassification('excellent', False)
+                        return MoveClassification('excellent', False, accuracy)
 
     @staticmethod
     def review_move(
@@ -210,7 +212,7 @@ class Reviewer(Processor):
             best_choices.append(move)
 
         move_classification = Reviewer.classify_move(
-            move, evaluation, evaluations, best_evaluation, best_choices, history
+            move, turn, evaluation, evaluations, best_evaluation, best_choices, history
         )
 
         assert isinstance(move_classification, MoveClassification), 'expected a move classification'
