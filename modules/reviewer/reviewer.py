@@ -47,7 +47,8 @@ MISSED_A_MATE = 'Missed a mate.'
 DELAYED_A_MATE = 'Delayed a mate.'
 STEPPED_INTO_A_MATE = 'Stepped into a mate.'
 MISSED_THE_ONLY_ONE_GOOD_MOVE = 'Missed the only one good move.'
-
+ALLOWED_TO_DRAW = 'Allowed to draw.'
+LOST_WINNING_POSITION = 'Lost winning position.'
 
 class Reviewer(Processor):
     def review_game(
@@ -178,7 +179,13 @@ class Reviewer(Processor):
                             return MoveClassification('excellent', True, accuracy, STEPPED_INTO_A_MATE)
                 else:
                     if win_difference > BLUNDER_THRESHOLD and evaluation.value < BLUNDER_PAWN_THRESHOLD:
-                        return MoveClassification('blunder', False, accuracy)
+                        description = None
+                        if best_evaluation.value > 5.0:
+                            if evaluation.value == 0.0:
+                                description = ALLOWED_TO_DRAW
+                            else:
+                                description = LOST_WINNING_POSITION
+                        return MoveClassification('blunder', False, accuracy, description)
                     elif significant_difference and abs(evaluation.value) < MISS_PAWN_THRESHOLD:
                         move_type = 'miss' if history and history[-1].move_classification.type in ['inaccuracy', 'mistake', 'blunder'] else 'mistake'
                         return MoveClassification(move_type, False, accuracy, MISSED_THE_ONLY_ONE_GOOD_MOVE)
