@@ -179,11 +179,11 @@ class Reviewer(Processor):
                             return MoveClassification('excellent', True, accuracy, STEPPED_INTO_A_MATE)
                 else:
                     if win_difference > BLUNDER_THRESHOLD and evaluation.value < BLUNDER_PAWN_THRESHOLD:
-                        description = None
+                        description = ''
                         if best_evaluation.value > 5.0:
                             if evaluation.value == 0.0:
                                 description = ALLOWED_TO_DRAW
-                            else:
+                            elif evaluation.value < 0.0:
                                 description = LOST_WINNING_POSITION
                         return MoveClassification('blunder', False, accuracy, description)
                     elif significant_difference and abs(evaluation.value) < MISS_PAWN_THRESHOLD:
