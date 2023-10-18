@@ -260,6 +260,19 @@ table#moves_list_table td:nth-child(5) {
     width: 100px;
 }
 
+#accuracy {
+    visibility: hidden;
+    font-weight: bold;
+}
+
+#white_accuracy {
+    background-color: var(--light-square);
+}
+
+#black_accuracy {
+    background-color: var(--dark-square);
+}
+
 @media screen and (orientation: portrait) {
     .column {
         width: 100%;

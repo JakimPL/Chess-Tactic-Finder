@@ -74,6 +74,14 @@ function updateNumberOfReviews(reviews) {
     }
 }
 
+function updateAccuracyInfo() {
+    var whiteAccuracy = (100 * accuracies[currentReviewId][0]).toFixed(2)
+    var blackAccuracy = (100 * accuracies[currentReviewId][1]).toFixed(2)
+    $('#white_accuracy_value').html(`${whiteAccuracy}%`)
+    $('#black_accuracy_value').html(`${blackAccuracy}%`)
+    $('#accuracy').css('visibility', 'visible')
+}
+
 function loadReview(path, reviewId) {
     document.getElementById('evaluation_chart').src = emptyImage
     setEvaluationBar('0.0', 0)
@@ -95,6 +103,8 @@ function loadReview(path, reviewId) {
         setLinks(pgn, fen)
         setButton('favorite', favorites[reviewId] == true)
         displayMoves(game.moves, review)
+
+        updateAccuracyInfo()
 
         clearTable('engine_lines_table')
         loadChart(path)
