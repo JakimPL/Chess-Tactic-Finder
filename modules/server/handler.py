@@ -38,7 +38,7 @@ DEFAULT_ERROR_MESSAGE = """
         <p>Message: %(message)s.</p>
         <p>Error code explanation: %(code)s - %(explain)s.</p>
         <footer>
-            <a href="https://github.com/JakimPL/Chess-Tactic-Finder/">Tactic Finder by Jakim (2023).</a>
+            <a href="https://github.com/JakimPL/Chess-Tactic-Finder/">Tactic Finder by Jakim (2025).</a>
         </footer>
     </body>
 </html>

@@ -86,6 +86,11 @@ button:active {
     width: min(100%, 360px);
 }
 
+#endgame_board {
+    margin: 0 auto;
+    width: min(100%, 640px);
+}
+
 #games_panel {
     height: 100%;
     overflow: auto;

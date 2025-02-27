@@ -154,7 +154,7 @@ class Reviewer(Processor):
                     elif evaluation.value < best_evaluation.value:
                         return MoveClassification('inaccuracy', True, accuracy)
                     elif evaluation.value >= best_evaluation.value:
-                        return MoveClassification('best', True, accuracy)
+                        return MoveClassification('excellent', True, accuracy)
             else:
                 second_best_win_difference = get_win_difference(evaluations[1], best_evaluation, turn)
                 significant_difference = second_best_win_difference > SIGNIFICANT_DIFFERENCE_THRESHOLD
