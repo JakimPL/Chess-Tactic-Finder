@@ -9,6 +9,7 @@ import urllib.parse
 from modules.configuration import load_configuration, save_configuration
 from modules.json import json_load
 from modules.server.auxiliary import refresh, get_value, save_progress
+from modules.server.endgame import EndgameStudySingleton
 from modules.server.status_server import StatusServer
 from modules.server.run import run_windows, run_linux
 from modules.structures.review import Review
@@ -137,6 +138,29 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             save_configuration(config)
             result = 'Configuration saved.'
             self.send_text(result)
+        elif parsed_url.path == '/endgame/start':
+            endgame_study = EndgameStudySingleton().get_instance()
+            length = int(self.headers['Content-Length'])
+            data = json.loads(self.rfile.read(length).decode('utf-8'))
+            dtz = data.get('dtz')
+            white = data.get('white')
+            bishop_color = data.get('bishop_color')
+            if dtz is not None and white is not None and bishop_color is not None:
+                fen = endgame_study.start_game(dtz, white, bishop_color)
+                print(fen)
+                self.send_json({'fen': fen})
+            else:
+                self.send_error(400, 'Required parameters not provided')
+        elif parsed_url.path == '/endgame/move':
+            endgame_study = EndgameStudySingleton().get_instance()
+            length = int(self.headers['Content-Length'])
+            data = json.loads(self.rfile.read(length).decode('utf-8'))
+            move = data.get('move')
+            if move:
+                result = endgame_study.play_move(move)
+                self.send_json(result)
+            else:
+                self.send_error(400, 'Move not provided')
 
     def list_directory(self, path):
         self.send_error(404)

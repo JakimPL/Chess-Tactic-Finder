@@ -9,18 +9,20 @@ import chess
 import chess.syzygy
 from tqdm import tqdm
 
+DEFAULT_LAYOUT = [[chess.KING, chess.BISHOP, chess.KNIGHT], [chess.KING]]
+
 
 class EndgameGenerator:
     def __init__(
             self,
-            layout: List[List[chess.Piece]],
             tablebase_path: Union[str, os.PathLike],
-            database_path: Union[str, os.PathLike]
+            database_path: Union[str, os.PathLike],
+            layout: Optional[List[List[chess.Piece]]] = None,
     ):
         self.tablebase_path = Path(tablebase_path)
         self.tablebase = chess.syzygy.open_tablebase(tablebase_path)
 
-        self.pieces_layout = layout
+        self.pieces_layout = layout or DEFAULT_LAYOUT
         self.colors_layout = self.generate_colors_layout()
 
         self.database_path = Path(database_path)
@@ -38,7 +40,7 @@ class EndgameGenerator:
                 fen TEXT,
                 dtz INTEGER,
                 white BOOLEAN,
-                white_to_play BOOLEAN,
+                white_to_move BOOLEAN,
                 bishop_color BOOLEAN,
                 PRIMARY KEY (fen)
             )
