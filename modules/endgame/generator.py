@@ -1,4 +1,3 @@
-import math
 import os
 import pickle
 import sqlite3
@@ -78,6 +77,16 @@ class EndgameGenerator:
     def get_bishop_color(square: int) -> bool:
         return bool((square + (square >> 3)) & 1)
 
+    @staticmethod
+    def set_board(board: chess.Board, pieces: List[chess.Piece], squares: Tuple[int], colors: List[bool]) -> Optional[bool]:
+        bishop_color = None
+        for square, piece, color in zip(squares, pieces, colors):
+            board.set_piece_at(square, chess.Piece(piece, color))
+            if piece == chess.BISHOP:
+                bishop_color = EndgameGenerator.get_bishop_color(square)
+
+        return bishop_color
+
     def generate_colors_layout(self) -> Dict[chess.Color, List[chess.Color]]:
         colors_layout = {}
         for color in [chess.WHITE, chess.BLACK]:
@@ -101,11 +110,25 @@ class EndgameGenerator:
         partial_results_path = self.database_path.with_name(self.database_path.stem)
         partial_results_path.mkdir(exist_ok=True)
 
-        processed_batches = set()
+        processed_batches = self.get_processed_batches(partial_results_path)
+        self.execute_batches(batches, pieces, processed_batches, partial_results_path, max_workers)
+        self.save_items_to_database(partial_results_path)
+
+    @staticmethod
+    def get_processed_batches(partial_results_path: Path) -> List[int]:
+        processed_batches = []
         for pkl_file in partial_results_path.glob("*.pkl"):
             batch_index = int(pkl_file.stem)
-            processed_batches.add(batch_index)
+            processed_batches.append(batch_index)
+        return processed_batches
 
+    @staticmethod
+    def batch(iterable, n=1):
+        length = len(iterable)
+        for ndx in range(0, length, n):
+            yield iterable[ndx:min(ndx + n, length)]
+
+    def execute_batches(self, batches, pieces, processed_batches, partial_results_path, max_workers):
         with ProcessPoolExecutor(max_workers=max_workers) as executor:
             futures = []
             batch_indices = []
@@ -119,14 +142,6 @@ class EndgameGenerator:
                 partial_results_file = partial_results_path / f"{i:04d}.pkl"
                 self.save_partial_results(partial_results_file, partial_result)
 
-        self.save_items_to_database(partial_results_path)
-
-    @staticmethod
-    def batch(iterable, n=1):
-        length = len(iterable)
-        for ndx in range(0, length, n):
-            yield iterable[ndx:min(ndx + n, length)]
-
     @staticmethod
     def process_batch(batch, pieces, colors_layout, tablebase_path: Union[str, os.PathLike] = TABLEBASE_PATH):
         results = []
@@ -135,13 +150,9 @@ class EndgameGenerator:
         for squares in batch:
             board = chess.Board(None)
             board.clear()
-            bishop_color = None
 
             for white, colors in colors_layout.items():
-                for square, piece, color in zip(squares, pieces, colors):
-                    board.set_piece_at(square, chess.Piece(piece, color))
-                    if piece == chess.BISHOP:
-                        bishop_color = EndgameGenerator.get_bishop_color(square)
+                bishop_color = EndgameGenerator.set_board(board, pieces, squares, colors)
 
                 for white_to_move in (chess.WHITE, chess.BLACK):
                     board.turn = white_to_move
