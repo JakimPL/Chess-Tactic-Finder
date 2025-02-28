@@ -4,8 +4,14 @@ class Game {
         this.chess = new Chess(fen)
     }
 
-    move(move) {
-        return this.chess.move(move)
+    move(uci) {
+        var source = uci.substr(0, 2)
+        var target = uci.substr(2, 4)
+        return this.chess.move({
+            from: source,
+            to: target,
+            promotion: 'q'
+	    })
     }
 
     isOver() {

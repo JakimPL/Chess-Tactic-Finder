@@ -16,16 +16,13 @@ function getConfig() {
 
 function onDrop(source, target) {
     document.getElementsByTagName('body')[0].style.overflow = 'scroll'
-    	var move = game.move({
-		from: source,
-		to: target,
-		promotion: 'q'
-	})
+    var uci = source + target
+    var move = game.move(uci)
 
 	if (move === null) {
 		return 'snapback'
 	} else {
-		// request next move
+		sendMove(uci)
 	}
 }
 
@@ -34,7 +31,7 @@ function onDragStart(source, piece, position, orientation) {
 	    return false
 	}
 
-    turn = game.getTurn()
+    var turn = game.getTurn()
 	if (game.isOver() || turn != player) {
 	    return false
 	}
@@ -78,6 +75,34 @@ function requestNewGame() {
     })
     .catch((error) => {
         console.error('Error starting new game:', error);
+    });
+}
+
+function sendMove(uci) {
+    const data = {
+        move: uci
+    };
+
+    fetch('/endgame/move', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Move result:', data);
+        board.position(data.fen);
+        game.move(data.move);
+    })
+    .catch((error) => {
+        console.error('Error making move:', error);
     });
 }
 

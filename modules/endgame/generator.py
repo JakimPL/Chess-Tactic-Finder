@@ -9,14 +9,20 @@ import chess
 import chess.syzygy
 from tqdm import tqdm
 
+from modules.configuration import load_configuration
+from modules.endgame.record import Record
+
+configuration = load_configuration()
+TABLEBASE_PATH = configuration['paths']['tablebase']
+DATABASE_PATH = configuration['paths']['database']
 DEFAULT_LAYOUT = [[chess.KING, chess.BISHOP, chess.KNIGHT], [chess.KING]]
 
 
 class EndgameGenerator:
     def __init__(
             self,
-            tablebase_path: Union[str, os.PathLike],
-            database_path: Union[str, os.PathLike],
+            tablebase_path: Union[str, os.PathLike] = TABLEBASE_PATH,
+            database_path: Union[str, os.PathLike] = DATABASE_PATH,
             layout: Optional[List[List[chess.Piece]]] = None,
     ):
         self.tablebase_path = Path(tablebase_path)
@@ -41,12 +47,17 @@ class EndgameGenerator:
                 dtz INTEGER,
                 white BOOLEAN,
                 white_to_move BOOLEAN,
+                result TEXT,
                 bishop_color BOOLEAN,
                 PRIMARY KEY (fen)
             )
         ''')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_dtz ON positions (dtz)')
         self.connection.commit()
+
+        cursor.execute('SELECT COUNT(*) FROM positions')
+        if cursor.fetchone()[0] == 0:
+            self.generate_positions()
 
     @staticmethod
     def is_legal_position(board: chess.Board) -> bool:
@@ -105,9 +116,10 @@ class EndgameGenerator:
 
                     dtz = self.tablebase.get_dtz(board)
                     if dtz is not None:
+                        result = 'win' if dtz > 0 else 'loss' if dtz < 0 else 'draw'
                         cursor.execute(
-                            'INSERT OR REPLACE INTO positions VALUES (?, ?, ?, ?, ?)',
-                            (board.fen(), int(abs(dtz)), white, bool(white_to_move), bishop_color)
+                            'INSERT OR REPLACE INTO positions VALUES (?, ?, ?, ?, ?, ?)',
+                            (board.fen(), int(dtz), white, bool(white_to_move), result, bishop_color)
                         )
 
         self.connection.commit()
@@ -138,6 +150,16 @@ class EndgameGenerator:
 
         cursor.execute(query, params)
         return [row[0] for row in cursor.fetchall()]
+
+    def get_record_by_fen(self, fen: str) -> Optional[Record]:
+        fen = ' '.join(fen.split(' ')[:4])
+        cursor = self.connection.cursor()
+        cursor.execute('SELECT dtz, white, white_to_move, result, bishop_color FROM positions WHERE fen LIKE ?', (fen + '%',))
+        result = cursor.fetchone()
+        if result:
+            return Record(fen, *result)
+
+        return None
 
     def close(self):
         self.connection.close()

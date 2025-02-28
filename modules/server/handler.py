@@ -145,9 +145,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             dtz = data.get('dtz')
             white = data.get('white')
             bishop_color = data.get('bishop_color')
-            if dtz is not None and white is not None and bishop_color is not None:
+            if dtz is not None and white is not None:
                 fen = endgame_study.start_game(dtz, white, bishop_color)
-                print(fen)
                 self.send_json({'fen': fen})
             else:
                 self.send_error(400, 'Required parameters not provided')
@@ -157,8 +156,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             data = json.loads(self.rfile.read(length).decode('utf-8'))
             move = data.get('move')
             if move:
-                result = endgame_study.play_move(move)
-                self.send_json(result)
+                reply, fen = endgame_study.move(move)
+                self.send_json({'move': reply, 'fen': fen})
             else:
                 self.send_error(400, 'Move not provided')
 

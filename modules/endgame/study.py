@@ -1,6 +1,6 @@
 from collections import deque
 import random
-from typing import Optional
+from typing import Optional, Tuple
 
 import chess
 import chess.syzygy
@@ -14,9 +14,6 @@ class EndgameStudy:
             endgame_generator: EndgameGenerator,
     ):
         self.generator = endgame_generator
-
-        self.tablebase_path = endgame_generator.tablebase_path
-        self.tablebase = chess.syzygy.open_tablebase(self.tablebase_path)
 
         self.board = chess.Board()
         self.history = deque()
@@ -46,3 +43,28 @@ class EndgameStudy:
     def play_move(self, move: str):
         self.board.push(chess.Move.from_uci(move))
         self.history.append(move)
+
+    def reply(self) -> str:
+        legal_moves = list(self.board.legal_moves)
+        replies = {}
+
+        for move in legal_moves:
+            self.board.push(move)
+            dtz = self.generator.tablebase.probe_dtz(self.board)
+            if dtz is not None:
+                replies[move] = dtz if dtz > 0 else float('inf')
+            self.board.pop()
+
+        if not replies:
+            raise ValueError("No legal moves with DTZ found")
+
+        max_dtz = max(replies.values())
+        best_moves = [move for move, dtz in replies.items() if dtz == max_dtz]
+        best_move = random.choice(best_moves)
+        return best_move.uci()
+
+    def move(self, move: str) -> Tuple[str, str]:
+        self.play_move(move)
+        reply = self.reply()
+        self.play_move(reply)
+        return reply, self.board.fen()

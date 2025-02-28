@@ -1,13 +1,7 @@
 from typing import Optional
 
-from modules.configuration import load_configuration
-
 from modules.endgame.generator import EndgameGenerator
 from modules.endgame.study import EndgameStudy
-
-configuration = load_configuration()
-TABLEBASE_PATH = configuration['paths']['tablebase']
-DATABASE_PATH = configuration['paths']['database']
 
 
 class EndgameStudySingleton:
@@ -22,7 +16,7 @@ class EndgameStudySingleton:
         return cls._instance
 
     def init(self):
-        self.endgame_generator = EndgameGenerator(tablebase_path=TABLEBASE_PATH, database_path=DATABASE_PATH)
+        self.endgame_generator = EndgameGenerator()
         self.endgame_study = EndgameStudy(self.endgame_generator)
 
     def get_instance(self):
