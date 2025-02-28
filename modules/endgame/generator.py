@@ -1,9 +1,12 @@
 import math
 import os
+import pickle
 import sqlite3
-from itertools import combinations
+
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from itertools import permutations
 from pathlib import Path
-from typing import List, Dict, Optional, Union
+from typing import List, Dict, Optional, Tuple, Union
 
 import chess
 import chess.syzygy
@@ -26,21 +29,17 @@ class EndgameGenerator:
             layout: Optional[List[List[chess.Piece]]] = None,
     ):
         self.tablebase_path = Path(tablebase_path)
-        self.tablebase = chess.syzygy.open_tablebase(tablebase_path)
+        self.database_path = Path(database_path)
+        self.database_path.parent.mkdir(exist_ok=True)
 
         self.pieces_layout = layout or DEFAULT_LAYOUT
         self.colors_layout = self.generate_colors_layout()
 
-        self.database_path = Path(database_path)
-        self.database_path.parent.mkdir(exist_ok=True)
-        self.connection = sqlite3.connect(str(database_path), timeout=10.0)
         self.create_table()
 
-    def __del__(self):
-        self.close()
-
     def create_table(self):
-        cursor = self.connection.cursor()
+        connection = self.get_connection()
+        cursor = connection.cursor()
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS positions (
                 fen TEXT,
@@ -52,11 +51,15 @@ class EndgameGenerator:
                 PRIMARY KEY (fen)
             )
         ''')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_fen ON positions (fen)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_dtz ON positions (dtz)')
-        self.connection.commit()
+        connection.commit()
 
         cursor.execute('SELECT COUNT(*) FROM positions')
-        if cursor.fetchone()[0] == 0:
+        items = cursor.fetchone()[0]
+        connection.close()
+
+        if not items:
             self.generate_positions()
 
     @staticmethod
@@ -88,41 +91,98 @@ class EndgameGenerator:
 
         return colors_layout
 
-    def generate_positions(self) -> None:
-        cursor = self.connection.cursor()
-        cursor.execute('DELETE FROM positions')
-
+    def generate_positions(self, batch_size: int = 4096, max_workers: int = 8) -> None:
         pieces = sum(self.pieces_layout, [])
         pieces_count = len(pieces)
 
-        combs = combinations(chess.SQUARES, pieces_count)
-        n = math.comb(len(chess.SQUARES), pieces_count)
+        perms = list(permutations(chess.SQUARES, pieces_count))
+        batches = self.batch(perms, batch_size)
 
-        for i, squares in tqdm(enumerate(combs), total=n):
+        partial_results_path = self.database_path.with_name(self.database_path.stem)
+        partial_results_path.mkdir(exist_ok=True)
+
+        processed_batches = set()
+        for pkl_file in partial_results_path.glob("*.pkl"):
+            batch_index = int(pkl_file.stem)
+            processed_batches.add(batch_index)
+
+        with ProcessPoolExecutor(max_workers=max_workers) as executor:
+            futures = []
+            batch_indices = []
+            for i, batch in enumerate(batches):
+                if i not in processed_batches:
+                    batch_indices.append(i)
+                    futures.append(executor.submit(self.process_batch, batch, pieces, self.colors_layout, self.tablebase_path))
+
+            for i, future in tqdm(zip(batch_indices, as_completed(futures)), total=len(futures)):
+                partial_result = future.result()
+                partial_results_file = partial_results_path / f"{i:04d}.pkl"
+                self.save_partial_results(partial_results_file, partial_result)
+
+        self.save_items_to_database(partial_results_path)
+
+    @staticmethod
+    def batch(iterable, n=1):
+        length = len(iterable)
+        for ndx in range(0, length, n):
+            yield iterable[ndx:min(ndx + n, length)]
+
+    @staticmethod
+    def process_batch(batch, pieces, colors_layout, tablebase_path: Union[str, os.PathLike] = TABLEBASE_PATH):
+        results = []
+        tablebase = chess.syzygy.open_tablebase(tablebase_path)
+
+        for squares in batch:
             board = chess.Board(None)
             board.clear()
-
             bishop_color = None
-            for white, colors in self.colors_layout.items():
+
+            for white, colors in colors_layout.items():
                 for square, piece, color in zip(squares, pieces, colors):
                     board.set_piece_at(square, chess.Piece(piece, color))
                     if piece == chess.BISHOP:
-                        bishop_color = self.get_bishop_color(square)
+                        bishop_color = EndgameGenerator.get_bishop_color(square)
 
                 for white_to_move in (chess.WHITE, chess.BLACK):
                     board.turn = white_to_move
-                    if not self.is_legal_position(board):
+                    if not EndgameGenerator.is_legal_position(board):
                         continue
 
-                    dtz = self.tablebase.get_dtz(board)
-                    if dtz is not None:
+                    try:
+                        dtz = tablebase.probe_dtz(board)
                         result = 'win' if dtz > 0 else 'loss' if dtz < 0 else 'draw'
-                        cursor.execute(
-                            'INSERT OR REPLACE INTO positions VALUES (?, ?, ?, ?, ?, ?)',
-                            (board.fen(), int(dtz), white, bool(white_to_move), result, bishop_color)
-                        )
+                        results.append((board.fen(), int(dtz), white, bool(white_to_move), result, bishop_color))
+                    except KeyError:
+                        pass
 
-        self.connection.commit()
+        tablebase.close()
+        return results
+
+    def get_connection(self) -> sqlite3.Connection:
+        return sqlite3.connect(str(self.database_path), timeout=10.0)
+
+    @staticmethod
+    def save_partial_results(path: Union[str, os.PathLike], items: List[Tuple]) -> None:
+        with open(path, 'wb') as file:
+            pickle.dump(items, file)
+
+    @staticmethod
+    def load_partial_results(path: Union[str, os.PathLike]) -> List[Tuple]:
+        with open(path, 'rb') as file:
+            return pickle.load(file)
+
+    def save_batch_to_database(self, batch: List[Tuple]) -> None:
+        connection = self.get_connection()
+        cursor = connection.cursor()
+        cursor.execute('BEGIN TRANSACTION')
+        cursor.executemany('INSERT INTO positions VALUES (?, ?, ?, ?, ?, ?)', batch)
+        connection.commit()
+        connection.close()
+
+    def save_items_to_database(self, partial_results_path: Path) -> None:
+        for pkl_file in sorted(partial_results_path.glob("*.pkl")):
+            batch = self.load_partial_results(pkl_file)
+            self.save_batch_to_database(batch)
 
     def find_positions(
             self,
@@ -131,7 +191,8 @@ class EndgameGenerator:
             white_to_move: Optional[bool] = None,
             bishop_color: Optional[bool] = None,
     ):
-        cursor = self.connection.cursor()
+        connection = self.get_connection()
+        cursor = connection.cursor()
         query = 'SELECT fen FROM positions WHERE 1=1'
         params = []
 
@@ -149,18 +210,20 @@ class EndgameGenerator:
             params.append(bishop_color)
 
         cursor.execute(query, params)
-        return [row[0] for row in cursor.fetchall()]
+        result = [row[0] for row in cursor.fetchall()]
+        connection.close()
+        return result
 
     def get_record_by_fen(self, fen: str) -> Optional[Record]:
         fen = ' '.join(fen.split(' ')[:4])
-        cursor = self.connection.cursor()
+
+        connection = self.get_connection()
+        cursor = connection.cursor()
         cursor.execute('SELECT dtz, white, white_to_move, result, bishop_color FROM positions WHERE fen LIKE ?', (fen + '%',))
         result = cursor.fetchone()
+        connection.close()
+
         if result:
             return Record(fen, *result)
 
         return None
-
-    def close(self):
-        self.connection.close()
-        self.tablebase.close()
