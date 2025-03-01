@@ -148,10 +148,9 @@ class EndgameGenerator:
         tablebase = chess.syzygy.open_tablebase(tablebase_path)
 
         for squares in batch:
-            board = chess.Board(None)
-            board.clear()
-
             for white, colors in colors_layout.items():
+                board = chess.Board(None)
+                board.clear()
                 bishop_color = EndgameGenerator.set_board(board, pieces, squares, colors)
 
                 for white_to_move in (chess.WHITE, chess.BLACK):

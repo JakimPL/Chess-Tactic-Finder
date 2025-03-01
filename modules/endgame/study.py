@@ -14,10 +14,14 @@ class EndgameStudy:
             endgame_generator: EndgameGenerator,
     ):
         self.generator = endgame_generator
+        self.tablebase = chess.syzygy.open_tablebase(self.generator.tablebase_path)
 
         self.board = chess.Board()
         self.history = deque()
         self.starting_position: Optional[str] = None
+
+    def __del__(self):
+        self.tablebase.close()
 
     def draw_position(
             self,
@@ -50,7 +54,7 @@ class EndgameStudy:
 
         for move in legal_moves:
             self.board.push(move)
-            dtz = self.generator.tablebase.probe_dtz(self.board)
+            dtz = self.tablebase.probe_dtz(self.board)
             if dtz is not None:
                 replies[move] = dtz if dtz > 0 else float('inf')
             self.board.pop()
@@ -63,8 +67,11 @@ class EndgameStudy:
         best_move = random.choice(best_moves)
         return best_move.uci()
 
-    def move(self, move: str) -> Tuple[str, str]:
+    def move(self, move: str) -> Tuple[Optional[str], str]:
         self.play_move(move)
+        if self.board.is_game_over():
+            return None, self.board.fen()
+
         reply = self.reply()
         self.play_move(reply)
         return reply, self.board.fen()
