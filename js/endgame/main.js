@@ -4,6 +4,7 @@ var game = null
 var fen = null
 var player = null
 var dtz = 30
+var movesList = null
 
 function getConfig() {
     return {
@@ -23,6 +24,7 @@ function onDrop(source, target) {
 	if (move === null) {
 		return 'snapback'
 	} else {
+	    movesList.addMove(move.san)
 		sendMove(uci)
 	}
 }
@@ -86,6 +88,7 @@ function requestNewGame() {
         fen = data.fen
         console.log('New game started:', fen);
         startNewGame()
+        movesList = new MovesList([], {}, game.turn == 'b', () => {})
     })
     .catch((error) => {
         console.error('Error starting new game:', error);

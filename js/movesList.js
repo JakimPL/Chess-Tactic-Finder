@@ -8,7 +8,15 @@ class MovesList {
     }
 
     addMove(move) {
+        console.log('Adding move:', move)
         this.moves.push(move)
+
+        const index = this.moves.length - 1
+        if (index % 2 == 0) {
+            this.addLine(index)
+        }
+
+        this.renderMove(move, index)
     }
 
     getMoves() {
@@ -67,60 +75,61 @@ class MovesList {
         }
     }
 
+    getMoveColorForRow(moveType, evenRow) {
+        const moveColor = this.getMoveColor(moveType);
+        return moveColor == null ? null : evenRow ? moveColor.lightSquare : moveColor.darkSquare;
+    }
+
+    addLine(index) {
+        const tableObject = document.getElementById(this.element);
+        const tr = document.createElement('tr');
+        tr.id = `row${Math.floor(index / 2)}`;
+        tableObject.appendChild(tr);
+        const evenRow = Math.floor(index / 2) % 2 === 0;
+        const rowClass = `row_${evenRow ? 'even' : 'odd'}`;
+
+        const moveId = Math.floor(index / 2) + 1;
+        createTableRowEntry(tr, `${moveId}.`, null, `move${moveId}`, rowClass);
+        createTableRowEntry(tr, '', null, `half_move${index}`, rowClass);
+        createTableRowEntry(tr, '', null, `half_move${index}c`, rowClass);
+        createTableRowEntry(tr, '', null, `half_move${index + 1}`, rowClass);
+        createTableRowEntry(tr, '', null, `half_move${index + 1}c`, rowClass);
+        createTableRowEntry(tr, '', null, `half_move${index}d`, rowClass);
+        createTableRowEntry(tr, '', null, `half_move${index + 1}d`, rowClass);
+    }
+
+    renderMove(move, index) {
+        const tableObject = document.getElementById(this.element);
+        const tr = tableObject.lastChild;
+        const turn = index % 2 === 0;
+        const evenRow = Math.floor(index / 2) % 2 === 0;
+        const rowClass = `row_${evenRow ? 'even' : 'odd'}`;
+
+        const moveClassification = this.review[index] != null ? this.review[index].classification : null;
+        const moveType = this.getMoveType(moveClassification);
+        const moveDescription = moveClassification != null ? moveClassification.description : '';
+        const moveColor = this.getMoveColorForRow(moveType, evenRow);
+        const moveSymbol = this.getMoveSymbol(move, turn);
+        const moveLink = new Link(null, () => { this.callback(index); });
+
+        setTableRowEntry(`half_move${index}`, moveSymbol, moveLink, null, moveColor);
+        setTableRowEntry(`half_move${index}c`, moveType, moveLink, null, moveColor);
+        setTableRowEntry(`half_move${index}d`, moveDescription);
+    }
+
     render() {
-        clearTable(this.element)
-        const tableObject = document.getElementById(this.element)
-        const black = this.first_move
-        for (var i = 0; i < this.moves.length; i += 2) {
-            const index = i - black
-            const turn = index % 2 == 0
-            const evenRow = index % 4 == 0
-            const rowClass = `row_${evenRow ? 'even' : 'odd'}`
-
-            const halfMoveIndex = `half_move${index}`
-            const halfNextMoveIndex = `half_move${index + 1}`
-
-            const moveClassification = this.review[i] != null ? this.review[i].classification : null
-            const nextMoveClassification = (i + 1 < this.review.length) ? this.review[i + 1].classification : null
-
-            const moveType = this.getMoveType(moveClassification)
-            const nextMoveType = this.getMoveType(nextMoveClassification)
-
-            const moveDescription = moveClassification != null ? moveClassification.description : ''
-            const nextMoveDescription = nextMoveClassification != null ? nextMoveClassification.description : ''
-
-            var moveColor = this.getMoveColor(moveType)
-            moveColor = moveColor == null ? null : moveColor
-            moveColor = moveColor == null ? null : evenRow ? moveColor.lightSquare : moveColor.darkSquare
-
-            var nextMoveColor = this.getMoveColor(nextMoveType)
-            nextMoveColor = nextMoveColor == null ? null : nextMoveColor
-            nextMoveColor = nextMoveColor == null ? null : evenRow ? nextMoveColor.lightSquare : nextMoveColor.darkSquare
-
-            var move = index >= 0 ? this.getMoveSymbol(this.moves[index], turn) : '...'
-            var nextMove = this.getMoveSymbol(this.moves[index + 1], !turn)
-
-            var tr = document.createElement('tr')
-            tr.id = `row${i}`
-
-            var moveLink = new Link(null, () => {this.callback(index)})
-            var nextMoveLink = new Link(null, () => {this.callback(index + 1)})
-
-            var moveId = i / 2 + 1
-            createTableRowEntry(tr, `${moveId}.`, null, `move${moveId}`)
-            createTableRowEntry(tr, move, moveLink, halfMoveIndex, rowClass, moveColor)
-            createTableRowEntry(tr, moveType, moveLink, `${halfMoveIndex}c`, rowClass, moveColor)
-            createTableRowEntry(tr, nextMove, nextMoveLink, halfNextMoveIndex, rowClass, nextMoveColor)
-            createTableRowEntry(tr, nextMoveType, nextMoveLink, `${halfNextMoveIndex}c`, rowClass, nextMoveColor)
-            createTableRowEntry(tr, moveDescription)
-            createTableRowEntry(tr, nextMoveDescription)
-            tableObject.appendChild(tr)
+        clearTable(this.element);
+        for (let i = 0; i < this.moves.length; i++) {
+            if (i % 2 === 0) {
+                this.addLine(i);
+            }
+            this.renderMove(this.moves[i], i);
         }
     }
 
-    highlightMove(moveIndex, color) {
-        var moveElement = document.getElementById(`half_move${moveIndex}`)
-        var moveTypeElement = document.getElementById(`half_move${moveIndex}c`)
+    highlightMove(index, color) {
+        var moveElement = document.getElementById(`half_move${index}`)
+        var moveTypeElement = document.getElementById(`half_move${index}c`)
         if (moveElement != null) {
             var $moveElement = $(moveElement)
             const backgroundColor = color == null ? null : $moveElement.hasClass('row_odd') ? color.darkSquare : color.lightSquare

@@ -13,23 +13,59 @@
     <script src="/js/import/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
     <script src="/js/import/chessboard-1.0.0.min.js" integrity="sha384-8Vi8VHwn3vjQ9eUHUxex3JSN/NFqUg3QbPyX8kWyb93+8AC/pPWTzj+nHtbC5bxD" crossorigin="anonymous"></script>
     <script src="/js/import/chess.js" integrity="sha384-s3XgLpvmHyscVpijnseAmye819Ee3yaGa8NxstkJVyA6nuDFjt59u1QvuEl/mecz" crossorigin="anonymous"></script>
+    <script src="/js/link.js"></script>
     <script src="/js/color.js"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/movesList.js"></script>
     <script src="/js/endgame/game.js"></script>
 </head>
 
 <body>
-    <div><h3>Board</h3></div>
-    <div id="endgame_board"></div>
-    <div id="mate_counter_container">
-        <h3>Mate Counter</h3>
-        <p id="mate_counter">0</p>
-    </div>
-    <div id="moves">
-        <table id="moves_list_table"></table>
-        <div id="moves_evaluation">
-            <img id="evaluation_chart" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" alt="evaluation chart"/>
+<div class="row">
+    <div class="column" id="board_panel">
+        <div><h3>Board</h3></div>
+        <p id="game_info">&nbsp</p>
+        <div id="board_with_evaluation">
+            <div id="evaluation">
+                <div id="evaluation_bar"></div>
+                <div id="evaluation_value"></div>
+            </div>
+            <div id="endgame_board"></div>
+        </div>
+        <div class="buttons">
+            <button id="backward" type="button">&#9664;</button>
+            <button id="flip" type="button">Flip</button>
+            <button id="forward" type="button">&#9654;</button>
+        </div>
+        <div class="buttons">
+            <button id="copyFEN" type="button">Copy FEN</button>
+            <button id="copyPGN" type="button">Copy PGN</button>
+        </div>
+        <div id="panel">&nbsp</div>
+        <div id="status"></div>
+        <div id="engine_lines">
+            <p>Engine choices:</p>
+            <table id="engine_lines_table"></table>
+        </div>
+        <div>Analyze:
+            <a href="https://www.chess.com/analysis" class="button" id="analyze_chess" target=”_blank”>chess.com</a>
+            <a href="https://lichess.com/analysis/" class="button" id="analyze_lichess" target=”_blank”>lichess.org</a>
         </div>
     </div>
+    <div class="column" id="games_panel">
+        <h3>Analysis</h3>
+        <div id="mate_counter_container">
+            <p id="mate_counter"></p>
+        </div>
+        <div id="moves">
+            <table id="moves_list_table"></table>
+            <div id="moves_evaluation">
+                <img id="evaluation_chart" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" alt="evaluation chart"/>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="/js/endgame/main.js"></script>
 
 <footer>

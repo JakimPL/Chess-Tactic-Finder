@@ -65,38 +65,47 @@ function clearTable(table, loading) {
     }
 }
 
+function setTableRowEntry(tdId, text, link, rowClass, backgroundColor) {
+    let td;
+    if (typeof tdId === 'string') {
+        td = document.getElementById(tdId);
+    } else {
+        td = tdId;
+    }
+
+    td.innerHTML = ''
+    var textNode = document.createTextNode(text);
+    if (link != null) {
+        var a = document.createElement('a');
+        if (link.code != null) {
+            a.onclick = link.code;
+            a.style.cursor = 'pointer';
+        }
+        if (link.link != null) {
+            a.href = link.link;
+        }
+        a.appendChild(textNode);
+        td.appendChild(a);
+    } else {
+        td.appendChild(textNode);
+    }
+
+    if (backgroundColor != null) {
+        td.style.backgroundColor = backgroundColor;
+    }
+
+    if (rowClass != null) {
+        td.classList.add(rowClass);
+    }
+}
+
 function createTableRowEntry(tr, text, link, id, rowClass, backgroundColor) {
     var td = document.createElement('td')
     if (id != null) {
         td.id = id
     }
 
-    var textNode = document.createTextNode(text)
-    if (link != null) {
-        var a = document.createElement('a')
-        if (link.code != null) {
-            a.onclick = link.code
-            a.style.cursor = 'pointer'
-        }
-
-        if (link.link != null) {
-            a.href = link.link
-        }
-
-        a.appendChild(textNode)
-        td.appendChild(a)
-    } else {
-        td.appendChild(textNode)
-    }
-
-    if (backgroundColor != null) {
-        td.style.backgroundColor = backgroundColor
-    }
-
-    if (rowClass != null) {
-        td.classList.add(rowClass)
-    }
-
+    setTableRowEntry(td, text, link, rowClass, backgroundColor);
     tr.appendChild(td)
     return td
 }
