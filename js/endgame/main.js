@@ -52,6 +52,34 @@ function onSnapEnd() {
 	board.position(game.getFEN())
 }
 
+function forward() {
+    if (game !== null) {
+        var previousMoveIndex = game.moveIndex
+        var nextMove = game.forward()
+        if (nextMove != null) {
+            setFEN(previousMoveIndex)
+        }
+    }
+}
+
+function backward() {
+    if (game !== null) {
+        var previousMoveIndex = game.moveIndex
+        game.backward()
+        setFEN(previousMoveIndex)
+    }
+}
+
+function goTo(moveIndex) {
+    if (game !== null) {
+        var previousMoveIndex = game.moveIndex
+        var nextMove = game.goTo(moveIndex)
+        if (nextMove != null) {
+            setFEN(previousMoveIndex)
+        }
+    }
+}
+
 function prepareMateCounter(dtz) {
     if (dtz === null || dtz === undefined) {
         return '';
