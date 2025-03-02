@@ -7,6 +7,20 @@ var dtz = 30
 var movesList = null
 var delayTime = 500
 
+var moveIndex = null
+
+$('#backward').on('click', function() {
+    backward()
+})
+
+$('#forward').on('click', function() {
+    forward()
+})
+
+$('#flip').on('click', function() {
+    board.flip()
+})
+
 function getConfig() {
     return {
         draggable: true,
@@ -17,16 +31,22 @@ function getConfig() {
     }
 }
 
+function setPosition() {
+    board.position(game.getFEN())
+}
+
 function onDrop(source, target) {
     document.getElementsByTagName('body')[0].style.overflow = 'scroll'
     var uci = source + target
+    var fen = game.getFEN()
     var move = game.move(uci)
 
 	if (move === null) {
 		return 'snapback'
 	} else {
+        moveIndex = game.currentMove
 	    movesList.addMove(move.san, true)
-		sendMove(uci)
+		sendMove(fen, uci)
 	}
 }
 
@@ -49,24 +69,24 @@ function onDragStart(source, piece, position, orientation) {
 }
 
 function onSnapEnd() {
-	board.position(game.getFEN())
+	setPosition()
 }
 
 function forward() {
-    if (game !== null) {
-        var previousMoveIndex = game.moveIndex
-        var nextMove = game.forward()
-        if (nextMove != null) {
-            setFEN(previousMoveIndex)
-        }
+    var previousMoveIndex = moveIndex
+    if (game !== null && game.forward()) {
+        moveIndex = game.currentMove - 1
+        movesList.highlightNextMove(previousMoveIndex, moveIndex)
+        setPosition()
     }
 }
 
 function backward() {
-    if (game !== null) {
-        var previousMoveIndex = game.moveIndex
-        game.backward()
-        setFEN(previousMoveIndex)
+    var previousMoveIndex = moveIndex
+    if (game !== null && game.backward()) {
+        moveIndex = game.currentMove - 1
+        movesList.highlightNextMove(previousMoveIndex, moveIndex)
+        setPosition()
     }
 }
 
@@ -124,8 +144,9 @@ function requestNewGame() {
     });
 }
 
-function sendMove(uci) {
+function sendMove(fen, uci) {
     const data = {
+        fen: fen,
         move: uci
     };
 
@@ -144,6 +165,7 @@ function sendMove(uci) {
     })
     .then(data => {
         setTimeout(() => {
+            moveIndex = game.currentMove
             board.position(data.fen)
             game.move(data.uci)
             setMateCounter(data.dtz)

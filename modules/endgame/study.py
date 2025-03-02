@@ -1,6 +1,5 @@
-from collections import deque
 import random
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional
 
 import chess
 import chess.syzygy
@@ -20,7 +19,6 @@ class EndgameStudy:
         self.tablebase = chess.syzygy.open_tablebase(self.generator.tablebase_path)
 
         self.board = chess.Board()
-        self.history = deque()
         self.starting_position: Optional[str] = None
 
         self.beta = beta
@@ -46,12 +44,10 @@ class EndgameStudy:
     ) -> str:
         self.starting_position = self.draw_position(dtz, white, bishop_color)
         self.board = chess.Board(self.starting_position)
-        self.history.clear()
         return self.starting_position
 
     def play_move(self, move: chess.Move):
         self.board.push(move)
-        self.history.append(move.uci())
 
     def choose_move(self, moves: Dict[chess.Move, int]) -> chess.Move:
         if self.beta == float('inf'):
@@ -79,7 +75,8 @@ class EndgameStudy:
 
         return self.choose_move(replies)
 
-    def move(self, move: str) -> MoveReply:
+    def move(self, fen: str, move: str) -> MoveReply:
+        self.board = chess.Board(fen)
         move = chess.Move.from_uci(move)
         self.play_move(move)
         if self.board.is_game_over():

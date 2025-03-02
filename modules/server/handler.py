@@ -154,9 +154,10 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             endgame_study = EndgameStudySingleton().get_instance()
             length = int(self.headers['Content-Length'])
             data = json.loads(self.rfile.read(length).decode('utf-8'))
+            fen = data.get('fen')
             move = data.get('move')
-            if move:
-                reply = endgame_study.move(move)
+            if fen and move:
+                reply = endgame_study.move(fen, move)
                 self.send_json(reply.__dict__)
             else:
                 self.send_error(400, 'Move not provided')
