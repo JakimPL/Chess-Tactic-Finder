@@ -3,6 +3,7 @@ board = Chessboard('endgame_board')
 var game = null
 var fen = null
 var player = null
+var dtz = 30
 
 function getConfig() {
     return {
@@ -48,11 +49,24 @@ function onSnapEnd() {
 	board.position(game.getFEN())
 }
 
+function prepareMateCounter(dtz) {
+    if (dtz === null || dtz === undefined) {
+        return '';
+    }
+    const sign = dtz < 0 ? '-' : '';
+    const movesToMate = Math.ceil((Math.abs(dtz) + 1) / 2);
+    return `#${sign}${movesToMate}`;
+}
+
+function setMateCounter(dtz) {
+    const mateCounter = prepareMateCounter(dtz);
+    document.getElementById('mate_counter').innerText = mateCounter;
+}
+
 function requestNewGame() {
     const data = {
-        dtz: 20,
-        white: true,
-        bishop_color: true
+        dtz: dtz,
+        white: true
     };
 
     fetch('/endgame/start', {
@@ -100,6 +114,7 @@ function sendMove(uci) {
         console.log('Move result:', data);
         board.position(data.fen);
         game.move(data.move);
+        setMateCounter(data.dtz);
     })
     .catch((error) => {
         console.error('Error making move:', error);
@@ -110,6 +125,7 @@ function startNewGame() {
     board = Chessboard('endgame_board', getConfig())
     game = new Game(fen)
     player = game.getTurn()
+    setMateCounter(dtz);
 
     if (player == 'b') {
         board.flip()
