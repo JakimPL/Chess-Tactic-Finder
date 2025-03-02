@@ -19,6 +19,11 @@ __pycache__/
 *.txt
 *.exe
 
+*.dat
+*.rtbw
+*.rtbz
+*.pkl
+
 chess.js
 chessboard-1.0.0.min.js
 jquery-3.4.1.min.js
