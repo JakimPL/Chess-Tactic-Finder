@@ -156,8 +156,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             data = json.loads(self.rfile.read(length).decode('utf-8'))
             move = data.get('move')
             if move:
-                reply, fen = endgame_study.move(move)
-                self.send_json({'move': reply, 'fen': fen})
+                reply = endgame_study.move(move)
+                self.send_json(reply.__dict__)
             else:
                 self.send_error(400, 'Move not provided')
 

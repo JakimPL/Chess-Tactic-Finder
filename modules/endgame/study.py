@@ -1,17 +1,20 @@
 from collections import deque
 import random
-from typing import Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 import chess
 import chess.syzygy
+import numpy as np
 
 from modules.endgame.generator import EndgameGenerator
+from modules.structures.move_reply import MoveReply
 
 
 class EndgameStudy:
     def __init__(
             self,
             endgame_generator: EndgameGenerator,
+            beta: float = float('inf')
     ):
         self.generator = endgame_generator
         self.tablebase = chess.syzygy.open_tablebase(self.generator.tablebase_path)
@@ -19,6 +22,8 @@ class EndgameStudy:
         self.board = chess.Board()
         self.history = deque()
         self.starting_position: Optional[str] = None
+
+        self.beta = beta
 
     def __del__(self):
         self.tablebase.close()
@@ -44,17 +49,27 @@ class EndgameStudy:
         self.history.clear()
         return self.starting_position
 
-    def play_move(self, move: str):
-        self.board.push(chess.Move.from_uci(move))
-        self.history.append(move)
+    def play_move(self, move: chess.Move):
+        self.board.push(move)
+        self.history.append(move.uci())
 
-    def reply(self) -> str:
+    def choose_move(self, moves: Dict[chess.Move, int]) -> chess.Move:
+        if self.beta == float('inf'):
+            max_dtz = max(moves.values())
+            best_moves = [move for move, dtz in moves.items() if dtz == max_dtz]
+            return np.random.choice(best_moves)
+        else:
+            weights = np.array([abs(dtz) ** self.beta for dtz in moves.values()])
+            probabilities = weights / weights.sum()
+            return np.random.choice(list(moves.keys()), p=probabilities)
+
+    def reply(self) -> chess.Move:
         legal_moves = list(self.board.legal_moves)
         replies = {}
 
         for move in legal_moves:
             self.board.push(move)
-            dtz = self.tablebase.probe_dtz(self.board)
+            dtz = self.tablebase.get_dtz(self.board)
             if dtz is not None:
                 replies[move] = dtz if dtz > 0 else float('inf')
             self.board.pop()
@@ -62,16 +77,26 @@ class EndgameStudy:
         if not replies:
             raise ValueError("No legal moves with DTZ found")
 
-        max_dtz = max(replies.values())
-        best_moves = [move for move, dtz in replies.items() if dtz == max_dtz]
-        best_move = random.choice(best_moves)
-        return best_move.uci()
+        return self.choose_move(replies)
 
-    def move(self, move: str) -> Tuple[Optional[str], str]:
+    def move(self, move: str) -> MoveReply:
+        move = chess.Move.from_uci(move)
         self.play_move(move)
         if self.board.is_game_over():
-            return None, self.board.fen()
+            return MoveReply(
+                uci=None,
+                san=None,
+                fen=self.board.fen(),
+                dtz=0
+            )
 
         reply = self.reply()
+        san = self.board.san(reply)
         self.play_move(reply)
-        return reply, self.board.fen()
+
+        return MoveReply(
+            uci=reply.uci(),
+            san=san,
+            fen=self.board.fen(),
+            dtz=self.tablebase.probe_dtz(self.board)
+        )

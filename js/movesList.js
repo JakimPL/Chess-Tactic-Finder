@@ -7,8 +7,7 @@ class MovesList {
         this.callback = callback
     }
 
-    addMove(move) {
-        console.log('Adding move:', move)
+    addMove(move, highlight = false) {
         this.moves.push(move)
 
         const index = this.moves.length - 1
@@ -17,6 +16,9 @@ class MovesList {
         }
 
         this.renderMove(move, index)
+        if (highlight) {
+            this.highlightNextMove(index - 1, index)
+        }
     }
 
     getMoves() {

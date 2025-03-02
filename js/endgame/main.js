@@ -5,6 +5,7 @@ var fen = null
 var player = null
 var dtz = 30
 var movesList = null
+var delayTime = 500
 
 function getConfig() {
     return {
@@ -24,7 +25,7 @@ function onDrop(source, target) {
 	if (move === null) {
 		return 'snapback'
 	} else {
-	    movesList.addMove(move.san)
+	    movesList.addMove(move.san, true)
 		sendMove(uci)
 	}
 }
@@ -82,7 +83,7 @@ function requestNewGame() {
         if (!response.ok) {
             throw new Error('Network response was not ok ' + response.statusText);
         }
-        return response.json();
+        return response.json()
     })
     .then(data => {
         fen = data.fen
@@ -91,7 +92,7 @@ function requestNewGame() {
         movesList = new MovesList([], {}, game.turn == 'b', () => {})
     })
     .catch((error) => {
-        console.error('Error starting new game:', error);
+        console.error('Error starting new game:', error)
     });
 }
 
@@ -114,13 +115,15 @@ function sendMove(uci) {
         return response.json();
     })
     .then(data => {
-        console.log('Move result:', data);
-        board.position(data.fen);
-        game.move(data.move);
-        setMateCounter(data.dtz);
+        setTimeout(() => {
+            board.position(data.fen)
+            game.move(data.uci)
+            setMateCounter(data.dtz)
+            movesList.addMove(data.san, true)
+	    }, delayTime)
     })
     .catch((error) => {
-        console.error('Error making move:', error);
+        console.error('Error making move:', error)
     });
 }
 
