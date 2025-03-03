@@ -3,8 +3,10 @@ board = Chessboard('endgame_board')
 var game = null
 var fen = null
 var player = null
-var dtz = 6
+var dtz = 2
 var movesList = null
+
+var delay = false
 var delayTime = 500
 
 var moveIndex = null
@@ -26,7 +28,7 @@ $('#copyFEN').on('click', function() {
         return
     }
 
-    var fen = game.chess.fen()
+    const fen = game.chess.fen()
     if (fen != null && fen != '') {
         navigator.clipboard.writeText(fen)
         setPanel($panel, 'FEN copied to clipboard!')
@@ -53,10 +55,10 @@ function setPosition() {
 
 function onDrop(source, target) {
     document.getElementsByTagName('body')[0].style.overflow = 'scroll'
-    var uci = source + target
-    var fen = game.getFEN()
-    var isLastMove = game.isLastMove()
-    var move = game.move(uci)
+    const uci = source + target
+    const fen = game.getFEN()
+    const isLastMove = game.isLastMove()
+    const move = game.move(uci)
 
 	if (move === null) {
 		return 'snapback'
@@ -76,7 +78,7 @@ function onDragStart(source, piece, position, orientation) {
 	    return false
 	}
 
-    var turn = game.getTurn()
+    const turn = game.getTurn()
 	if (game.isOver() || turn != player) {
 	    return false
 	}
@@ -94,33 +96,41 @@ function onSnapEnd() {
 }
 
 function forward() {
-    var previousMoveIndex = moveIndex
-    if (game !== null && game.forward()) {
+    const previousMoveIndex = moveIndex
+    if (!delay && game !== null && game.forward()) {
         moveIndex = game.currentMove - 1
         movesList.highlightNextMove(previousMoveIndex, moveIndex)
         setPosition()
+        setMateCounter(game.getDTZ())
     }
 }
 
 function backward() {
-    var previousMoveIndex = moveIndex
-    if (game !== null && game.backward()) {
+    const previousMoveIndex = moveIndex
+    if (!delay && game !== null && game.backward()) {
         moveIndex = game.currentMove - 1
         movesList.highlightNextMove(previousMoveIndex, moveIndex)
         setPosition()
+        setMateCounter(game.getDTZ())
     }
 }
 
 function goTo(moveIndex) {
-    if (game !== null) {
+    if (!delay && game !== null) {
         // not implemented
     }
 }
 
 function prepareMateCounter(dtz) {
+    var result = game.getResult()
+    if (result != null) {
+        return result
+    }
+
     if (dtz === null || dtz === undefined) {
         return ''
     }
+
     const sign = dtz < 0 ? '-' : ''
     const movesToMate = Math.ceil((Math.abs(dtz) + 1) / 2)
     return `${sign}M${movesToMate}`
@@ -181,24 +191,29 @@ function sendMove(fen, uci) {
         return response.json()
     })
     .then(data => {
+        game.updateDTZ(data.previous_dtz)
+        setMateCounter(data.previous_dtz)
+        delay = true
         setTimeout(() => {
             moveIndex = game.currentMove
             board.position(data.fen)
             if (data.uci != null) {
-                game.move(data.uci)
-                setMateCounter(data.dtz)
+                game.move(data.uci, data.current_dtz)
+                setMateCounter(data.current_dtz)
                 movesList.addMove(data.san, true)
             }
+            delay = false
 	    }, delayTime)
     })
     .catch((error) => {
         console.error('Error making move:', error)
+        delay = false
     })
 }
 
 function startNewGame() {
     board = Chessboard('endgame_board', getConfig())
-    game = new Game(fen)
+    game = new Game(fen, dtz)
     player = game.getTurn()
     setMateCounter(dtz)
 

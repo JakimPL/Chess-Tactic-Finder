@@ -77,6 +77,8 @@ class EndgameStudy:
 
     def move(self, fen: str, move: str) -> MoveReply:
         self.board = chess.Board(fen)
+        previous_dtz = self.tablebase.probe_dtz(self.board)
+
         move = chess.Move.from_uci(move)
         self.play_move(move)
         if self.board.is_game_over():
@@ -84,7 +86,8 @@ class EndgameStudy:
                 uci=None,
                 san=None,
                 fen=self.board.fen(),
-                dtz=0
+                previous_dtz=previous_dtz,
+                current_dtz=0
             )
 
         reply = self.reply()
@@ -95,5 +98,6 @@ class EndgameStudy:
             uci=reply.uci(),
             san=san,
             fen=self.board.fen(),
-            dtz=self.tablebase.probe_dtz(self.board)
+            previous_dtz=previous_dtz,
+            current_dtz=self.tablebase.probe_dtz(self.board)
         )

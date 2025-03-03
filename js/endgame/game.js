@@ -55,6 +55,16 @@ class Game {
         return this.chess.game_over()
     }
 
+    getResult() {
+        if (this.isOver()) {
+            if (this.chess.in_draw()) {
+                return '½-½'
+            } else if (this.chess.in_checkmate()) {
+                return this.chess.turn() == 'w' ? '0-1' : '1-0'
+            }
+        }
+    }
+
     getTurn() {
         return this.chess.turn()
     }
@@ -65,5 +75,13 @@ class Game {
 
     isLastMove() {
         return this.currentMove == this.states.length - 1
+    }
+
+    getDTZ() {
+        return this.states[this.currentMove].dtz
+    }
+
+    updateDTZ(dtz) {
+        this.states[this.currentMove].dtz = dtz
     }
 }

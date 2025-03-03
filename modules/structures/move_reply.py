@@ -7,4 +7,5 @@ class MoveReply:
     uci: Optional[str]
     san: Optional[str]
     fen: str
-    dtz: int
+    previous_dtz: int
+    current_dtz: int
