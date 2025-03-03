@@ -199,6 +199,7 @@ class EndgameGenerator:
             dtz: Optional[int] = None,
             white: Optional[bool] = None,
             white_to_move: Optional[bool] = None,
+            result: Optional[str] = None,
             bishop_color: Optional[bool] = None,
     ):
         connection = self.get_connection()
@@ -215,6 +216,9 @@ class EndgameGenerator:
         if white_to_move is not None:
             query += ' AND white_to_move = ?'
             params.append(white_to_move)
+        if result is not None:
+            query += ' AND result = ?'
+            params.append(result)
         if bishop_color is not None:
             query += ' AND bishop_color = ?'
             params.append(bishop_color)

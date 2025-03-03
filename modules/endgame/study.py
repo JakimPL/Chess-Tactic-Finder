@@ -33,7 +33,7 @@ class EndgameStudy:
             bishop_color: Optional[bool] = None
     ):
         bishop_color = bishop_color if bishop_color is not None else bool(random.getrandbits(1))
-        choices = self.generator.find_positions(dtz, white, white, bishop_color)
+        choices = self.generator.find_positions(dtz, white, white, result="win", bishop_color=bishop_color)
         return random.choice(choices)
 
     def start_game(

@@ -1,9 +1,7 @@
 board = Chessboard('endgame_board')
 
 var game = null
-var fen = null
 var player = null
-var dtz = 2
 var movesList = null
 
 var delay = false
@@ -142,9 +140,15 @@ function setMateCounter(dtz) {
 }
 
 function requestNewGame() {
+    const mateIn = document.getElementById('mate_in').value;
+    const dtz = mateIn == 1 ? 1 : (mateIn - 1) * 2;
+    const whiteToPlay = document.getElementById('white_to_play').checked;
+    const bishopColor = document.getElementById('bishop_color').value == 'light';
+
     const data = {
         dtz: dtz,
-        white: true
+        white: whiteToPlay,
+        bishop_color: bishopColor
     }
 
     fetch('/endgame/start', {
@@ -163,8 +167,9 @@ function requestNewGame() {
     .then(data => {
         fen = data.fen
         console.log('New game started:', fen)
-        startNewGame()
+        startNewGame(fen, dtz)
         movesList = new MovesList([], {}, game.turn == 'b', () => {})
+        movesList.render()
     })
     .catch((error) => {
         console.error('Error starting new game:', error)
@@ -211,7 +216,7 @@ function sendMove(fen, uci) {
     })
 }
 
-function startNewGame() {
+function startNewGame(fen, dtz) {
     board = Chessboard('endgame_board', getConfig())
     game = new Game(fen, dtz)
     player = game.getTurn()
@@ -224,3 +229,4 @@ function startNewGame() {
 
 requestNewGame()
 bindKeys(backward, forward)
+document.getElementById('new_study').addEventListener('click', requestNewGame);
