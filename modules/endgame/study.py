@@ -59,7 +59,7 @@ class EndgameStudy:
             probabilities = weights / weights.sum()
             return np.random.choice(list(moves.keys()), p=probabilities)
 
-    def reply(self) -> chess.Move:
+    def prepare_replies(self) -> Dict[chess.Move, int]:
         legal_moves = list(self.board.legal_moves)
         replies = {}
 
@@ -67,27 +67,50 @@ class EndgameStudy:
             self.board.push(move)
             dtz = self.tablebase.get_dtz(self.board)
             if dtz is not None:
-                replies[move] = dtz if dtz > 0 else float('inf')
+                replies[move] = dtz
             self.board.pop()
+
+        return replies
+
+    def reply(self) -> chess.Move:
+        replies = self.prepare_replies()
 
         if not replies:
             raise ValueError("No legal moves with DTZ found")
 
         return self.choose_move(replies)
 
-    def move(self, fen: str, move: str) -> MoveReply:
+    @staticmethod
+    def rate_move(previous_dtz: int, current_dtz: int) -> str:
+        if previous_dtz > 0:
+            if current_dtz >= 0:
+                return "blunder"
+            elif abs(previous_dtz + current_dtz) > 8:
+                return "mistake"
+            elif abs(previous_dtz + current_dtz) > 2:
+                return "inaccuracy"
+            elif abs(previous_dtz + current_dtz) == 1:
+                return "best"
+
+        return ""
+
+    def move(self, fen: str, uci: str) -> MoveReply:
         self.board = chess.Board(fen)
         previous_dtz = self.tablebase.probe_dtz(self.board)
+        move = chess.Move.from_uci(uci)
 
-        move = chess.Move.from_uci(move)
         self.play_move(move)
+        current_dtz = self.tablebase.probe_dtz(self.board)
+        rating = self.rate_move(previous_dtz, current_dtz)
+
         if self.board.is_game_over():
             return MoveReply(
                 uci=None,
                 san=None,
                 fen=self.board.fen(),
                 previous_dtz=previous_dtz,
-                current_dtz=0
+                current_dtz=current_dtz,
+                rating=rating
             )
 
         reply = self.reply()
@@ -99,5 +122,6 @@ class EndgameStudy:
             san=san,
             fen=self.board.fen(),
             previous_dtz=previous_dtz,
-            current_dtz=self.tablebase.probe_dtz(self.board)
+            current_dtz=self.tablebase.probe_dtz(self.board),
+            rating=rating
         )

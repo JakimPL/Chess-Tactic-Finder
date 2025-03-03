@@ -310,9 +310,9 @@ function setFEN(previousMoveIndex) {
     board.position(fen)
 
     clearSquaresColors()
-    var move = review.moves[game.moveIndex]
+    const move = review.moves[game.moveIndex]
+    const moveColor = movesList.getMoveColor(movesList.getMoveType(move.classification))
     if (move != null) {
-        moveColor = movesList.getMoveColor(movesList.getMoveType(move.classification))
         colorSquare(move.move.slice(0, 2), moveColor)
         colorSquare(move.move.slice(2, 4), moveColor)
     }

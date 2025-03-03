@@ -7,15 +7,19 @@ class MovesList {
         this.callback = callback
     }
 
-    addMove(move, highlight = false) {
-        this.moves.push(move)
+    addMove(uci, san, highlight = false, moveType = '', moveDescription = '') {
+        this.moves.push(san)
+        this.review.push({
+            move: uci,
+            classification: { type: moveType, description: moveDescription }
+        })
 
         const index = this.moves.length - 1
         if (index % 2 == 0) {
             this.addLine(index)
         }
 
-        this.renderMove(move, index)
+        this.renderMove(san, index)
         if (highlight) {
             this.highlightNextMove(index - 1, index)
         }
@@ -155,5 +159,16 @@ class MovesList {
 
         move = this.review[currentMoveIndex]
         this.highlightMove(currentMoveIndex, highlightColor)
+    }
+
+    updateReview(index, moveType = '', moveDescription = '') {
+        this.review[index].classification.type = moveType
+        this.review[index].classification.description = moveDescription
+        this.renderMove(this.moves[index], index)
+    }
+
+    truncate(index) {
+        this.moves = movesList.moves.slice(0, index)
+        this.review = movesList.review.slice(0, index)
     }
 }

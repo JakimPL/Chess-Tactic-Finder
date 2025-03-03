@@ -62,11 +62,11 @@ function onDrop(source, target) {
 		return 'snapback'
 	} else {
         if (!isLastMove) {
-            movesList.moves = movesList.moves.slice(0, game.currentMove - 1)
+            movesList.truncate(game.currentMove - 1)
             movesList.render()
         }
         moveIndex = game.currentMove
-        movesList.addMove(move.san, true)
+        movesList.addMove(uci, move.san, true)
         sendMove(fen, uci)
 	}
 }
@@ -168,7 +168,7 @@ function requestNewGame() {
         fen = data.fen
         console.log('New game started:', fen)
         startNewGame(fen, dtz)
-        movesList = new MovesList([], {}, game.turn == 'b', () => {})
+        movesList = new MovesList([], [], game.turn == 'b', () => {})
         movesList.render()
     })
     .catch((error) => {
@@ -177,6 +177,7 @@ function requestNewGame() {
 }
 
 function sendMove(fen, uci) {
+    clearSquaresColors()
     const data = {
         fen: fen,
         move: uci
@@ -198,6 +199,11 @@ function sendMove(fen, uci) {
     .then(data => {
         game.updateDTZ(data.previous_dtz)
         setMateCounter(data.previous_dtz)
+        if (data.rating != '') {
+            movesList.updateReview(game.currentMove - 1, data.rating)
+            colorSquares()
+        }
+
         delay = true
         setTimeout(() => {
             moveIndex = game.currentMove
@@ -205,7 +211,7 @@ function sendMove(fen, uci) {
             if (data.uci != null) {
                 game.move(data.uci, data.current_dtz)
                 setMateCounter(data.current_dtz)
-                movesList.addMove(data.san, true)
+                movesList.addMove(data.uci, data.san, true)
             }
             delay = false
 	    }, delayTime)
@@ -224,6 +230,16 @@ function startNewGame(fen, dtz) {
 
     if (player == 'b') {
         board.flip()
+    }
+}
+
+function colorSquares() {
+    const move = movesList.review[game.currentMove - 1]
+    const color = movesList.getMoveColor(movesList.getMoveType(move.classification))
+    if (move != null) {
+        console.log(move)
+        colorSquare(move.move.slice(0, 2), color)
+        colorSquare(move.move.slice(2, 4), color)
     }
 }
 

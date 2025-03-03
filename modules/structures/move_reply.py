@@ -9,3 +9,4 @@ class MoveReply:
     fen: str
     previous_dtz: int
     current_dtz: int
+    rating: str = ""
