@@ -3,7 +3,7 @@ board = Chessboard('endgame_board')
 var game = null
 var fen = null
 var player = null
-var dtz = 30
+var dtz = 6
 var movesList = null
 var delayTime = 500
 
@@ -19,6 +19,22 @@ $('#forward').on('click', function() {
 
 $('#flip').on('click', function() {
     board.flip()
+})
+
+$('#copyFEN').on('click', function() {
+    if (game == null) {
+        return
+    }
+
+    var fen = game.chess.fen()
+    if (fen != null && fen != '') {
+        navigator.clipboard.writeText(fen)
+        setPanel($panel, 'FEN copied to clipboard!')
+    }
+})
+
+$('#copyPGN').on('click', function() {
+    // not implemented yet
 })
 
 function getConfig() {
@@ -39,14 +55,19 @@ function onDrop(source, target) {
     document.getElementsByTagName('body')[0].style.overflow = 'scroll'
     var uci = source + target
     var fen = game.getFEN()
+    var isLastMove = game.isLastMove()
     var move = game.move(uci)
 
 	if (move === null) {
 		return 'snapback'
 	} else {
+        if (!isLastMove) {
+            movesList.moves = movesList.moves.slice(0, game.currentMove - 1)
+            movesList.render()
+        }
         moveIndex = game.currentMove
-	    movesList.addMove(move.san, true)
-		sendMove(fen, uci)
+        movesList.addMove(move.san, true)
+        sendMove(fen, uci)
 	}
 }
 
@@ -92,33 +113,29 @@ function backward() {
 
 function goTo(moveIndex) {
     if (game !== null) {
-        var previousMoveIndex = game.moveIndex
-        var nextMove = game.goTo(moveIndex)
-        if (nextMove != null) {
-            setFEN(previousMoveIndex)
-        }
+        // not implemented
     }
 }
 
 function prepareMateCounter(dtz) {
     if (dtz === null || dtz === undefined) {
-        return '';
+        return ''
     }
-    const sign = dtz < 0 ? '-' : '';
-    const movesToMate = Math.ceil((Math.abs(dtz) + 1) / 2);
-    return `#${sign}${movesToMate}`;
+    const sign = dtz < 0 ? '-' : ''
+    const movesToMate = Math.ceil((Math.abs(dtz) + 1) / 2)
+    return `${sign}M${movesToMate}`
 }
 
 function setMateCounter(dtz) {
-    const mateCounter = prepareMateCounter(dtz);
-    document.getElementById('mate_counter').innerText = mateCounter;
+    const mateCounter = prepareMateCounter(dtz)
+    document.getElementById('mate_counter').innerText = mateCounter
 }
 
 function requestNewGame() {
     const data = {
         dtz: dtz,
         white: true
-    };
+    }
 
     fetch('/endgame/start', {
         method: 'POST',
@@ -129,26 +146,26 @@ function requestNewGame() {
     })
     .then(response => {
         if (!response.ok) {
-            throw new Error('Network response was not ok ' + response.statusText);
+            throw new Error('Network response was not ok ' + response.statusText)
         }
         return response.json()
     })
     .then(data => {
         fen = data.fen
-        console.log('New game started:', fen);
+        console.log('New game started:', fen)
         startNewGame()
         movesList = new MovesList([], {}, game.turn == 'b', () => {})
     })
     .catch((error) => {
         console.error('Error starting new game:', error)
-    });
+    })
 }
 
 function sendMove(fen, uci) {
     const data = {
         fen: fen,
         move: uci
-    };
+    }
 
     fetch('/endgame/move', {
         method: 'POST',
@@ -159,33 +176,36 @@ function sendMove(fen, uci) {
     })
     .then(response => {
         if (!response.ok) {
-            throw new Error('Network response was not ok ' + response.statusText);
+            throw new Error('Network response was not ok ' + response.statusText)
         }
-        return response.json();
+        return response.json()
     })
     .then(data => {
         setTimeout(() => {
             moveIndex = game.currentMove
             board.position(data.fen)
-            game.move(data.uci)
-            setMateCounter(data.dtz)
-            movesList.addMove(data.san, true)
+            if (data.uci != null) {
+                game.move(data.uci)
+                setMateCounter(data.dtz)
+                movesList.addMove(data.san, true)
+            }
 	    }, delayTime)
     })
     .catch((error) => {
         console.error('Error making move:', error)
-    });
+    })
 }
 
 function startNewGame() {
     board = Chessboard('endgame_board', getConfig())
     game = new Game(fen)
     player = game.getTurn()
-    setMateCounter(dtz);
+    setMateCounter(dtz)
 
     if (player == 'b') {
         board.flip()
     }
 }
 
-requestNewGame();
+requestNewGame()
+bindKeys(backward, forward)

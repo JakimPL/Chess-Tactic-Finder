@@ -132,3 +132,15 @@ function colorSquare(square, color) {
 function clearSquaresColors () {
     $('.square-55d63').css('background', '')
 }
+
+function bindKeys(backward, forward) {
+    document.onkeydown = function checkKey(event) {
+        event = event || window.event;
+
+        if (event.keyCode == '37') {
+            backward()
+        } else if (event.keyCode == '39') {
+            forward()
+        }
+    }
+}

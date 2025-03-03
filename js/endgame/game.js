@@ -1,12 +1,12 @@
 class Game {
-    constructor(fen) {
+    constructor(fen, dtz) {
         this.fen = fen
         this.chess = new Chess(fen)
-        this.moves = []
+        this.states = [new State(fen, dtz, null)]
         this.currentMove = 0
     }
 
-    move(uci) {
+    move(uci, dtz) {
         var source = uci.substr(0, 2)
         var target = uci.substr(2, 4)
         var move = this.chess.move({
@@ -16,8 +16,10 @@ class Game {
 	    })
 
         if (move != null) {
-            this.moves = this.moves.slice(0, this.currentMove)
-            this.moves.push(move)
+            if (!this.isLastMove()) {
+                this.truncate()
+            }
+            this.states.push(new State(this.chess.fen(), dtz, move))
             this.currentMove++
         }
 
@@ -35,14 +37,18 @@ class Game {
     }
 
     forward() {
-        if (this.currentMove < this.moves.length) {
-            var move = this.moves[this.currentMove]
+        if (!this.isLastMove()) {
+            var move = this.states[this.currentMove + 1].move
             this.chess.move(move)
             this.currentMove++
             return true
         }
 
         return false
+    }
+
+    truncate() {
+        this.states = this.states.slice(0, this.currentMove + 1)
     }
 
     isOver() {
@@ -55,5 +61,9 @@ class Game {
 
     getFEN() {
         return this.chess.fen()
+    }
+
+    isLastMove() {
+        return this.currentMove == this.states.length - 1
     }
 }

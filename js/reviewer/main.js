@@ -403,14 +403,4 @@ function refresh(gather) {
 
 loadConfiguration()
 loadFavorites()
-
-document.onkeydown = function checkKey(event) {
-    event = event || window.event;
-
-    if (event.keyCode == '37') {
-        backward()
-    } else if (event.keyCode == '39') {
-        forward()
-    }
-}
-
+bindKeys(backward, forward)
