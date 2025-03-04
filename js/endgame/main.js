@@ -194,13 +194,13 @@ function sendMove(fen, uci) {
 function requestNewGame() {
     const mateIn = document.getElementById('mate_in').value;
     const dtz = mateIn == 1 ? 1 : (mateIn - 1) * 2;
-    const whiteToPlay = document.getElementById('white_to_play').checked;
-    const bishopColor = document.getElementById('bishop_color').value == 'light';
+    const whiteToPlay = document.getElementById('side').value;
+    const bishopColor = document.getElementById('bishop_color').value;
 
     const data = {
         dtz: dtz,
-        white: whiteToPlay,
-        bishop_color: bishopColor
+        white: whiteToPlay == 'random' ? null : whiteToPlay == 'white',
+        bishop_color: bishopColor == 'random' ? null : bishopColor == 'light'
     }
 
     markButton('new_study')

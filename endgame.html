@@ -52,31 +52,50 @@
         </div>
     </div>
     <div class="column" id="games_panel">
+        <div class="row" id="analysis">
         <h3>Analysis</h3>
-        <div id="mate_counter_container">
-                <p id="mate_counter"></p>
-            </div>
-        <div id="moves">
-            <table id="moves_list_table"></table>
-            <div id="moves_evaluation">
-                <img id="evaluation_chart" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" alt="evaluation chart"/>
+            <div id="mate_counter_container">
+                    <p id="mate_counter"></p>
+                </div>
+            <div id="moves">
+                <table id="moves_list_table"></table>
+                <div id="moves_evaluation">
+                    <img id="evaluation_chart" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" alt="evaluation chart"/>
+                </div>
             </div>
         </div>
-        <div class="column" id="endgame_study_options">
+        <div class="row">
             <h3>Endgame Study Options</h3>
-            <label for="mate_in">Select mate in X:</label>
-            <input type="range" id="mate_in" min="1" max="32" value="2" oninput="document.getElementById('mate_in_value').innerText = this.value">
-            <span id="mate_in_value">1</span>
-            <br>
-            <label for="white_to_play">White to play?</label>
-            <input type="checkbox" id="white_to_play" checked>
-            <br>
-            <label for="bishop_color">Bishop color:</label>
-            <select id="bishop_color">
-                <option value="light">Light-squared</option>
-                <option value="dark">Dark-squared</option>
-            </select>
-            <br>
+            <div class="column">
+                <table>
+                    <tr>
+                        <td><label for="mate_in">Mate in:</label></td>
+                        <td><input type="number" class="options" id="mate_in" min="1" max="32" value="2"></td>
+                    </tr>
+                    <tr>
+                        <td><label for="side">Side:</label></td>
+                        <td>
+                            <select id="side" class="options">
+                                <option value="white">White</option>
+                                <option value="black">Black</option>
+                                <option value="random">Random</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><label for="bishop_color">Bishop color:</label></td>
+                        <td>
+                            <select id="bishop_color" class="options">
+                                <option value="light">Light-squared</option>
+                                <option value="dark">Dark-squared</option>
+                                <option value="random">Random</option>
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="buttons">
             <button id="new_study" type="button">New Study</button>
         </div>
     </div>

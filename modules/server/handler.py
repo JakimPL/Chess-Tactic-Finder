@@ -145,7 +145,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             dtz = data.get('dtz')
             white = data.get('white')
             bishop_color = data.get('bishop_color')
-            if dtz is not None and white is not None:
+            if dtz is not None:
                 fen = endgame_study.start_game(dtz, white, bishop_color)
                 self.send_json({'fen': fen})
             else:
