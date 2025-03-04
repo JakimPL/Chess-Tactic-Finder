@@ -82,15 +82,19 @@ class EndgameStudy:
 
     @staticmethod
     def rate_move(previous_dtz: int, current_dtz: int) -> str:
-        if previous_dtz > 0:
-            if current_dtz >= 0:
-                return "blunder"
-            elif abs(previous_dtz + current_dtz) > 8:
-                return "mistake"
-            elif abs(previous_dtz + current_dtz) > 2:
-                return "inaccuracy"
-            elif abs(previous_dtz + current_dtz) == 1:
+        abs_difference = abs(previous_dtz + current_dtz)
+        if previous_dtz != 0:
+            if abs_difference <= 1:
                 return "best"
+            elif current_dtz * previous_dtz >= 0:
+                return "blunder"
+            elif abs_difference > 8:
+                return "mistake"
+            elif abs_difference > 2:
+                return "inaccuracy"
+        else:
+            if abs(current_dtz) > 0:
+                return "blunder"
 
         return ""
 
@@ -101,7 +105,7 @@ class EndgameStudy:
 
         self.play_move(move)
         current_dtz = self.tablebase.probe_dtz(self.board)
-        rating = self.rate_move(previous_dtz, current_dtz)
+        previous_rating = self.rate_move(previous_dtz, current_dtz)
 
         if self.board.is_game_over():
             return MoveReply(
@@ -110,18 +114,21 @@ class EndgameStudy:
                 fen=self.board.fen(),
                 previous_dtz=previous_dtz,
                 current_dtz=current_dtz,
-                rating=rating
+                previous_rating=previous_rating
             )
 
         reply = self.reply()
         san = self.board.san(reply)
         self.play_move(reply)
+        new_dtz = self.tablebase.probe_dtz(self.board)
+        current_rating = self.rate_move(current_dtz, new_dtz)
 
         return MoveReply(
             uci=reply.uci(),
             san=san,
             fen=self.board.fen(),
             previous_dtz=previous_dtz,
-            current_dtz=self.tablebase.probe_dtz(self.board),
-            rating=rating
+            current_dtz=new_dtz,
+            previous_rating=previous_rating,
+            current_rating=current_rating
         )

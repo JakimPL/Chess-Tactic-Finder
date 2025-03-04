@@ -49,6 +49,8 @@ function getConfig() {
 
 function setPosition() {
     board.position(game.getFEN())
+    setMateCounter(game.getDTZ())
+    colorSquares()
 }
 
 function onDrop(source, target) {
@@ -99,7 +101,6 @@ function forward() {
         moveIndex = game.currentMove - 1
         movesList.highlightNextMove(previousMoveIndex, moveIndex)
         setPosition()
-        setMateCounter(game.getDTZ())
     }
 }
 
@@ -109,13 +110,20 @@ function backward() {
         moveIndex = game.currentMove - 1
         movesList.highlightNextMove(previousMoveIndex, moveIndex)
         setPosition()
-        setMateCounter(game.getDTZ())
     }
 }
 
 function goTo(moveIndex) {
     if (!delay && game !== null) {
         // not implemented
+        setPosition()
+    }
+}
+
+function updateMoveRating(rating) {
+    if (rating != '') {
+        movesList.updateReview(game.currentMove - 1, rating)
+        colorSquares()
     }
 }
 
@@ -137,43 +145,6 @@ function prepareMateCounter(dtz) {
 function setMateCounter(dtz) {
     const mateCounter = prepareMateCounter(dtz)
     document.getElementById('mate_counter').innerText = mateCounter
-}
-
-function requestNewGame() {
-    const mateIn = document.getElementById('mate_in').value;
-    const dtz = mateIn == 1 ? 1 : (mateIn - 1) * 2;
-    const whiteToPlay = document.getElementById('white_to_play').checked;
-    const bishopColor = document.getElementById('bishop_color').value == 'light';
-
-    const data = {
-        dtz: dtz,
-        white: whiteToPlay,
-        bishop_color: bishopColor
-    }
-
-    fetch('/endgame/start', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok ' + response.statusText)
-        }
-        return response.json()
-    })
-    .then(data => {
-        fen = data.fen
-        console.log('New game started:', fen)
-        startNewGame(fen, dtz)
-        movesList = new MovesList([], [], game.turn == 'b', () => {})
-        movesList.render()
-    })
-    .catch((error) => {
-        console.error('Error starting new game:', error)
-    })
 }
 
 function sendMove(fen, uci) {
@@ -199,10 +170,7 @@ function sendMove(fen, uci) {
     .then(data => {
         game.updateDTZ(data.previous_dtz)
         setMateCounter(data.previous_dtz)
-        if (data.rating != '') {
-            movesList.updateReview(game.currentMove - 1, data.rating)
-            colorSquares()
-        }
+        updateMoveRating(data.previous_rating)
 
         delay = true
         setTimeout(() => {
@@ -212,6 +180,7 @@ function sendMove(fen, uci) {
                 game.move(data.uci, data.current_dtz)
                 setMateCounter(data.current_dtz)
                 movesList.addMove(data.uci, data.san, true)
+                updateMoveRating(data.current_rating)
             }
             delay = false
 	    }, delayTime)
@@ -222,11 +191,52 @@ function sendMove(fen, uci) {
     })
 }
 
+function requestNewGame() {
+    const mateIn = document.getElementById('mate_in').value;
+    const dtz = mateIn == 1 ? 1 : (mateIn - 1) * 2;
+    const whiteToPlay = document.getElementById('white_to_play').checked;
+    const bishopColor = document.getElementById('bishop_color').value == 'light';
+
+    const data = {
+        dtz: dtz,
+        white: whiteToPlay,
+        bishop_color: bishopColor
+    }
+
+    markButton('new_study')
+    fetch('/endgame/start', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText)
+        }
+        return response.json()
+    })
+    .then(data => {
+        fen = data.fen
+        console.log('New game started:', fen)
+        setTimeout(() => {
+            startNewGame(fen, dtz)
+            movesList = new MovesList([], [], game.turn == 'b', () => {})
+            movesList.render()
+        }, 50)
+    })
+    .catch((error) => {
+        console.error('Error starting new game:', error)
+    })
+}
+
 function startNewGame(fen, dtz) {
     board = Chessboard('endgame_board', getConfig())
     game = new Game(fen, dtz)
     player = game.getTurn()
     setMateCounter(dtz)
+    unmarkButton('new_study')
 
     if (player == 'b') {
         board.flip()
@@ -234,10 +244,10 @@ function startNewGame(fen, dtz) {
 }
 
 function colorSquares() {
+    clearSquaresColors()
     const move = movesList.review[game.currentMove - 1]
-    const color = movesList.getMoveColor(movesList.getMoveType(move.classification))
     if (move != null) {
-        console.log(move)
+        const color = movesList.getMoveColor(movesList.getMoveType(move.classification))
         colorSquare(move.move.slice(0, 2), color)
         colorSquare(move.move.slice(2, 4), color)
     }
