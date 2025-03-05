@@ -64,6 +64,7 @@ class MovesList {
             case 'mistake': return '?';
             case 'miss': return '×';
             case 'blunder': return '??';
+            case 'forced': return '⮕';
             default: return '';
         }
     }
@@ -77,6 +78,7 @@ class MovesList {
             case '?': return mistakeColor;
             case '×': return missColor;
             case '??': return blunderColor;
+            case '⮕': return forcedColor;
             default: return null;
         }
     }

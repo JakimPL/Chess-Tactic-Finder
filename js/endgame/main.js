@@ -1,5 +1,7 @@
 board = Chessboard('endgame_board')
 
+const $panel = $('#panel')
+
 var game = null
 var player = null
 var movesList = null

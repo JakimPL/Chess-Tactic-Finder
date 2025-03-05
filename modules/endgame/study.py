@@ -84,16 +84,19 @@ class EndgameStudy:
         return self.choose_move(replies)
 
     @staticmethod
-    def rate_move(previous_dtz: int, current_dtz: int) -> str:
-        abs_difference = abs(previous_dtz + current_dtz)
+    def rate_move(legal_moves: int, previous_dtz: int, current_dtz: int) -> str:
+        if legal_moves == 1:
+            return "forced"
+
+        difference = previous_dtz + current_dtz
         if previous_dtz != 0:
-            if abs_difference == 1 or (abs_difference == 0 and current_dtz != 0):
+            if difference == 1 or (difference == 0 and current_dtz != 0):
                 return "best"
             elif current_dtz * previous_dtz >= 0:
                 return "blunder"
-            elif abs_difference > 8:
+            elif abs(difference) > 8:
                 return "mistake"
-            elif abs_difference > 2:
+            elif abs(difference) > 2:
                 return "inaccuracy"
         else:
             if abs(current_dtz) > 0:
@@ -105,10 +108,11 @@ class EndgameStudy:
         self.board = chess.Board(fen)
         previous_dtz = self.tablebase.probe_dtz(self.board)
         move = chess.Move.from_uci(uci)
+        legal_moves = len(list(self.board.legal_moves))
 
         self.play_move(move)
         current_dtz = self.tablebase.probe_dtz(self.board)
-        previous_rating = self.rate_move(previous_dtz, current_dtz)
+        previous_rating = self.rate_move(legal_moves, previous_dtz, current_dtz)
 
         if self.board.is_game_over():
             return MoveReply(
@@ -122,9 +126,10 @@ class EndgameStudy:
 
         reply = self.reply()
         san = self.board.san(reply)
+        legal_moves = len(list(self.board.legal_moves))
         self.play_move(reply)
         new_dtz = self.tablebase.probe_dtz(self.board)
-        current_rating = self.rate_move(current_dtz, new_dtz)
+        current_rating = self.rate_move(legal_moves, current_dtz, new_dtz)
 
         return MoveReply(
             uci=reply.uci(),
