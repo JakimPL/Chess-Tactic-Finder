@@ -23,6 +23,8 @@ __pycache__/
 *.rtbw
 *.rtbz
 *.pkl
+*.cp4
+md5sum
 
 chess.js
 chessboard-1.0.0.min.js

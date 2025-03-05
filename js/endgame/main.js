@@ -129,23 +129,23 @@ function updateMoveRating(rating) {
     }
 }
 
-function prepareMateCounter(dtz) {
+function prepareMateCounter(dtm) {
     var result = game.getResult()
     if (result != null) {
         return result
     }
 
-    if (dtz === null || dtz === undefined) {
+    if (dtm === null || dtm === undefined) {
         return ''
     }
 
-    const sign = dtz < 0 ? '-' : ''
-    const movesToMate = Math.ceil((Math.abs(dtz) + 1) / 2)
+    const sign = dtm < 0 ? '-' : ''
+    const movesToMate = Math.ceil((Math.abs(dtm) + 1) / 2)
     return `${sign}M${movesToMate}`
 }
 
-function setMateCounter(dtz) {
-    const mateCounter = prepareMateCounter(dtz)
+function setMateCounter(dtm) {
+    const mateCounter = prepareMateCounter(dtm)
     document.getElementById('mate_counter').innerText = mateCounter
 }
 
@@ -170,8 +170,8 @@ function sendMove(fen, uci) {
         return response.json()
     })
     .then(data => {
-        game.updateDTZ(data.previous_dtz)
-        setMateCounter(data.previous_dtz)
+        game.updateDTZ(data.previous_dtm)
+        setMateCounter(data.previous_dtm)
         updateMoveRating(data.previous_rating)
 
         delay = true
@@ -179,8 +179,8 @@ function sendMove(fen, uci) {
             moveIndex = game.currentMove
             board.position(data.fen)
             if (data.uci != null) {
-                game.move(data.uci, data.current_dtz)
-                setMateCounter(data.current_dtz)
+                game.move(data.uci, data.current_dtm)
+                setMateCounter(data.current_dtm)
                 movesList.addMove(data.uci, data.san, true)
                 updateMoveRating(data.current_rating)
             }
@@ -195,12 +195,12 @@ function sendMove(fen, uci) {
 
 function requestNewGame() {
     const mateIn = document.getElementById('mate_in').value;
-    const dtz = mateIn == 1 ? 1 : (mateIn - 1) * 2;
+    const dtm = mateIn == 1 ? 1 : (mateIn - 1) * 2;
     const whiteToPlay = document.getElementById('side').value;
     const bishopColor = document.getElementById('bishop_color').value;
 
     const data = {
-        dtz: dtz,
+        dtm: dtm,
         white: whiteToPlay == 'random' ? null : whiteToPlay == 'white',
         bishop_color: bishopColor == 'random' ? null : bishopColor == 'light'
     }
@@ -223,7 +223,7 @@ function requestNewGame() {
         fen = data.fen
         console.log('New game started:', fen)
         setTimeout(() => {
-            startNewGame(fen, dtz)
+            startNewGame(fen, dtm)
             movesList = new MovesList([], [], game.turn == 'b', () => {})
             movesList.render()
         }, 50)
@@ -233,11 +233,11 @@ function requestNewGame() {
     })
 }
 
-function startNewGame(fen, dtz) {
+function startNewGame(fen, dtm) {
     board = Chessboard('endgame_board', getConfig())
-    game = new Game(fen, dtz)
+    game = new Game(fen, dtm)
     player = game.getTurn()
-    setMateCounter(dtz)
+    setMateCounter(dtm)
     unmarkButton('new_study')
 
     if (player == 'b') {

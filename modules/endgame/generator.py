@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import List, Dict, Optional, Tuple, Union
 
 import chess
+import chess.gaviota
 import chess.syzygy
 from tqdm import tqdm
 
@@ -43,6 +44,7 @@ class EndgameGenerator:
             CREATE TABLE IF NOT EXISTS positions (
                 fen TEXT,
                 dtz INTEGER,
+                dtm INTEGER,
                 white BOOLEAN,
                 white_to_move BOOLEAN,
                 result TEXT,
@@ -52,6 +54,7 @@ class EndgameGenerator:
         ''')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_fen ON positions (fen)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_dtz ON positions (dtz)')
+        # cursor.execute('CREATE INDEX IF NOT EXISTS idx_dtm ON positions (dtm)')
         connection.commit()
 
         cursor.execute('SELECT COUNT(*) FROM positions')
@@ -143,9 +146,15 @@ class EndgameGenerator:
                 self.save_partial_results(partial_results_file, partial_result)
 
     @staticmethod
-    def process_batch(batch, pieces, colors_layout, tablebase_path: Union[str, os.PathLike] = TABLEBASE_PATH):
+    def process_batch(
+            batch,
+            pieces,
+            colors_layout,
+            tablebase_path: Union[str, os.PathLike] = TABLEBASE_PATH
+    ):
         results = []
-        tablebase = chess.syzygy.open_tablebase(tablebase_path)
+        syzygy = chess.syzygy.open_tablebase(tablebase_path)
+        gaviota = chess.gaviota.open_tablebase(tablebase_path)
 
         for squares in batch:
             for white, colors in colors_layout.items():
@@ -159,13 +168,15 @@ class EndgameGenerator:
                         continue
 
                     try:
-                        dtz = tablebase.probe_dtz(board)
+                        dtz = syzygy.probe_dtz(board)
+                        dtm = gaviota.probe_dtm(board)
                         result = 'win' if dtz > 0 else 'loss' if dtz < 0 else 'draw'
-                        results.append((board.fen(), int(dtz), white, bool(white_to_move), result, bishop_color))
+                        results.append((board.fen(), int(dtz), int(dtm), white, bool(white_to_move), result, bishop_color))
                     except KeyError:
                         pass
 
-        tablebase.close()
+        syzygy.close()
+        gaviota.close()
         return results
 
     def get_connection(self) -> sqlite3.Connection:
@@ -197,6 +208,7 @@ class EndgameGenerator:
     def find_positions(
             self,
             dtz: Optional[int] = None,
+            dtm: Optional[int] = None,
             white: Optional[bool] = None,
             white_to_move: Optional[bool] = None,
             result: Optional[str] = None,
@@ -210,6 +222,9 @@ class EndgameGenerator:
         if dtz is not None:
             query += ' AND dtz = ?'
             params.append(dtz)
+        if dtm is not None:
+            query += ' AND dtm = ?'
+            params.append(dtm)
         if white is not None:
             query += ' AND white = ?'
             params.append(white)

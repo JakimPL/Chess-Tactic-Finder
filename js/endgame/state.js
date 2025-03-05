@@ -1,7 +1,7 @@
 class State {
-    constructor(fen, dtz, move) {
+    constructor(fen, dtm, move) {
         this.fen = fen
-        this.dtz = dtz
+        this.dtm = dtm
         this.move = move
     }
 }

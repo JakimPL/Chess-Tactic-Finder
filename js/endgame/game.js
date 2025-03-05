@@ -1,12 +1,12 @@
 class Game {
-    constructor(fen, dtz) {
+    constructor(fen, dtm) {
         this.fen = fen
         this.chess = new Chess(fen)
-        this.states = [new State(fen, dtz, null)]
+        this.states = [new State(fen, dtm, null)]
         this.currentMove = 0
     }
 
-    move(uci, dtz) {
+    move(uci, dtm) {
         var source = uci.substr(0, 2)
         var target = uci.substr(2, 4)
         var move = this.chess.move({
@@ -19,7 +19,7 @@ class Game {
             if (!this.isLastMove()) {
                 this.truncate()
             }
-            this.states.push(new State(this.chess.fen(), dtz, move))
+            this.states.push(new State(this.chess.fen(), dtm, move))
             this.currentMove++
         }
 
@@ -78,10 +78,10 @@ class Game {
     }
 
     getDTZ() {
-        return this.states[this.currentMove].dtz
+        return this.states[this.currentMove].dtm
     }
 
-    updateDTZ(dtz) {
-        this.states[this.currentMove].dtz = dtz
+    updateDTZ(dtm) {
+        this.states[this.currentMove].dtm = dtm
     }
 }
