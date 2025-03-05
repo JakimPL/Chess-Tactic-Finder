@@ -13,7 +13,7 @@ class EndgameStudy:
     def __init__(
             self,
             endgame_generator: EndgameGenerator,
-            beta: float = float('inf')
+            beta: float = 2.0
     ):
         self.generator = endgame_generator
         self.tablebase = chess.syzygy.open_tablebase(self.generator.tablebase_path)
@@ -50,7 +50,10 @@ class EndgameStudy:
         self.board.push(move)
 
     def choose_move(self, moves: Dict[chess.Move, int]) -> chess.Move:
-        if self.beta == float('inf'):
+        signs = np.sign(list(moves.values()))
+        min_sign = min(signs)
+        moves = {move: dtz for move, dtz in moves.items() if np.sign(dtz) == min_sign}
+        if self.beta == float('inf') or min_sign == 0:
             max_dtz = max(moves.values())
             best_moves = [move for move, dtz in moves.items() if dtz == max_dtz]
             return np.random.choice(best_moves)
@@ -84,7 +87,7 @@ class EndgameStudy:
     def rate_move(previous_dtz: int, current_dtz: int) -> str:
         abs_difference = abs(previous_dtz + current_dtz)
         if previous_dtz != 0:
-            if abs_difference <= 1:
+            if abs_difference == 1 or (abs_difference == 0 and current_dtz != 0):
                 return "best"
             elif current_dtz * previous_dtz >= 0:
                 return "blunder"
