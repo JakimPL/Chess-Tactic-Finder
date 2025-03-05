@@ -195,7 +195,7 @@ function sendMove(fen, uci) {
 
 function requestNewGame() {
     const mateIn = document.getElementById('mate_in').value;
-    const dtm = mateIn == 1 ? 1 : (mateIn - 1) * 2;
+    const dtm = mateIn * 2 - 1;
     const whiteToPlay = document.getElementById('side').value;
     const bishopColor = document.getElementById('bishop_color').value;
 

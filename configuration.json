@@ -51,7 +51,7 @@
         "gathered_reviews": "json/reviews.json",
         "progress": "json/progress.json",
         "tablebase": "tables",
-        "database": "database/KBNvK.dat",
+        "database": "database/database.db",
         "unix_socket": "./temp/http.socket",
         "log": "log.txt"
     },

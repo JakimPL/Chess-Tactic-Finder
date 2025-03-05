@@ -1,4 +1,3 @@
-import random
 from typing import Dict, Optional
 
 import chess
@@ -32,16 +31,15 @@ class EndgameStudy:
             white: bool = True,
             bishop_color: Optional[bool] = None
     ):
-        bishop_color = bishop_color if bishop_color is not None else bool(random.getrandbits(1))
         choices = self.generator.find_positions(
             dtm=dtm,
             white=white,
             white_to_move=white,
             result="win",
-            bishop_color=bishop_color
+            bishop_color=bishop_color if self.generator.layout == "KBNvK" else None
         )
 
-        return random.choice(choices)
+        return np.random.choice(choices)
 
     def start_game(
             self,

@@ -19,7 +19,7 @@ __pycache__/
 *.txt
 *.exe
 
-*.dat
+*.db
 *.rtbw
 *.rtbz
 *.pkl
