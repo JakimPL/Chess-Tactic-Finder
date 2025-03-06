@@ -9,18 +9,12 @@ from modules.structures.move_reply import MoveReply
 
 
 class EndgameStudy:
-    def __init__(
-            self,
-            endgame_generator: EndgameGenerator,
-            beta: float = 2.0
-    ):
+    def __init__(self, endgame_generator: EndgameGenerator):
         self.generator = endgame_generator
         self.tablebase = chess.gaviota.open_tablebase(self.generator.tablebase_path)
 
         self.board = chess.Board()
         self.starting_position: Optional[str] = None
-
-        self.beta = beta
 
     def __del__(self):
         self.tablebase.close()
@@ -57,16 +51,17 @@ class EndgameStudy:
     def play_move(self, move: chess.Move):
         self.board.push(move)
 
-    def choose_move(self, moves: Dict[chess.Move, int]) -> chess.Move:
+    @staticmethod
+    def choose_move(moves: Dict[chess.Move, int], beta: float) -> chess.Move:
         signs = np.sign(list(moves.values()))
         min_sign = min(signs)
         moves = {move: dtm for move, dtm in moves.items() if np.sign(dtm) == min_sign}
-        if self.beta == float('inf') or min_sign == 0:
+        if beta == float('inf') or min_sign == 0:
             max_dtm = max(moves.values())
             best_moves = [move for move, dtm in moves.items() if dtm == max_dtm]
             return np.random.choice(best_moves)
         else:
-            weights = np.array([abs(dtm) ** self.beta for dtm in moves.values()])
+            weights = np.array([abs(dtm) ** beta for dtm in moves.values()])
             probabilities = weights / weights.sum()
             return np.random.choice(list(moves.keys()), p=probabilities)
 
@@ -83,13 +78,13 @@ class EndgameStudy:
 
         return replies
 
-    def reply(self) -> chess.Move:
+    def reply(self, beta: float) -> chess.Move:
         replies = self.prepare_replies()
 
         if not replies:
             raise ValueError("No legal moves with DTZ found")
 
-        return self.choose_move(replies)
+        return self.choose_move(replies, beta)
 
     @staticmethod
     def rate_move(legal_moves: int, previous_dtm: int, current_dtm: int) -> str:
@@ -112,7 +107,7 @@ class EndgameStudy:
 
         return ""
 
-    def move(self, fen: str, uci: str) -> MoveReply:
+    def move(self, fen: str, uci: str, beta: float) -> MoveReply:
         self.board = chess.Board(fen)
         previous_dtm = self.tablebase.probe_dtm(self.board)
         move = chess.Move.from_uci(uci)
@@ -132,7 +127,7 @@ class EndgameStudy:
                 previous_rating=previous_rating
             )
 
-        reply = self.reply()
+        reply = self.reply(beta)
         san = self.board.san(reply)
         legal_moves = len(list(self.board.legal_moves))
         self.play_move(reply)

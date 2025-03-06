@@ -1,6 +1,14 @@
 board = Chessboard('endgame_board')
 
 const $panel = $('#panel')
+const maxMateInValues = {
+    'KRvK': 16,
+    'KQvK': 10,
+    'KPvK': 28,
+    'KRRvK': 7,
+    'KBBvK': 19,
+    'KBNvK': 33
+}
 
 var game = null
 var player = null
@@ -135,8 +143,8 @@ function prepareMateCounter(dtm) {
         return result
     }
 
-    if (dtm === null || dtm === undefined) {
-        return ''
+    if (dtm === null || dtm === undefined || dtm == 0) {
+        return '-'
     }
 
     const sign = dtm < 0 ? '-' : ''
@@ -150,10 +158,14 @@ function setMateCounter(dtm) {
 }
 
 function sendMove(fen, uci) {
+    const difficulty = document.getElementById('difficulty').value
+    const beta = difficulty == 1.0 ? 'inf' : difficulty / (1 - difficulty)
+
     clearSquaresColors()
     const data = {
         fen: fen,
-        move: uci
+        move: uci,
+        beta: beta
     }
 
     fetch('/endgame/move', {
@@ -194,13 +206,14 @@ function sendMove(fen, uci) {
 }
 
 function requestNewGame() {
-    const mateIn = document.getElementById('mate_in').value;
-    const dtm = mateIn * 2 - 1;
-    const whiteToPlay = document.getElementById('side').value;
-    const bishopColor = document.getElementById('bishop_color').value;
+    const mateIn = document.getElementById('mate_in').value
+    const dtm = mateIn * 2 - 1
+    const whiteToPlay = document.getElementById('side').value
+    const bishopColor = document.getElementById('bishop_color').value
+    const layout = document.getElementById('study_layout').value
 
     const data = {
-        layout: 'KBBvK',
+        layout: layout,
         dtm: dtm,
         white: whiteToPlay == 'random' ? null : whiteToPlay == 'white',
         bishop_color: bishopColor == 'random' ? null : bishopColor == 'light'
@@ -216,7 +229,8 @@ function requestNewGame() {
     })
     .then(response => {
         if (!response.ok) {
-            throw new Error('Network response was not ok ' + response.statusText)
+            unmarkButton('new_study')
+            throw new Error(response.statusText)
         }
         return response.json()
     })
@@ -231,6 +245,7 @@ function requestNewGame() {
     })
     .catch((error) => {
         console.error('Error starting new game:', error)
+        unmarkButton('new_study')
     })
 }
 
@@ -258,4 +273,24 @@ function colorSquares() {
 
 requestNewGame()
 bindKeys(backward, forward)
-document.getElementById('new_study').addEventListener('click', requestNewGame);
+document.getElementById('new_study').addEventListener('click', requestNewGame)
+document.getElementById('study_layout').addEventListener('change', function() {
+    var layout = this.value
+    var maxMateIn = maxMateInValues[layout]
+    var mateInInput = document.getElementById('mate_in')
+
+    mateInInput.max = maxMateIn
+
+    if (parseInt(mateInInput.value) > maxMateIn) {
+        mateInInput.value = maxMateIn
+    }
+
+    var bishopColorRow = document.getElementById('bishop_color').parentElement.parentElement
+    if (layout === 'KBNvK') {
+        bishopColorRow.style.display = ''
+    } else {
+        bishopColorRow.style.display = 'none'
+    }
+})
+
+document.getElementById('study_layout').dispatchEvent(new Event('change'))

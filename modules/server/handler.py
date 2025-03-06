@@ -147,8 +147,11 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             white = data.get('white')
             bishop_color = data.get('bishop_color')
             if layout is not None and dtm is not None:
-                fen = endgame_study.start_game(layout, dtm, white, bishop_color)
-                self.send_json({'fen': fen})
+                try:
+                    fen = endgame_study.start_game(layout, dtm, white, bishop_color)
+                    self.send_json({'fen': fen})
+                except ValueError:
+                    self.send_error(400, 'No position matching the criteria')
             else:
                 self.send_error(400, 'Required parameters not provided')
         elif parsed_url.path == '/endgame/move':
@@ -157,8 +160,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             data = json.loads(self.rfile.read(length).decode('utf-8'))
             fen = data.get('fen')
             move = data.get('move')
+            beta = float(data.get('beta'))
             if fen and move:
-                reply = endgame_study.move(fen, move)
+                reply = endgame_study.move(fen, move, beta)
                 self.send_json(reply.__dict__)
             else:
                 self.send_error(400, 'Move not provided')

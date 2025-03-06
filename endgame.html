@@ -55,7 +55,7 @@
         <div class="row" id="analysis">
         <h3>Analysis</h3>
             <div id="mate_counter_container">
-                    <p id="mate_counter"></p>
+                    <p id="mate_counter">-</p>
                 </div>
             <div id="moves">
                 <table id="moves_list_table"></table>
@@ -69,6 +69,19 @@
             <div class="column">
                 <table>
                     <tr>
+                        <td><label for="study_layout">Study Layout:</label></td>
+                        <td>
+                            <select id="study_layout" class="options">
+                                <option value="KRvK">King + Rook vs King</option>
+                                <option value="KQvK">King + Queen vs King</option>
+                                <option value="KPvK">King + Pawn vs King</option>
+                                <option value="KRRvK">King + 2 Rooks vs King</option>
+                                <option value="KBBvK">King + 2 Bishops vs King</option>
+                                <option value="KBNvK">King + Bishop + Knight vs King</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
                         <td><label for="mate_in">Mate in:</label></td>
                         <td><input type="number" class="options" id="mate_in" min="1" max="32" value="2"></td>
                     </tr>
@@ -81,6 +94,10 @@
                                 <option value="random">Random</option>
                             </select>
                         </td>
+                    </tr>
+                    <tr>
+                        <td><label for="difficulty">Difficulty:</label></td>
+                        <td><input type="number" class="options" id="difficulty" min="0.00" max="1.00" step="0.01" value="0.50"></td>
                     </tr>
                     <tr>
                         <td><label for="bishop_color">Bishop color:</label></td>
