@@ -27,27 +27,30 @@ class EndgameStudy:
 
     def draw_position(
             self,
+            layout: str,
             dtm: int,
             white: bool = True,
             bishop_color: Optional[bool] = None
     ):
         choices = self.generator.find_positions(
+            layout=layout,
             dtm=dtm,
             white=white,
             white_to_move=white,
             result="win",
-            bishop_color=bishop_color if self.generator.layout == "KBNvK" else None
+            bishop_color=bishop_color if layout == "KBNvK" else None
         )
 
         return np.random.choice(choices)
 
     def start_game(
             self,
+            layout: str,
             dtm: int,
             white: bool = True,
             bishop_color: Optional[bool] = None
     ) -> str:
-        self.starting_position = self.draw_position(dtm, white, bishop_color)
+        self.starting_position = self.draw_position(layout, dtm, white, bishop_color)
         self.board = chess.Board(self.starting_position)
         return self.starting_position
 

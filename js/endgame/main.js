@@ -200,6 +200,7 @@ function requestNewGame() {
     const bishopColor = document.getElementById('bishop_color').value;
 
     const data = {
+        layout: 'KBBvK',
         dtm: dtm,
         white: whiteToPlay == 'random' ? null : whiteToPlay == 'white',
         bishop_color: bishopColor == 'random' ? null : bishopColor == 'light'

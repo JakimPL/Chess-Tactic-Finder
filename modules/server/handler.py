@@ -142,11 +142,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             endgame_study = EndgameStudySingleton().get_instance()
             length = int(self.headers['Content-Length'])
             data = json.loads(self.rfile.read(length).decode('utf-8'))
+            layout = data.get('layout')
             dtm = data.get('dtm')
             white = data.get('white')
             bishop_color = data.get('bishop_color')
-            if dtm is not None:
-                fen = endgame_study.start_game(dtm, white, bishop_color)
+            if layout is not None and dtm is not None:
+                fen = endgame_study.start_game(layout, dtm, white, bishop_color)
                 self.send_json({'fen': fen})
             else:
                 self.send_error(400, 'Required parameters not provided')
