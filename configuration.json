@@ -50,6 +50,8 @@
         "gathered_puzzles": "json/puzzles.json",
         "gathered_reviews": "json/reviews.json",
         "progress": "json/progress.json",
+        "tablebase": "tables",
+        "database": "database/database.db",
         "unix_socket": "./temp/http.socket",
         "log": "log.txt"
     },
@@ -66,5 +68,8 @@
     "tactic_player": {
         "hard_progress": true,
         "count_moves_instead_of_puzzles": false
+    },
+    "endgame_study": {
+
     }
 }

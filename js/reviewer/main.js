@@ -9,6 +9,7 @@ var pgn = null
 var fen = null
 var review = null
 var currentReviewId = null
+var movesList = null
 
 var chess = null
 var game = null
@@ -102,7 +103,9 @@ function loadReview(path, reviewId) {
         startGame(pgn)
         setLinks(pgn, fen)
         setButton('favorite', favorites[reviewId] == true)
-        displayMoves(game.moves, review)
+
+        movesList = new MovesList(game.moves, review.moves, game.turn == 'b', goTo)
+        movesList.render()
 
         updateAccuracyInfo()
 
@@ -301,20 +304,15 @@ function setEvaluation() {
 function setFEN(previousMoveIndex) {
     var fen = game.getFEN()
 
-    var move = review.moves[previousMoveIndex]
-    var moveType = move != null ? getMoveType(move.classification) : null
-    var moveColor = getMoveColor(moveType)
-
-    clearSquaresColors()
-    highlightMove(previousMoveIndex, moveColor)
+    movesList.highlightNextMove(previousMoveIndex, game.moveIndex)
 
     chess.load(fen)
     board.position(fen)
 
-    move = review.moves[game.moveIndex]
-    highlightMove(game.moveIndex, highlightColor)
+    clearSquaresColors()
+    const move = review.moves[game.moveIndex]
+    const moveColor = movesList.getMoveColor(movesList.getMoveType(move.classification))
     if (move != null) {
-        moveColor = getMoveColor(getMoveType(move.classification))
         colorSquare(move.move.slice(0, 2), moveColor)
         colorSquare(move.move.slice(2, 4), moveColor)
     }
@@ -348,128 +346,6 @@ function goTo(moveIndex) {
         if (nextMove != null) {
             setFEN(previousMoveIndex)
         }
-    }
-}
-
-function highlightMove(moveIndex, color) {
-    var moveElement = document.getElementById(`half_move${moveIndex}`)
-    var moveTypeElement = document.getElementById(`half_move${moveIndex}c`)
-    if (moveElement != null) {
-        var $moveElement = $(moveElement)
-        const backgroundColor = color == null ? null : $moveElement.hasClass('row_odd') ? color.darkSquare : color.lightSquare
-        moveElement.style.backgroundColor = backgroundColor
-        moveTypeElement.style.backgroundColor = backgroundColor
-            if (backgroundColor == darkSquareColor) {
-            moveElement.style.color = 'white'
-            moveTypeElement.style.color = 'white'
-        } else {
-            moveElement.style.color = null
-            moveTypeElement.style.color = null
-        }
-    }
-}
-
-function getMoveSymbol(move, turn) {
-    if (move == null) {
-        return ''
-    }
-
-    var piece = move.charAt(0)
-    var symbol = move
-    var figurine = true
-    switch (piece) {
-        case 'K': symbol = turn ? '♔' : '♚'; break
-        case 'Q': symbol = turn ? '♕' : '♛'; break
-        case 'R': symbol = turn ? '♖' : '♜'; break
-        case 'B': symbol = turn ? '♗' : '♝'; break
-        case 'N': symbol = turn ? '♘' : '♞'; break
-        default: symbol = '⠀'; figurine = false; break
-    }
-
-    symbol += move.slice(figurine)
-    return symbol
-}
-
-function getMoveType(moveClassification) {
-    if (moveClassification == null) {
-        return ''
-    }
-
-    var moveType = moveClassification.type
-    switch (moveType) {
-        case 'brilliant': return '!!';
-        case 'great': return '!';
-        case 'best': return '★';
-        case 'inaccuracy': return '?!';
-        case 'mistake': return '?';
-        case 'miss': return '×';
-        case 'blunder': return '??';
-        default: return '';
-    }
-}
-
-function getMoveColor(moveType) {
-    switch (moveType) {
-        case '!!': return brilliantMoveColor;
-        case '!': return greatMoveColor;
-        case '★': return bestMoveColor;
-        case '?!': return inaccuracyColor;
-        case '?': return mistakeColor;
-        case '×': return missColor;
-        case '??': return blunderColor;
-        default: return null;
-    }
-}
-
-function displayMoves(moves) {
-    clearTable('moves_list_table')
-    const tableObject = document.getElementById('moves_list_table')
-    const black = game.turn == 'b'
-    const movesReview = review.moves
-    for (var i = 0; i < moves.length; i += 2) {
-        const index = i - black
-        const turn = index % 2 == 0
-        const evenRow = index % 4 == 0
-        const rowClass = `row_${evenRow ? 'even' : 'odd'}`
-
-        const halfMoveIndex = `half_move${index}`
-        const halfNextMoveIndex = `half_move${index + 1}`
-
-        const moveClassification = movesReview[i] != null ? movesReview[i].classification : null
-        const nextMoveClassification = (i + 1 < movesReview.length) ? movesReview[i + 1].classification : null
-
-        const moveType = getMoveType(moveClassification)
-        const nextMoveType = getMoveType(nextMoveClassification)
-
-        const moveDescription = moveClassification != null ? moveClassification.description : ''
-        const nextMoveDescription = nextMoveClassification != null ? nextMoveClassification.description : ''
-
-        var moveColor = getMoveColor(moveType)
-        moveColor = moveColor == null ? null : moveColor
-        moveColor = moveColor == null ? null : evenRow ? moveColor.lightSquare : moveColor.darkSquare
-
-        var nextMoveColor = getMoveColor(nextMoveType)
-        nextMoveColor = nextMoveColor == null ? null : nextMoveColor
-        nextMoveColor = nextMoveColor == null ? null : evenRow ? nextMoveColor.lightSquare : nextMoveColor.darkSquare
-
-        var move = index >= 0 ? getMoveSymbol(moves[index], turn) : '...'
-        var nextMove = getMoveSymbol(moves[index + 1], !turn)
-
-        var tr = document.createElement('tr')
-        tr.id = `row${i}`
-
-        var moveLink = new Link(null, () => {goTo(index)})
-        var nextMoveLink = new Link(null, () => {goTo(index + 1)})
-
-        var moveId = i / 2 + 1
-        createTableRowEntry(tr, `${moveId}.`, null, `move${moveId}`)
-        createTableRowEntry(tr, move, moveLink, halfMoveIndex, rowClass, moveColor)
-        createTableRowEntry(tr, moveType, moveLink, `${halfMoveIndex}c`, rowClass, moveColor)
-        createTableRowEntry(tr, nextMove, nextMoveLink, halfNextMoveIndex, rowClass, nextMoveColor)
-        createTableRowEntry(tr, nextMoveType, nextMoveLink, `${halfNextMoveIndex}c`, rowClass, nextMoveColor)
-        createTableRowEntry(tr, moveDescription)
-        createTableRowEntry(tr, nextMoveDescription)
-        tableObject.appendChild(tr)
     }
 }
 
@@ -509,7 +385,7 @@ function createReviewsTable(reviews) {
 
 function refresh(gather) {
     if (gather) {
-        clearTable('reviews_list_table')
+        clearTable('reviews_list_table', 8)
     }
 
     $.ajax({
@@ -527,14 +403,4 @@ function refresh(gather) {
 
 loadConfiguration()
 loadFavorites()
-
-document.onkeydown = function checkKey(event) {
-    event = event || window.event;
-
-    if (event.keyCode == '37') {
-        backward()
-    } else if (event.keyCode == '39') {
-        forward()
-    }
-}
-
+bindKeys(backward, forward)

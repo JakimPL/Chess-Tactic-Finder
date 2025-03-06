@@ -49,10 +49,53 @@ function setPanel(element, text) {
     }
 }
 
-function clearTable(table) {
+function clearTable(table, loading) {
     const node = document.getElementById(table)
     while (node.firstChild) {
         node.removeChild(node.lastChild)
+    }
+
+    if (loading != null) {
+        var tr = document.createElement('tr')
+        var td = document.createElement('td')
+        td.colSpan = loading
+        td.innerHTML = 'loading...'
+        tr.appendChild(td)
+        node.appendChild(tr)
+    }
+}
+
+function setTableRowEntry(tdId, text, link, rowClass, backgroundColor) {
+    let td;
+    if (typeof tdId === 'string') {
+        td = document.getElementById(tdId);
+    } else {
+        td = tdId;
+    }
+
+    td.innerHTML = ''
+    var textNode = document.createTextNode(text);
+    if (link != null) {
+        var a = document.createElement('a');
+        if (link.code != null) {
+            a.onclick = link.code;
+            a.style.cursor = 'pointer';
+        }
+        if (link.link != null) {
+            a.href = link.link;
+        }
+        a.appendChild(textNode);
+        td.appendChild(a);
+    } else {
+        td.appendChild(textNode);
+    }
+
+    if (backgroundColor != null) {
+        td.style.backgroundColor = backgroundColor;
+    }
+
+    if (rowClass != null) {
+        td.classList.add(rowClass);
     }
 }
 
@@ -62,32 +105,7 @@ function createTableRowEntry(tr, text, link, id, rowClass, backgroundColor) {
         td.id = id
     }
 
-    var textNode = document.createTextNode(text)
-    if (link != null) {
-        var a = document.createElement('a')
-        if (link.code != null) {
-            a.onclick = link.code
-            a.style.cursor = 'pointer'
-        }
-
-        if (link.link != null) {
-            a.href = link.link
-        }
-
-        a.appendChild(textNode)
-        td.appendChild(a)
-    } else {
-        td.appendChild(textNode)
-    }
-
-    if (backgroundColor != null) {
-        td.style.backgroundColor = backgroundColor
-    }
-
-    if (rowClass != null) {
-        td.classList.add(rowClass)
-    }
-
+    setTableRowEntry(td, text, link, rowClass, backgroundColor);
     tr.appendChild(td)
     return td
 }
@@ -113,4 +131,16 @@ function colorSquare(square, color) {
 
 function clearSquaresColors () {
     $('.square-55d63').css('background', '')
+}
+
+function bindKeys(backward, forward) {
+    document.onkeydown = function checkKey(event) {
+        event = event || window.event;
+
+        if (event.keyCode == '37') {
+            backward()
+        } else if (event.keyCode == '39') {
+            forward()
+        }
+    }
 }

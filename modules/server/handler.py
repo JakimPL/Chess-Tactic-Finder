@@ -9,6 +9,7 @@ import urllib.parse
 from modules.configuration import load_configuration, save_configuration
 from modules.json import json_load
 from modules.server.auxiliary import refresh, get_value, save_progress
+from modules.server.endgame import EndgameStudySingleton
 from modules.server.status_server import StatusServer
 from modules.server.run import run_windows, run_linux
 from modules.structures.review import Review
@@ -38,7 +39,7 @@ DEFAULT_ERROR_MESSAGE = """
         <p>Message: %(message)s.</p>
         <p>Error code explanation: %(code)s - %(explain)s.</p>
         <footer>
-            <a href="https://github.com/JakimPL/Chess-Tactic-Finder/">Tactic Finder by Jakim (2023).</a>
+            <a href="https://github.com/JakimPL/Chess-Tactic-Finder/">Tactic Finder by Jakim (2025).</a>
         </footer>
     </body>
 </html>
@@ -137,6 +138,34 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             save_configuration(config)
             result = 'Configuration saved.'
             self.send_text(result)
+        elif parsed_url.path == '/endgame/start':
+            endgame_study = EndgameStudySingleton().get_instance()
+            length = int(self.headers['Content-Length'])
+            data = json.loads(self.rfile.read(length).decode('utf-8'))
+            layout = data.get('layout')
+            dtm = data.get('dtm')
+            white = data.get('white')
+            bishop_color = data.get('bishop_color')
+            if layout is not None and dtm is not None:
+                try:
+                    fen = endgame_study.start_game(layout, dtm, white, bishop_color)
+                    self.send_json({'fen': fen})
+                except ValueError:
+                    self.send_error(400, 'No position matching the criteria')
+            else:
+                self.send_error(400, 'Required parameters not provided')
+        elif parsed_url.path == '/endgame/move':
+            endgame_study = EndgameStudySingleton().get_instance()
+            length = int(self.headers['Content-Length'])
+            data = json.loads(self.rfile.read(length).decode('utf-8'))
+            fen = data.get('fen')
+            move = data.get('move')
+            beta = float(data.get('beta'))
+            if fen and move:
+                reply = endgame_study.move(fen, move, beta)
+                self.send_json(reply.__dict__)
+            else:
+                self.send_error(400, 'Move not provided')
 
     def list_directory(self, path):
         self.send_error(404)

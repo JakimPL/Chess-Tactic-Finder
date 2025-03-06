@@ -46,8 +46,7 @@ class Tactic {
 
         this.turn = chess.turn()
 
-        var fen = chess.fen()
-        return fen
+        return chess.fen()
     }
 
     getPGN() {
@@ -56,7 +55,6 @@ class Tactic {
             chess.move(move)
         }
 
-        var pgn = chess.pgn()
-        return pgn
+        return chess.pgn()
     }
 }

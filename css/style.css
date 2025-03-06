@@ -31,7 +31,7 @@ footer {
     text-align: center;
 }
 
-button, input[type=number], input[type=button], input[type=submit] {
+button, input[type=number], input[type=button], input[type=submit], select {
     font-size: 12px;
     background-color: var(--light-square);
     font-family: "Noto Mono", sans-serif;
@@ -84,6 +84,11 @@ button:active {
 #game_board {
     margin: 0 auto;
     width: min(100%, 360px);
+}
+
+#endgame_board {
+    margin: 0 auto;
+    width: min(100%, 640px);
 }
 
 #games_panel {
@@ -276,6 +281,18 @@ table#moves_list_table td:nth-child(7) {
 
 #black_accuracy {
     background-color: var(--dark-square);
+}
+
+#mate_counter {
+    font-size: 14pt;
+    font-weight: bold;
+    background-color: var(--light-square);
+    padding: 10px;
+    border: 2px solid black;
+    border-radius: 5px;
+    text-align: center;
+    margin: 10px 0;
+    width: 50px;
 }
 
 @media screen and (orientation: portrait) {

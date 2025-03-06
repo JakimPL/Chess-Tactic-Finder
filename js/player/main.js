@@ -132,6 +132,41 @@ function getConfig(tactic) {
     }
 }
 
+function onDrop(source, target) {
+    document.getElementsByTagName('body')[0].style.overflow = 'scroll'
+	var move = game.move({
+		from: source,
+		to: target,
+		promotion: 'q'
+	})
+
+	if (wait || move === null) {
+		return 'snapback'
+	} else {
+		nextMove = tactic.nextMove
+		if (nextMove != move.san) {
+			panelTextCallback('Incorrect move!')
+            save(currentPuzzleId, tactic.moveIndex - 1)
+			delay(() => {
+				game.undo()
+				board.position(game.fen())
+				panelTextCallback()
+			})
+		}
+		else {
+			move = tactic.forward()
+			if (move !== null) {
+				delay(() => {
+                    makeMove(move)
+                    tactic.forward()
+                })
+			}
+		}
+	}
+
+	updateStatus()
+}
+
 function onDragStart(source, piece, position, orientation) {
 	if (tactic == null || game == null) {
 	    return false
@@ -191,41 +226,6 @@ function reset() {
     updateStatus()
 }
 
-function onDrop(source, target) {
-    document.getElementsByTagName('body')[0].style.overflow = 'scroll'
-	var move = game.move({
-		from: source,
-		to: target,
-		promotion: 'q'
-	})
-
-	if (wait || move === null) {
-		return 'snapback'
-	} else {
-		nextMove = tactic.nextMove
-		if (nextMove != move.san) {
-			panelTextCallback('Incorrect move!')
-            save(currentPuzzleId, tactic.moveIndex - 1)
-			delay(() => {
-				game.undo()
-				board.position(game.fen())
-				panelTextCallback()
-			})
-		}
-		else {
-			move = tactic.forward()
-			if (move !== null) {
-				delay(() => {
-                    makeMove(move)
-                    tactic.forward()
-                })
-			}
-		}
-	}
-
-	updateStatus()
-}
-
 function checkIfSolved() {
     if (tactic == null) {
         return
@@ -274,7 +274,7 @@ function save(hash, value) {
 
 function refresh(gather) {
     if (gather) {
-        clearTable('games_list')
+        clearTable('games_list_table', 10)
     }
 
     $.ajax({
