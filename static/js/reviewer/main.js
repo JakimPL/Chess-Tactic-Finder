@@ -119,7 +119,7 @@ function loadReview(path, reviewId) {
 }
 
 function loadConfiguration() {
-    fetch('configuration.json', {cache: 'no-cache'})
+    fetch('/configuration.json', {cache: 'no-cache'})
     .then(response => response.json())
     .then(json => {
         configuration = json

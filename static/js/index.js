@@ -65,7 +65,7 @@ function saveConfiguration(configuration) {
 }
 
 function loadConfiguration() {
-    fetch('configuration.json', {cache: 'no-cache'})
+    fetch('/configuration.json', {cache: 'no-cache'})
     .then(response => response.json())
     .then(json => {
         configuration = json
