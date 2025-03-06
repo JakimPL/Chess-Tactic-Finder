@@ -10,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from modules.configuration import load_configuration, save_configuration
+from modules.json import json_load
 from modules.server.auxiliary import refresh
 from modules.server.endgame import EndgameStudySingleton
 from modules.server.run import run_windows, run_linux
@@ -115,8 +116,10 @@ async def review(request: Request):
 
 @app.post("/reviewer/get_chart")
 async def get_chart(request: Request):
-    data = await request.json()
-    review = Review.from_json(data)
+    data = await request.body()
+    path = data.decode('utf-8')[1:]
+    dictionary = json_load(path)
+    review = Review.from_json(dictionary)
     graph_data = review.plot_evaluations()
     return PlainTextResponse(graph_data)
 
