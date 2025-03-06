@@ -62,7 +62,7 @@ The output tactics should be in the folder `tactics` in a directory correspondin
 example `Player 1 vs Player 2 (2022.02.22) [aa519caa19c5d254aee5d63d626a94bd]`. A PGN file may contain multiple games,
 and each game will have its own directory.
 
-To run the tactic player directly, open `http://localhost:8000/player.html` in your browser. You can change the port
+To run the tactic player directly, open `http://localhost:8000/chess/tactic.html` in your browser. You can change the port
 in `configuration.json`.
 
 ### Linux
@@ -110,7 +110,7 @@ The output tactics should be in the folder `tactics` in a directory correspondin
 example `Player 1 vs Player 2 (2022.02.22) [aa519caa19c5d254aee5d63d626a94bd]`. A PGN file may contain multiple games,
 and each game will have its own directory.
 
-To run the tactic player directly, open `http://localhost:8000/player.html` in your browser. You can change the port
+To run the tactic player directly, open `http://localhost:8000/chess/tactic.html` in your browser. You can change the port
 in `configuration.json`.
 
 ## Algorithm

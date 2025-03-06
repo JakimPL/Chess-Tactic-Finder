@@ -278,7 +278,7 @@ function refresh(gather) {
     }
 
     $.ajax({
-        url: gather == true ? 'refresh?gather=true' : 'refresh',
+        url: gather == true ? '/refresh?gather=true' : '/refresh',
         type: 'GET',
         success: () => {
             loadPuzzlesCallback()

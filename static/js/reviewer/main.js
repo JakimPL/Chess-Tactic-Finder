@@ -123,7 +123,7 @@ function loadConfiguration() {
     .then(response => response.json())
     .then(json => {
         configuration = json
-        reviewsPath = configuration['paths']['gathered_reviews']
+        reviewsPath = "/" + configuration['paths']['gathered_reviews']
         refresh()
     })
 }
@@ -148,7 +148,7 @@ function loadReviews() {
 function loadChart(path) {
 $.ajax(
     {
-        url: 'get_chart',
+        url: '/reviewer/get_chart',
         type: 'POST',
         data: path,
         contentType: 'text/plain; charset=utf-8',
@@ -357,7 +357,7 @@ function createReviewsTable(reviews) {
         tr.id = `row${review.hash}`
 
         var path = getPath(review.path)
-        var link = new Link(`javascript:loadReview('${path}', '${review.hash}')`)
+        var link = new Link(`javascript:loadReview('/${path}', '${review.hash}')`)
 
         var reviewId = `review${review.hash}`
         var playSymbol = favorites[review.hash] == true ? '★' : '▶'
@@ -389,7 +389,7 @@ function refresh(gather) {
     }
 
     $.ajax({
-        url: gather == true ? 'refresh?gather=true' : 'refresh',
+        url: gather == true ? '/refresh?gather=true' : '/refresh',
         type: 'GET',
         success: () => {
             loadReviews()

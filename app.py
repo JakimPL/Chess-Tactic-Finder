@@ -45,7 +45,11 @@ DEFAULT_ERROR_MESSAGE = """
 </html>
 """
 
+
 app.mount("/chess", StaticFiles(directory='static', html=True), name='html')
+app.mount("/json", StaticFiles(directory='json', html=False), name='json')
+app.mount("/reviews", StaticFiles(directory='reviews', html=False), name='reviews')
+app.mount("/tactics", StaticFiles(directory='tactics', html=False), name='tactics')
 
 
 class Configuration(BaseModel):
@@ -109,7 +113,7 @@ async def review(request: Request):
     return await analyze_mode(request, 'review')
 
 
-@app.post("/get_chart")
+@app.post("/reviewer/get_chart")
 async def get_chart(request: Request):
     data = await request.json()
     review = Review.from_json(data)

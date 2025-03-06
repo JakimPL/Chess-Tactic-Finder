@@ -34,7 +34,7 @@ $('#reinstall').on('click', function() {
     installation = true
     markButton('reinstall')
     $.ajax({
-        url: 'reinstall',
+        url: '/reinstall',
         type: 'GET',
         success: () => {
             alert('Tactic Finder reinstalled.')
@@ -51,7 +51,7 @@ $('#reinstall').on('click', function() {
 
 function saveConfiguration(configuration) {
     $.ajax({
-        url: 'save_configuration',
+        url: '/save_configuration',
         type: 'POST',
         data: JSON.stringify(configuration),
         contentType: "application/json; charset=utf-8",
@@ -94,7 +94,7 @@ function setProgressBar(message, analyzed, total) {
 
 function getState() {
     $.ajax({
-        url: 'analysis_state',
+        url: '/analysis_state',
         type: 'GET',
         contentType: "application/json; charset=utf-8",
         success: (data) => {
