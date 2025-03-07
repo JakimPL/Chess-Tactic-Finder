@@ -34,9 +34,9 @@ class Position:
     @staticmethod
     def from_json(dictionary: dict):
         for key, value in dictionary.items():
-            if key == 'evaluation' and value is not None:
+            if key == "evaluation" and value is not None:
                 dictionary[key] = Evaluation(value)
-            elif key == 'outcome' and value is not None:
+            elif key == "outcome" and value is not None:
                 dictionary[key] = Outcome(**value)
 
         return Position(**dictionary)

@@ -12,16 +12,16 @@ Not every tactical situation qualifies as a puzzle. A puzzle, like every [Daily 
 
 A good puzzle should meet the following criteria:
 
-* There is only one correct move each time, and this move should be significantly better than any other alternatives.
-* Each opponent response should be "good enough". Ideally, the opponent should consistently make the best moves possible. Bad puzzles assume bad opponent moves, especially falling into a mating net.
-* It should be clear why the final position is winning. This can involve gaining a material advantage or delivering a checkmate. Occasionally, the goal may be to find a forced draw in a losing position, which is fine too.
-* The starting move cannot be forced (meaning that is there is only one legal move). This simply defeats the purpose of a puzzle.
+-   There is only one correct move each time, and this move should be significantly better than any other alternatives.
+-   Each opponent response should be "good enough". Ideally, the opponent should consistently make the best moves possible. Bad puzzles assume bad opponent moves, especially falling into a mating net.
+-   It should be clear why the final position is winning. This can involve gaining a material advantage or delivering a checkmate. Occasionally, the goal may be to find a forced draw in a losing position, which is fine too.
+-   The starting move cannot be forced (meaning that is there is only one legal move). This simply defeats the purpose of a puzzle.
 
 For the first conditions there some nuances that need to be addressed. There are, roughly speaking, three types of puzzle I consider:
 
-* Checkmate puzzles
-* Draw puzzles
-* Material advantage puzzles
+-   Checkmate puzzles
+-   Draw puzzles
+-   Material advantage puzzles
 
 You may ask about positional advantage puzzles. Unfortunately, this is somehow hard to quantify.
 
@@ -53,8 +53,8 @@ In each game position an algorithm tries to find a puzzle that satisfies mention
 
 To evaluate positions, we need a chess engine, and I've chosen [Stockfish](https://stockfishchess.org/), an obvious choice, for two reasons:
 
-* it is proven to be really strong
-* there are many convenient programming tools communicating with Stockfish
+-   it is proven to be really strong
+-   there are many convenient programming tools communicating with Stockfish
 
 Personally, I write code in Python and it is really easy to use Stockfish via [a library](https://pypi.org/project/stockfish/).
 
@@ -64,8 +64,8 @@ Chess engines use a centipawn unit to represent an advantage of a player, in one
 
 The algorithm builds a tree of positions, or simply: variations. Let us focus on two simple rules that each puzzle needs to have:
 
-* There should always be only one correct move per position, significantly better than other alternatives
-* The opponent must play accurately.
+-   There should always be only one correct move per position, significantly better than other alternatives
+-   The opponent must play accurately.
 
 So, how do we know that there is only one good move in a chess position? This depends on there is a forced mate or not.
 
@@ -91,8 +91,8 @@ For example, if there is a forced mate in 7 moves, a puzzle needs to have at lea
 
 In some puzzles the objective is to find a draw instead of checkmating the opponent or gaining a material advantage. In these cases, it is demanded that there is only one move that maintains the draw and other ones lead to a loss. A move is considered "losing" if the opponent:
 
-* Has a forced checkmate.
-* Gains a significant advantage, at least 150 centipawns.
+-   Has a forced checkmate.
+-   Gains a significant advantage, at least 150 centipawns.
 
 In other words, at each move the evaluation of a top move should be 0 centipawns and every other move should either lead to a checkmate or be evaluated as at least 150 centipawns in favor of the opponent.
 
@@ -125,24 +125,24 @@ Given a position, the algorithm consequently constructs a tree of variations. Fo
 The algorithm stops either if there is no such move or if the game simply ends. At the end of the process we obtain of a tree of nodes.
 
 ```
-/c3b3  
-└── /c3b3/d6d3  
-└── /c3b3/d6d3/c1c3  
-└── /c3b3/d6d3/c1c3/d3c3  
-└── /c3b3/d6d3/c1c3/d3c3/b3c3  
-└── /c3b3/d6d3/c1c3/d3c3/b3c3/c7e5  
-├── /c3b3/d6d3/c1c3/d3c3/b3c3/c7e5/c3b3  
-│ └── /c3b3/d6d3/c1c3/d3c3/b3c3/c7e5/c3b3/e5a1  
-│ └── /c3b3/d6d3/c1c3/d3c3/b3c3/c7e5/c3b3/e5a1/e3a7  
-├── /c3b3/d6d3/c1c3/d3c3/b3c3/c7e5/c3c2  
-│ └── /c3b3/d6d3/c1c3/d3c3/b3c3/c7e5/c3c2/e5a1  
-│ └── /c3b3/d6d3/c1c3/d3c3/b3c3/c7e5/c3c2/e5a1/e3a7  
-└── /c3b3/d6d3/c1c3/d3c3/b3c3/c7e5/c3b4  
-└── /c3b3/d6d3/c1c3/d3c3/b3c3/c7e5/c3b4/e5a1  
+/c3b3
+└── /c3b3/d6d3
+└── /c3b3/d6d3/c1c3
+└── /c3b3/d6d3/c1c3/d3c3
+└── /c3b3/d6d3/c1c3/d3c3/b3c3
+└── /c3b3/d6d3/c1c3/d3c3/b3c3/c7e5
+├── /c3b3/d6d3/c1c3/d3c3/b3c3/c7e5/c3b3
+│ └── /c3b3/d6d3/c1c3/d3c3/b3c3/c7e5/c3b3/e5a1
+│ └── /c3b3/d6d3/c1c3/d3c3/b3c3/c7e5/c3b3/e5a1/e3a7
+├── /c3b3/d6d3/c1c3/d3c3/b3c3/c7e5/c3c2
+│ └── /c3b3/d6d3/c1c3/d3c3/b3c3/c7e5/c3c2/e5a1
+│ └── /c3b3/d6d3/c1c3/d3c3/b3c3/c7e5/c3c2/e5a1/e3a7
+└── /c3b3/d6d3/c1c3/d3c3/b3c3/c7e5/c3b4
+└── /c3b3/d6d3/c1c3/d3c3/b3c3/c7e5/c3b4/e5a1
 └── /c3b3/d6d3/c1c3/d3c3/b3c3/c7e5/c3b4/e5a1/e3a7
 ```
 
-An example tree of nodes in an example. Each move is represented in the [long algebraic notation](https://en.wikipedia.org/wiki/Algebraic_notation_(chess)#Long_algebraic_notation) (move format including a starting position of a piece, like e2e4 instead of e4). Here's the corresponding situation:
+An example tree of nodes in an example. Each move is represented in the [long algebraic notation](<https://en.wikipedia.org/wiki/Algebraic_notation_(chess)#Long_algebraic_notation>) (move format including a starting position of a piece, like e2e4 instead of e4). Here's the corresponding situation:
 
 <img src="/img/doc/situation.png" alt="Situation" width="360"/>
 
@@ -156,9 +156,9 @@ Most of the time, there is no puzzle at all. But any time your opponent makes a 
 
 The algorithm is far from being perfect as it is in a very early stage. But still I find it useful enough. As each tactic is saved not only to PGN file but also a data structure that contains:
 
-* A sequence of all moves with FEN positions.
-* Initial evaluations.
-* A simple classification (checkmate, stalemate, draw by repetition or material advantage).
+-   A sequence of all moves with FEN positions.
+-   Initial evaluations.
+-   A simple classification (checkmate, stalemate, draw by repetition or material advantage).
 
 One can filter some results by imposing additional conditions on tactics. Speaking of which...
 

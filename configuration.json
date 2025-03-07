@@ -18,8 +18,8 @@
         "significant_difference_threshold": 0.1,
         "good_move_threshold": 0.02,
         "inaccuracy_threshold": 0.05,
-        "mistake_threshold": 0.10,
-        "blunder_threshold": 0.20,
+        "mistake_threshold": 0.1,
+        "blunder_threshold": 0.2,
         "mate_distance_threshold": 5,
         "one_way_to_mate_distance_min": 4,
         "one_way_to_mate_distance_max": 10
@@ -52,7 +52,6 @@
         "progress": "json/progress.json",
         "tablebase": "tables",
         "database": "database/database.db",
-        "unix_socket": "./temp/http.socket",
         "log": "log.txt"
     },
     "export": {
@@ -62,14 +61,10 @@
     "server": {
         "port": 8000,
         "listener_port": 6000,
-        "socket": false,
         "open_browser": true
     },
     "tactic_player": {
         "hard_progress": true,
         "count_moves_instead_of_puzzles": false
-    },
-    "endgame_study": {
-
     }
 }

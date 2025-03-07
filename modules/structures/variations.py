@@ -26,10 +26,11 @@ class Variations(Picklable):
 
     def get_resolved_leaves(self) -> list[Node]:
         leaves = self.root.leaves
-        return sorted([
-            leaf for leaf in leaves
-            if leaf.name.outcome.type != 'not resolved'
-        ], key=lambda leaf: leaf.depth, reverse=True)
+        return sorted(
+            [leaf for leaf in leaves if leaf.name.outcome.type != "not resolved"],
+            key=lambda leaf: leaf.depth,
+            reverse=True,
+        )
 
     def get_tactics(self) -> Optional[list[Tactic]]:
         resolved_leaves = self.get_resolved_leaves()
@@ -38,8 +39,9 @@ class Variations(Picklable):
                 Tactic(
                     get_node_history(leaf),
                     type=leaf.name.outcome.description,
-                    headers=self.headers
-                ) for leaf in resolved_leaves
+                    headers=self.headers,
+                )
+                for leaf in resolved_leaves
             ]
 
     def get_tactic(self) -> Optional[Tactic]:
@@ -56,20 +58,17 @@ class Variations(Picklable):
                 node.name = node.name.to_json()
 
         return {
-            'root': json.loads(exporter.export(root)),
-            'headers': self.headers.__dict__
+            "root": json.loads(exporter.export(root)),
+            "headers": self.headers.__dict__,
         }
 
     @staticmethod
     def from_json(dictionary: dict):
         importer = JsonImporter()
-        root = importer.import_(json.dumps(dictionary['root']))
+        root = importer.import_(json.dumps(dictionary["root"]))
         for node in PreOrderIter(root):
             if isinstance(node.name, dict):
                 node.name = Position.from_json(node.name)
 
-        headers = get_headers(dictionary['headers'])
-        return Variations(
-            root=root,
-            headers=headers
-        )
+        headers = get_headers(dictionary["headers"])
+        return Variations(root=root, headers=headers)

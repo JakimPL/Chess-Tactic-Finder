@@ -11,7 +11,13 @@ def win(evaluation: Evaluation, turn: bool) -> float:
 
         return 1.0 if evaluation.value > 0 else 0.0
     else:
-        return min(1.0, max(0.0, 0.50 + 0.50 * (2 / (1 + math.exp(-0.368208 * evaluation.value)) - 1)))
+        return min(
+            1.0,
+            max(
+                0.0,
+                0.50 + 0.50 * (2 / (1 + math.exp(-0.368208 * evaluation.value)) - 1),
+            ),
+        )
 
 
 def get_accuracy(win_difference: float) -> float:

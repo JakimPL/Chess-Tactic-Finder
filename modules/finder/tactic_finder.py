@@ -9,36 +9,36 @@ from modules.configuration import load_configuration
 from modules.finder.auxiliary import calculate_material_balance
 from modules.structures.evaluation import Evaluation
 from modules.structures.outcome import Outcome
-from modules.structures.position import PositionOccurred, Position
+from modules.structures.position import Position, PositionOccurred
 from modules.structures.tactic import Tactic
 from modules.structures.variations import Variations, get_node_history
 
 configuration = load_configuration()
 
-CENTIPAWN_THRESHOLD = configuration['algorithm']['centipawn_threshold']
-CENTIPAWN_LIMIT = configuration['algorithm']['centipawn_limit']
-CENTIPAWN_TOLERANCE = configuration['algorithm']['centipawn_tolerance']
-CHECKMATE_PROGRESS_THRESHOLD = configuration['algorithm']['checkmate_progress_threshold']
-REPETITION_THRESHOLD = configuration['algorithm']['repetition_threshold']
+CENTIPAWN_THRESHOLD = configuration["algorithm"]["centipawn_threshold"]
+CENTIPAWN_LIMIT = configuration["algorithm"]["centipawn_limit"]
+CENTIPAWN_TOLERANCE = configuration["algorithm"]["centipawn_tolerance"]
+CHECKMATE_PROGRESS_THRESHOLD = configuration["algorithm"]["checkmate_progress_threshold"]
+REPETITION_THRESHOLD = configuration["algorithm"]["repetition_threshold"]
 
-MIN_RELATIVE_MATERIAL_BALANCE = configuration['algorithm']['min_relative_material_balance']
+MIN_RELATIVE_MATERIAL_BALANCE = configuration["algorithm"]["min_relative_material_balance"]
 
-STOCKFISH_TOP_MOVES = configuration['stockfish']['top_moves']
+STOCKFISH_TOP_MOVES = configuration["stockfish"]["top_moves"]
 
 
 class TacticFinder:
     def __init__(
-            self,
-            stockfish: Stockfish,
-            white: bool,
-            starting_position: Position,
-            centipawn_threshold: float = CENTIPAWN_THRESHOLD,
-            centipawn_limit: float = CENTIPAWN_LIMIT,
-            centipawn_tolerance: float = CENTIPAWN_TOLERANCE,
-            checkmate_progress_threshold: float = CHECKMATE_PROGRESS_THRESHOLD,
-            repetition_threshold: int = REPETITION_THRESHOLD,
-            stockfish_top_moves: int = STOCKFISH_TOP_MOVES,
-            fens: set[str] = None
+        self,
+        stockfish: Stockfish,
+        white: bool,
+        starting_position: Position,
+        centipawn_threshold: float = CENTIPAWN_THRESHOLD,
+        centipawn_limit: float = CENTIPAWN_LIMIT,
+        centipawn_tolerance: float = CENTIPAWN_TOLERANCE,
+        checkmate_progress_threshold: float = CHECKMATE_PROGRESS_THRESHOLD,
+        repetition_threshold: int = REPETITION_THRESHOLD,
+        stockfish_top_moves: int = STOCKFISH_TOP_MOVES,
+        fens: set[str] = None,
     ):
         self.stockfish: Stockfish = stockfish
         self.fens: set[str] = set() if fens is None else fens
@@ -69,12 +69,10 @@ class TacticFinder:
             evaluation = evaluations[0] if self.white else -evaluations[0]
             next_evaluation = evaluations[1] if self.white else -evaluations[1]
             if evaluation.mate and next_evaluation.mate:
-                return (
-                        evaluation.value > 0 > next_evaluation.value
-                        or (
-                                evaluation.value > 0 and next_evaluation.value > 0
-                                and abs(evaluation.value - next_evaluation.value) > 5
-                        )
+                return evaluation.value > 0 > next_evaluation.value or (
+                    evaluation.value > 0
+                    and next_evaluation.value > 0
+                    and abs(evaluation.value - next_evaluation.value) > 5
                 )
             elif evaluation.mate and not next_evaluation.mate:
                 return evaluation.value > 0
@@ -103,8 +101,8 @@ class TacticFinder:
                 return evaluation.value >= 0.0
             elif not evaluation.mate and not next_evaluation.mate:
                 return (
-                        evaluation.value - next_evaluation.value > self.pawn_threshold
-                        and 0 <= evaluation.value <= self.pawn_limit
+                    evaluation.value - next_evaluation.value > self.pawn_threshold
+                    and 0 <= evaluation.value <= self.pawn_limit
                 )
         else:
             raise ValueError("unexpected number of moves")
@@ -113,13 +111,10 @@ class TacticFinder:
         if len(best_moves) == 0:
             return []
         elif len(best_moves) == 1:
-            return [best_moves[0]['Move']]
+            return [best_moves[0]["Move"]]
         elif len(best_moves) >= 2:
             evaluations = {
-                move['Move']: (
-                    Evaluation.from_stockfish(move)
-                    if self.white else -Evaluation.from_stockfish(move)
-                )
+                move["Move"]: (Evaluation.from_stockfish(move) if self.white else -Evaluation.from_stockfish(move))
                 for move in best_moves
             }
 
@@ -127,14 +122,16 @@ class TacticFinder:
             if best_evaluation.mate:
                 if best_evaluation.value > 0 or best_evaluation.value < 0:
                     return [
-                        move for move, evaluation in evaluations.items()
+                        move
+                        for move, evaluation in evaluations.items()
                         if evaluation.mate and evaluation == best_evaluation
                     ]
                 else:
                     raise ValueError("mate counter cannot be zero")
             else:
                 return [
-                    move for move, evaluation in evaluations.items()
+                    move
+                    for move, evaluation in evaluations.items()
                     if not evaluation.mate and abs(best_evaluation - evaluation) < self.pawn_tolerance
                 ]
 
@@ -158,17 +155,17 @@ class TacticFinder:
         except PositionOccurred:
             return None
         except ValueError as error:
-            print(f'Stockfish error: {error}')
+            print(f"Stockfish error: {error}")
             return None
 
         return root
 
     def find(
-            self,
-            move: str = None,
-            previous_fen: str = '',
-            defender: bool = False,
-            parent: Node = None
+        self,
+        move: str = None,
+        previous_fen: str = "",
+        defender: bool = False,
+        parent: Node = None,
     ) -> Node:
         fen = self.stockfish.get_fen_position()
         self.visited_fens.add(fen)
@@ -202,7 +199,7 @@ class TacticFinder:
                 fen=previous_fen,
                 forced=forced,
                 hard=hard,
-                material_balance=material_balance
+                material_balance=material_balance,
             )
 
         node = Node(position, parent=parent)
@@ -210,7 +207,7 @@ class TacticFinder:
         outcome = self.get_outcome(board, evaluation, material_balance)
         node.name.outcome = outcome
 
-        if outcome.type == 'draw':
+        if outcome.type == "draw":
             node.name.evaluation = Evaluation(0.0)
         else:
             if defender:
@@ -223,7 +220,7 @@ class TacticFinder:
 
             else:
                 if self.is_only_one_good_move(best_moves):
-                    best_move = best_moves[0]['Move']
+                    best_move = best_moves[0]["Move"]
                     self.stockfish.make_moves_from_current_position([best_move])
                     self.find(best_move, fen, True, parent=node)
 
@@ -237,31 +234,26 @@ class TacticFinder:
         coefficient = 1 if self.white else -1
         return coefficient * (material_balance - self.material_balance)
 
-    def get_outcome(
-            self,
-            board: chess.Board,
-            evaluation: Evaluation,
-            material_balance: int
-    ) -> Outcome:
+    def get_outcome(self, board: chess.Board, evaluation: Evaluation, material_balance: int) -> Outcome:
         if board.is_stalemate():
-            return Outcome('draw', 'stalemate')
+            return Outcome("draw", "stalemate")
         elif board.is_insufficient_material():
-            return Outcome('draw', 'insufficient material')
+            return Outcome("draw", "insufficient material")
         elif board.is_repetition(self.repetition_threshold) or board.can_claim_draw():
-            return Outcome('draw', 'repetition')
+            return Outcome("draw", "repetition")
 
         if self.checkmate_counter:
             if board.is_game_over():
-                return Outcome('checkmate', 'checkmate')
+                return Outcome("checkmate", "checkmate")
             elif evaluation is not None and evaluation.mate:
                 if abs(evaluation.value) - 1 < self.checkmate_counter * self.checkmate_progress_threshold:
-                    return Outcome('checkmate', 'mating net')
+                    return Outcome("checkmate", "mating net")
 
         material_advantage = material_balance >= MIN_RELATIVE_MATERIAL_BALANCE
         if material_advantage:
-            return Outcome('material advantage', 'material advantage')
+            return Outcome("material advantage", "material advantage")
 
-        return Outcome('not resolved')
+        return Outcome("not resolved")
 
     def get_variations(self, headers: Optional[Headers] = None) -> tuple[Optional[Variations], Optional[Tactic]]:
         root = self.create_tree()

@@ -1,7 +1,5 @@
 import os
 
-import chess
-import chess.pgn
 from chess import Board
 from chess.pgn import Headers
 from stockfish import Stockfish
@@ -18,32 +16,28 @@ from modules.structures.variations import Variations
 
 configuration = load_configuration()
 
-INPUT_DIRECTORY = configuration['paths']['processed']
-OUTPUT_DIRECTORY = configuration['paths']['tactics']
-STOCKFISH_PATH = configuration['paths']['stockfish']
+INPUT_DIRECTORY = configuration["paths"]["processed"]
+OUTPUT_DIRECTORY = configuration["paths"]["tactics"]
+STOCKFISH_PATH = configuration["paths"]["stockfish"]
 
-STOCKFISH_DEPTH = configuration['stockfish']['depth']
-STOCKFISH_PARAMETERS = configuration['stockfish']['parameters']
-STOCKFISH_TOP_MOVES = configuration['stockfish']['top_moves']
+STOCKFISH_DEPTH = configuration["stockfish"]["depth"]
+STOCKFISH_PARAMETERS = configuration["stockfish"]["parameters"]
+STOCKFISH_TOP_MOVES = configuration["stockfish"]["top_moves"]
 
-IGNORE_FIRST_MOVE = configuration['export']['ignore_first_move']
-SAVE_LAST_OPPONENT_MOVE = configuration['export']['save_last_opponent_move']
+IGNORE_FIRST_MOVE = configuration["export"]["ignore_first_move"]
+SAVE_LAST_OPPONENT_MOVE = configuration["export"]["save_last_opponent_move"]
 
 
 class Analyzer(Processor):
     def find_variations(
-            self,
-            moves,
-            starting_position: str,
-            headers: Headers,
-            output_filename: str,
-            stockfish_depth: int = STOCKFISH_DEPTH,
+        self,
+        moves,
+        starting_position: str,
+        headers: Headers,
+        output_filename: str,
+        stockfish_depth: int = STOCKFISH_DEPTH,
     ) -> tuple[list[Variations], [Tactic]]:
-        stockfish = Stockfish(
-            path=STOCKFISH_PATH,
-            depth=stockfish_depth,
-            parameters=STOCKFISH_PARAMETERS
-        )
+        stockfish = Stockfish(path=STOCKFISH_PATH, depth=stockfish_depth, parameters=STOCKFISH_PARAMETERS)
 
         if starting_position:
             board = Board(starting_position)
@@ -62,12 +56,7 @@ class Analyzer(Processor):
 
             fen = stockfish.get_fen_position()
 
-            position = Position(
-                move=move,
-                color=not white,
-                evaluation=evaluation,
-                fen=fen
-            )
+            position = Position(move=move, color=not white, evaluation=evaluation, fen=fen)
 
             stockfish.make_moves_from_current_position([move])
             evaluation = Evaluation.from_evaluation(stockfish.get_evaluation())
@@ -75,13 +64,13 @@ class Analyzer(Processor):
             board.push_san(move)
 
             move_string = f'{move_number}{"." if white else "..."} {board_move} {"   " if white else " "}'
-            print(f'{move_string}\t{evaluation}')
+            print(f"{move_string}\t{evaluation}")
 
             self.message_sender(
                 filename=output_filename,
                 fen=board.fen(),
                 move_string=move_string,
-                evaluation=evaluation
+                evaluation=evaluation,
             )
 
             tactic_finder = TacticFinder(stockfish, not white, starting_position=position, fens=fens)
@@ -91,41 +80,41 @@ class Analyzer(Processor):
             if tactic:
                 tactic_list.append(tactic)
                 variations_list.append(variations)
-                print(f'Tactic:\n{tactic}')
+                print(f"Tactic:\n{tactic}")
 
         return variations_list, tactic_list
 
     @staticmethod
     def save_variations(
-            variations_list: list[Variations],
-            tactic_list: list[Tactic],
-            directory: str,
-            ignore_first_move: bool = IGNORE_FIRST_MOVE,
-            save_last_opponent_move: bool = SAVE_LAST_OPPONENT_MOVE
+        variations_list: list[Variations],
+        tactic_list: list[Tactic],
+        directory: str,
+        ignore_first_move: bool = IGNORE_FIRST_MOVE,
+        save_last_opponent_move: bool = SAVE_LAST_OPPONENT_MOVE,
     ):
         for index, (variations, tactic) in enumerate(list(zip(variations_list, tactic_list))):
             game = tactic.to_pgn(
                 ignore_first_move=ignore_first_move,
-                save_last_opponent_move=save_last_opponent_move
+                save_last_opponent_move=save_last_opponent_move,
             )
 
-            prefix = f'tactic_{index:04}'
+            prefix = f"tactic_{index:04}"
 
-            variations_filename = f'{prefix}.vars'
+            variations_filename = f"{prefix}.vars"
             variations_path = os.path.join(directory, variations_filename)
             variations.to_file(variations_path)
 
-            json_filename = f'{prefix}.json'
+            json_filename = f"{prefix}.json"
             json_path = os.path.join(directory, json_filename)
             json_save(variations.to_json(), json_path)
 
-            tactic_filename = f'{prefix}.tactic'
+            tactic_filename = f"{prefix}.tactic"
             tactic_path = os.path.join(directory, tactic_filename)
             tactic.to_file(tactic_path)
 
-            pgn_filename = f'{prefix}.pgn'
+            pgn_filename = f"{prefix}.pgn"
             pgn_path = os.path.join(directory, pgn_filename)
-            print(game, file=open(pgn_path, 'w'), end='\n\n')
+            print(game, file=open(pgn_path, "w"), end="\n\n")
 
     def __call__(self):
         game_path = os.path.join(INPUT_DIRECTORY, self.filename)
@@ -134,8 +123,15 @@ class Analyzer(Processor):
         if data is None:
             return
 
-        moves, headers, starting_position, output_filename, directory, in_progress_file = data
-        print(f'Finding tactics for: {output_filename}')
+        (
+            moves,
+            headers,
+            starting_position,
+            output_filename,
+            directory,
+            in_progress_file,
+        ) = data
+        print(f"Finding tactics for: {output_filename}")
 
         variations_list = None
         tactic_list = None
@@ -145,18 +141,18 @@ class Analyzer(Processor):
                 moves=moves,
                 starting_position=starting_position,
                 headers=headers,
-                output_filename=output_filename
+                output_filename=output_filename,
             )
 
         except ValueError as error:
-            print(f'Stockfish error: {error}')
+            print(f"Stockfish error: {error}")
         except KeyboardInterrupt:
-            raise KeyboardInterrupt('interrupted')
+            raise KeyboardInterrupt("interrupted")
 
         if tactic_list:
             self.save_variations(variations_list, tactic_list, directory)
-            print(f'Saved {len(tactic_list)} tactics.')
+            print(f"Saved {len(tactic_list)} tactics.")
         else:
-            print(f'No tactics found.')
+            print("No tactics found.")
 
         os.remove(in_progress_file)

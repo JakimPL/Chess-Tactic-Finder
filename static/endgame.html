@@ -1,0 +1,222 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Endgame Study</title>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1, user-scalable=no"
+        />
+
+        <link
+            rel="icon"
+            type="image/png"
+            href="img/chesspieces/wikipedia/wB.png"
+        />
+        <link rel="stylesheet" href="css/style.css" />
+        <link
+            rel="stylesheet"
+            href="css/import/chessboard-1.0.0.min.css"
+            integrity="sha384-q94+BZtLrkL1/ohfjR8c6L+A6qzNH9R2hBLwyoAfu3i/WCvQjzL2RQJ3uNHDISdU"
+            crossorigin="anonymous"
+        />
+
+        <script
+            src="js/import/jquery-3.4.1.min.js"
+            integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+            crossorigin="anonymous"
+        ></script>
+        <script
+            src="js/import/chessboard-1.0.0.min.js"
+            integrity="sha384-8Vi8VHwn3vjQ9eUHUxex3JSN/NFqUg3QbPyX8kWyb93+8AC/pPWTzj+nHtbC5bxD"
+            crossorigin="anonymous"
+        ></script>
+        <script
+            src="js/import/chess.js"
+            integrity="sha384-s3XgLpvmHyscVpijnseAmye819Ee3yaGa8NxstkJVyA6nuDFjt59u1QvuEl/mecz"
+            crossorigin="anonymous"
+        ></script>
+        <script src="js/link.js"></script>
+        <script src="js/color.js"></script>
+        <script src="js/common.js"></script>
+        <script src="js/movesList.js"></script>
+    </head>
+
+    <body>
+        <div class="row">
+            <div class="column" id="board_panel">
+                <div><h3>Board</h3></div>
+                <p id="game_info">&nbsp</p>
+                <div id="board_with_evaluation">
+                    <div id="endgame_board"></div>
+                </div>
+                <div class="buttons">
+                    <button id="backward" type="button">&#9664;</button>
+                    <button id="flip" type="button">Flip</button>
+                    <button id="forward" type="button">&#9654;</button>
+                </div>
+                <div class="buttons">
+                    <button id="copyFEN" type="button">Copy FEN</button>
+                    <button id="copyPGN" type="button">Copy PGN</button>
+                </div>
+                <div id="panel">&nbsp</div>
+                <div id="status"></div>
+                <div id="engine_lines">
+                    <p>Engine choices:</p>
+                    <table id="engine_lines_table"></table>
+                </div>
+                <div>
+                    Analyze:
+                    <a
+                        href="https://www.chess.com/analysis"
+                        class="button"
+                        id="analyze_chess"
+                        target="”_blank”"
+                        >chess.com</a
+                    >
+                    <a
+                        href="https://lichess.org/analysis/"
+                        class="button"
+                        id="analyze_lichess"
+                        target="”_blank”"
+                        >lichess.org</a
+                    >
+                </div>
+            </div>
+            <div class="column" id="games_panel">
+                <div class="row" id="analysis">
+                    <h3>Analysis</h3>
+                    <div id="mate_counter_container">
+                        <p id="mate_counter">-</p>
+                    </div>
+                    <div id="moves">
+                        <table id="moves_list_table"></table>
+                        <div id="moves_evaluation">
+                            <img
+                                id="evaluation_chart"
+                                src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+                                alt="evaluation chart"
+                            />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <h3>Endgame Study Options</h3>
+                    <div class="column">
+                        <table>
+                            <tr>
+                                <td>
+                                    <label for="study_layout"
+                                        >Study Layout:</label
+                                    >
+                                </td>
+                                <td>
+                                    <select id="study_layout" class="options">
+                                        <option value="KRRvK">
+                                            King + 2 Rooks vs King
+                                        </option>
+                                        <option value="KQvK">
+                                            King + Queen vs King
+                                        </option>
+                                        <option value="KRvK">
+                                            King + Rook vs King
+                                        </option>
+                                        <option value="KPvK">
+                                            King + Pawn vs King
+                                        </option>
+                                        <option value="KQvKB">
+                                            King + Queen vs King + Bishop
+                                        </option>
+                                        <option value="KQvKN">
+                                            King + Queen vs King + Knight
+                                        </option>
+                                        <option value="KQvKR">
+                                            King + Queen vs King + Rook
+                                        </option>
+                                        <option value="KBBvK">
+                                            King + 2 Bishops vs King
+                                        </option>
+                                        <option value="KBNvK">
+                                            King + Bishop + Knight vs King
+                                        </option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><label for="mate_in">Mate in:</label></td>
+                                <td>
+                                    <input
+                                        type="number"
+                                        class="options"
+                                        id="mate_in"
+                                        min="1"
+                                        max="32"
+                                        value="2"
+                                    />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><label for="side">Side:</label></td>
+                                <td>
+                                    <select id="side" class="options">
+                                        <option value="white">White</option>
+                                        <option value="black">Black</option>
+                                        <option value="random">Random</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label for="difficulty">Difficulty:</label>
+                                </td>
+                                <td>
+                                    <input
+                                        type="number"
+                                        class="options"
+                                        id="difficulty"
+                                        min="0.00"
+                                        max="1.00"
+                                        step="0.01"
+                                        value="1.00"
+                                    />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label for="bishop_color"
+                                        >Bishop color:</label
+                                    >
+                                </td>
+                                <td>
+                                    <select id="bishop_color" class="options">
+                                        <option value="light">
+                                            Light-squared
+                                        </option>
+                                        <option value="dark">
+                                            Dark-squared
+                                        </option>
+                                        <option value="random">Random</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="buttons">
+                    <button id="new_study" type="button">New Study</button>
+                </div>
+            </div>
+        </div>
+
+        <script src="js/endgame/state.js"></script>
+        <script src="js/endgame/game.js"></script>
+        <script src="js/endgame/main.js"></script>
+
+        <footer>
+            <a href="https://github.com/JakimPL/Chess-Tactic-Finder/"
+                >Tactic Finder by Jakim (2025).</a
+            >
+        </footer>
+    </body>
+</html>

@@ -18,7 +18,10 @@ body::-webkit-scrollbar {
     display: none;
 }
 
-a:link, a:hover, a:visited, a:active {
+a:link,
+a:hover,
+a:visited,
+a:active {
     text-decoration: none;
 }
 
@@ -31,7 +34,11 @@ footer {
     text-align: center;
 }
 
-button, input[type=number], input[type=button], input[type=submit], select {
+button,
+input[type="number"],
+input[type="button"],
+input[type="submit"],
+select {
     font-size: 12px;
     background-color: var(--light-square);
     font-family: "Noto Mono", sans-serif;
@@ -230,7 +237,10 @@ table#games th:nth-child(7) {
     flex: 1;
 }
 
-#moves_list_table a:link,  a:hover, a:visited, a:active {
+#moves_list_table a:link,
+a:hover,
+a:visited,
+a:active {
     color: black;
 }
 
