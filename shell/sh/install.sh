@@ -1,4 +1,10 @@
 #!/bin/bash
+mkdir -p database
+mkdir -p games
+mkdir -p json
+mkdir -p reviews
+mkdir -p tables
+mkdir -p temp
 
 # create a virtual environment
 echo "Installing a virtual environment."

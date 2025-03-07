@@ -1,3 +1,11 @@
+:: create directories
+mkdir database
+mkdir games
+mkdir json
+mkdir reviews
+mkdir tables
+mkdir temp
+
 :: download pgn-extract
 if not exist pgn-extract.exe (
 	echo Downloading pgn-extract.exe.
