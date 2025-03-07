@@ -11,8 +11,13 @@ from modules.structures.evaluation import Evaluation
 from modules.structures.position import Position
 
 TACTIC_TYPES_ORDER = [
-    '', 'mating net', 'insufficient material', 'material advantage',
-    'repetition', 'checkmate', 'stalemate'
+    "",
+    "mating net",
+    "insufficient material",
+    "material advantage",
+    "repetition",
+    "checkmate",
+    "stalemate",
 ]
 
 
@@ -20,7 +25,7 @@ TACTIC_TYPES_ORDER = [
 class Tactic(Picklable):
     positions: list[Position]
     headers: Optional[Headers] = None
-    type: str = ''
+    type: str = ""
 
     def __iter__(self):
         return self.positions.__iter__()
@@ -35,24 +40,20 @@ class Tactic(Picklable):
         return self.positions.__len__()
 
     def __le__(self, other):
-        return (
-            TACTIC_TYPES_ORDER.index(self.type), self.hardness, self.moves
-        ) <= (
-            TACTIC_TYPES_ORDER.index(other.type), other.hardness, other.moves
+        return (TACTIC_TYPES_ORDER.index(self.type), self.hardness, self.moves) <= (
+            TACTIC_TYPES_ORDER.index(other.type),
+            other.hardness,
+            other.moves,
         )
 
     def __lt__(self, other):
-        return (
-            TACTIC_TYPES_ORDER.index(self.type), self.hardness, self.moves
-        ) < (
-            TACTIC_TYPES_ORDER.index(other.type), other.hardness, other.moves
+        return (TACTIC_TYPES_ORDER.index(self.type), self.hardness, self.moves) < (
+            TACTIC_TYPES_ORDER.index(other.type),
+            other.hardness,
+            other.moves,
         )
 
-    def to_pgn(
-            self,
-            ignore_first_move: bool = False,
-            save_last_opponent_move: bool = True
-    ) -> chess.pgn.Game:
+    def to_pgn(self, ignore_first_move: bool = False, save_last_opponent_move: bool = True) -> chess.pgn.Game:
         board = None
         turn = None
         for index, position in enumerate(self.positions):

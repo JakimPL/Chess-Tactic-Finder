@@ -46,17 +46,11 @@ class Evaluation:
 
     @staticmethod
     def from_stockfish(move):
-        return Evaluation(
-            move["Centipawn"] / 100 if move["Centipawn"] is not None else move["Mate"]
-        )
+        return Evaluation(move["Centipawn"] / 100 if move["Centipawn"] is not None else move["Mate"])
 
     @staticmethod
     def from_evaluation(evaluation):
-        return Evaluation(
-            evaluation["value"] / 100
-            if evaluation["type"] == "cp"
-            else evaluation["value"]
-        )
+        return Evaluation(evaluation["value"] / 100 if evaluation["type"] == "cp" else evaluation["value"])
 
     @staticmethod
     def from_string(string: str):

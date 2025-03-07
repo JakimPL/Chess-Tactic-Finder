@@ -1,10 +1,10 @@
-from urllib import parse
 from multiprocessing.connection import Listener
+from urllib import parse
 
 from modules.server.connection import get_listener
 from modules.singleton import Singleton
 
-NO_ANALYSIS_MESSAGE = 'No analysis in progress.'
+NO_ANALYSIS_MESSAGE = "No analysis in progress."
 
 
 class StatusServer(Singleton):
@@ -23,7 +23,7 @@ class StatusServer(Singleton):
                 try:
                     self.message = connection.recv()
                     text = parse.parse_qsl(self.message)[0][1]
-                    if 'completed' in text or 'interrupted' in text or 'Stockfish error' in text:
+                    if "completed" in text or "interrupted" in text or "Stockfish error" in text:
                         connection.close()
                         running = False
                 except EOFError:

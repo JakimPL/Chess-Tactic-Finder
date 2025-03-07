@@ -16,18 +16,18 @@ from modules.requests.configuration import Configuration
 from modules.requests.move import MoveData
 from modules.server.auxiliary import refresh
 from modules.server.endgame import EndgameStudySingleton
-from modules.server.run import run_windows, run_linux
+from modules.server.run import run_linux, run_windows
 from modules.server.status_server import StatusServer
 from modules.structures.review import Review
 
 configuration = load_configuration()
-INPUT_PGN_FILE = configuration['paths']['input_pgn']
-LOG_FILE = configuration['paths']['log']
-PORT = configuration['server']['port']
-OPEN_BROWSER = configuration['server']['open_browser']
+INPUT_PGN_FILE = configuration["paths"]["input_pgn"]
+LOG_FILE = configuration["paths"]["log"]
+PORT = configuration["server"]["port"]
+OPEN_BROWSER = configuration["server"]["open_browser"]
 
 logging.basicConfig(filename=LOG_FILE, level=logging.DEBUG)
-logger = logging.getLogger('handler')
+logger = logging.getLogger("handler")
 
 DEFAULT_ERROR_MESSAGE = """
 <!DOCTYPE HTML>
@@ -50,10 +50,10 @@ DEFAULT_ERROR_MESSAGE = """
 
 app = FastAPI()
 status_server = StatusServer()
-app.mount("/chess", StaticFiles(directory='static', html=True), name='html')
-app.mount("/json", StaticFiles(directory='json', html=False), name='json')
-app.mount("/reviews", StaticFiles(directory='reviews', html=False), name='reviews')
-app.mount("/tactics", StaticFiles(directory='tactics', html=False), name='tactics')
+app.mount("/chess", StaticFiles(directory="static", html=True), name="html")
+app.mount("/json", StaticFiles(directory="json", html=False), name="json")
+app.mount("/reviews", StaticFiles(directory="reviews", html=False), name="reviews")
+app.mount("/tactics", StaticFiles(directory="tactics", html=False), name="tactics")
 
 
 @app.on_event("startup")
@@ -62,7 +62,7 @@ async def startup_event():
     listener_thread.start()
 
     if OPEN_BROWSER:
-        webbrowser.open(f'http://localhost:{PORT}/chess/index.html')
+        webbrowser.open(f"http://localhost:{PORT}/chess/index.html")
 
 
 @app.on_event("shutdown")
@@ -72,7 +72,7 @@ async def shutdown_event():
 
 @app.get("/configuration.json")
 async def get_configuration():
-    return FileResponse('configuration.json')
+    return FileResponse("configuration.json")
 
 
 @app.get("/refresh")
@@ -91,40 +91,36 @@ async def analysis_state():
 
 @app.get("/reinstall")
 async def reinstall():
-    logger.info('Reinstalling...')
-    if platform.system() == 'Windows':
+    logger.info("Reinstalling...")
+    if platform.system() == "Windows":
         result = subprocess.run(
-            [os.path.join('shell', 'bat', 'install.bat')],
+            [os.path.join("shell", "bat", "install.bat")],
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
+            stderr=subprocess.PIPE,
         )
-    elif platform.system() == 'Linux':
-        path = os.path.join('shell', 'sh', 'install.sh')
-        result = subprocess.run(
-            [path],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
-        )
+    elif platform.system() == "Linux":
+        path = os.path.join("shell", "sh", "install.sh")
+        result = subprocess.run([path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     else:
-        raise HTTPException(status_code=501, detail=f'Platform {platform.system()} is not supported')
+        raise HTTPException(status_code=501, detail=f"Platform {platform.system()} is not supported")
 
     return PlainTextResponse(result.stdout.decode())
 
 
 @app.post("/analyze")
 async def analyze(request: Request):
-    return await analyze_mode(request, 'analyze')
+    return await analyze_mode(request, "analyze")
 
 
 @app.post("/review")
 async def review_endpoint(request: Request):
-    return await analyze_mode(request, 'review')
+    return await analyze_mode(request, "review")
 
 
 @app.post("/reviewer/get_chart")
 async def get_chart(request: Request):
     data = await request.body()
-    path = data.decode('utf-8')[1:]
+    path = data.decode("utf-8")[1:]
     dictionary = json_load(path)
     review = Review.from_json(dictionary)
     graph_data = review.plot_evaluations()
@@ -133,7 +129,7 @@ async def get_chart(request: Request):
 
 @app.post("/save_configuration")
 async def save_configuration_endpoint(config: Configuration):
-    logger.info('Saving configuration...')
+    logger.info("Saving configuration...")
     save_configuration(config.dict())
     return PlainTextResponse("Configuration saved.")
 
@@ -142,18 +138,18 @@ async def save_configuration_endpoint(config: Configuration):
 async def endgame_start(data: dict):
     endgame_singleton = EndgameStudySingleton().get_instance()
     endgame_study = endgame_singleton.endgame_study
-    layout = data.get('layout')
-    dtm = data.get('dtm')
-    white = data.get('white')
-    bishop_color = data.get('bishop_color')
+    layout = data.get("layout")
+    dtm = data.get("dtm")
+    white = data.get("white")
+    bishop_color = data.get("bishop_color")
     if layout is not None and dtm is not None:
         try:
             fen = endgame_study.start_game(layout, dtm, white, bishop_color)
-            return JSONResponse({'fen': fen})
+            return JSONResponse({"fen": fen})
         except ValueError:
-            raise HTTPException(status_code=400, detail='No position matching the criteria')
+            raise HTTPException(status_code=400, detail="No position matching the criteria")
     else:
-        raise HTTPException(status_code=400, detail='Required parameters not provided')
+        raise HTTPException(status_code=400, detail="Required parameters not provided")
 
 
 @app.post("/endgame/move")
@@ -165,20 +161,20 @@ async def endgame_move(data: MoveData):
 
 
 async def analyze_mode(request: Request, mode: str):
-    logger.info('Analyzing...')
+    logger.info("Analyzing...")
     pgn = await request.body()
-    with open(INPUT_PGN_FILE, 'w') as file:
-        file.write(pgn.decode('utf-8'))
+    with open(INPUT_PGN_FILE, "w") as file:
+        file.write(pgn.decode("utf-8"))
 
-    if platform.system() == 'Windows':
-        path = os.path.join('shell', 'bat', 'analyze.bat')
-        command = f'{path} {mode}.py {INPUT_PGN_FILE}'
+    if platform.system() == "Windows":
+        path = os.path.join("shell", "bat", "analyze.bat")
+        command = f"{path} {mode}.py {INPUT_PGN_FILE}"
         run_windows(command)
-    elif platform.system() == 'Linux':
-        path = os.path.join('shell', 'sh', 'analyze.sh')
-        command = f'{path} {mode}.py {INPUT_PGN_FILE}'
+    elif platform.system() == "Linux":
+        path = os.path.join("shell", "sh", "analyze.sh")
+        command = f"{path} {mode}.py {INPUT_PGN_FILE}"
         run_linux(command)
     else:
-        raise HTTPException(status_code=501, detail=f'Platform {platform.system()} is not supported')
+        raise HTTPException(status_code=501, detail=f"Platform {platform.system()} is not supported")
 
     return PlainTextResponse("Analysis started.")

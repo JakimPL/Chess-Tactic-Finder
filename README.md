@@ -41,7 +41,7 @@ from [here](https://www.python.org/downloads/). You also need to have:
    set a Stockfish executable path in the `Set paths > Stockfish` box. You can also set the path by running:
 
 ```batch
-python config.py paths.stockfish "C:\Stockfish\stockfish-windows-x84-64.exe"  
+python config.py paths.stockfish "C:\Stockfish\stockfish-windows-x84-64.exe"
 ```
 
 or you can edit `configuration.json` file manually and adjust the path (`/usr/bin/stockfish/` by default).
@@ -73,14 +73,14 @@ in `configuration.json`.
     ```bash
     sudo apt update
     sudo apt install python3
-    ```  
+    ```
    Or, if you use an older release of Ubuntu (like 20.04), Python 3.10 may not be available in the repositories. In this
    case, you can use [deadsnakes PPA](https://launchpad.net/~deadsnakes/+archive/ubuntu/ppa):
     ```bash
     sudo add-apt-repository ppa:deadsnakes/ppa
     sudo apt update
     sudo apt install python3.10-full
-    ``` 
+    ```
 2. Install Stockfish:
     ```bash
     sudo apt-get install stockfish
@@ -88,7 +88,7 @@ in `configuration.json`.
 3. Install `pgn-extract` by
     ```bash
     sudo apt-get install pgn-extract
-    ```  
+    ```
    Alternatively, you can download `pgn-extract` manually
    from [here](https://www.cs.kent.ac.uk/people/staff/djb/pgn-extract/). You may copy `pgn-extract` executable to the
    main directory of this tool or set the path to it in `configuration.json`, or by the command:
@@ -98,7 +98,7 @@ in `configuration.json`.
 4. Create a virtual environment, install dependencies and run the server by:
     ```bash
     source run.sh
-    ``` 
+    ```
    In case of permission error, run `chmod +x run.sh` first.
 
 #### Usage

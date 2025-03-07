@@ -6,7 +6,7 @@ class MoveClassification:
     type: str
     mate: bool
     accuracy: float
-    description: str = ''
+    description: str = ""
 
     @staticmethod
     def from_json(dictionary: dict):

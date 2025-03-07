@@ -15,19 +15,13 @@ class MessageSender:
     analyzed: int = 0
     total: int = 0
 
-    def __call__(
-            self,
-            filename: str,
-            fen: str,
-            move_string: str,
-            evaluation: Evaluation
-    ):
-        text = '{name} {text} {items} of {total} games ({percent:.2f}%)...'.format(
+    def __call__(self, filename: str, fen: str, move_string: str, evaluation: Evaluation):
+        text = "{name} {text} {items} of {total} games ({percent:.2f}%)...".format(
             name=self.id,
             text=self.text,
             items=self.analyzed,
             total=self.total,
-            percent=100 * self.analyzed / self.total if self.total > 0 else 100
+            percent=100 * self.analyzed / self.total if self.total > 0 else 100,
         )
 
         message = Message(
@@ -37,7 +31,7 @@ class MessageSender:
             game_name=filename,
             fen=fen,
             last_move=move_string,
-            evaluation=str(evaluation)
+            evaluation=str(evaluation),
         )
 
         self.client.send(message.encode())

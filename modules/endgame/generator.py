@@ -16,15 +16,15 @@ from modules.endgame.layout import PiecesLayout
 from modules.endgame.record import Record
 
 configuration = load_configuration()
-TABLEBASE_PATH = configuration['paths']['tablebase']
-DATABASE_PATH = configuration['paths']['database']
+TABLEBASE_PATH = configuration["paths"]["tablebase"]
+DATABASE_PATH = configuration["paths"]["database"]
 
 
 class EndgameGenerator:
     def __init__(
-            self,
-            tablebase_path: Union[str, os.PathLike] = TABLEBASE_PATH,
-            database_path: Union[str, os.PathLike] = DATABASE_PATH,
+        self,
+        tablebase_path: Union[str, os.PathLike] = TABLEBASE_PATH,
+        database_path: Union[str, os.PathLike] = DATABASE_PATH,
     ):
 
         self.tablebase_path = Path(tablebase_path)
@@ -34,7 +34,8 @@ class EndgameGenerator:
     def create_table(self, layout: str):
         connection = self.get_connection()
         cursor = connection.cursor()
-        cursor.execute(f'''
+        cursor.execute(
+            f"""
             CREATE TABLE IF NOT EXISTS {layout} (
                 fen TEXT,
                 dtz INTEGER,
@@ -45,17 +46,18 @@ class EndgameGenerator:
                 bishop_color BOOLEAN,
                 PRIMARY KEY (fen)
             )
-        ''')
-        cursor.execute(f'CREATE INDEX IF NOT EXISTS idx_fen ON {layout} (fen)')
-        cursor.execute(f'CREATE INDEX IF NOT EXISTS idx_dtz ON {layout} (dtz)')
-        cursor.execute(f'CREATE INDEX IF NOT EXISTS idx_dtm ON {layout} (dtm)')
+        """
+        )
+        cursor.execute(f"CREATE INDEX IF NOT EXISTS idx_fen ON {layout} (fen)")
+        cursor.execute(f"CREATE INDEX IF NOT EXISTS idx_dtz ON {layout} (dtz)")
+        cursor.execute(f"CREATE INDEX IF NOT EXISTS idx_dtm ON {layout} (dtm)")
         connection.commit()
         connection.close()
 
     def clear_table(self, layout: str):
         connection = self.get_connection()
         cursor = connection.cursor()
-        cursor.execute(f'DELETE FROM {layout}')
+        cursor.execute(f"DELETE FROM {layout}")
         connection.commit()
         connection.close()
 
@@ -64,7 +66,12 @@ class EndgameGenerator:
         return bool((square + (square >> 3)) & 1)
 
     @staticmethod
-    def set_board(board: chess.Board, pieces: List[chess.Piece], squares: Tuple[int], colors: List[bool]) -> Optional[bool]:
+    def set_board(
+        board: chess.Board,
+        pieces: List[chess.Piece],
+        squares: Tuple[int],
+        colors: List[bool],
+    ) -> Optional[bool]:
         bishop_color = None
         for square, piece, color in zip(squares, pieces, colors):
             board.set_piece_at(square, chess.Piece(piece, color))
@@ -92,7 +99,7 @@ class EndgameGenerator:
     @staticmethod
     def get_processed_batches(partial_results_path: Path) -> List[int]:
         processed_batches = []
-        for pkl_file in partial_results_path.glob('*.pkl'):
+        for pkl_file in partial_results_path.glob("*.pkl"):
             batch_index = int(pkl_file.stem)
             processed_batches.append(batch_index)
         return processed_batches
@@ -101,15 +108,15 @@ class EndgameGenerator:
     def batch(iterable, n=1):
         length = len(iterable)
         for ndx in range(0, length, n):
-            yield iterable[ndx:min(ndx + n, length)]
+            yield iterable[ndx : min(ndx + n, length)]
 
     def execute_batches(
-            self,
-            batches: Generator,
-            layout: PiecesLayout,
-            processed_batches: List[int],
-            partial_results_path: Path,
-            max_workers: int
+        self,
+        batches: Generator,
+        layout: PiecesLayout,
+        processed_batches: List[int],
+        partial_results_path: Path,
+        max_workers: int,
     ):
         with ProcessPoolExecutor(max_workers=max_workers) as executor:
             futures = []
@@ -119,16 +126,20 @@ class EndgameGenerator:
                     batch_indices.append(i)
                     futures.append(executor.submit(self.process_batch, batch, layout, self.tablebase_path))
 
-            for i, future in tqdm(zip(batch_indices, as_completed(futures)), desc='Processing positions', total=len(futures)):
+            for i, future in tqdm(
+                zip(batch_indices, as_completed(futures)),
+                desc="Processing positions",
+                total=len(futures),
+            ):
                 partial_result = future.result()
-                partial_results_file = partial_results_path / f'{i:04d}.pkl'
+                partial_results_file = partial_results_path / f"{i:04d}.pkl"
                 self.save_partial_results(partial_results_file, partial_result)
 
     @staticmethod
     def process_batch(
-            batch,
-            pieces_layout: PiecesLayout,
-            tablebase_path: Union[str, os.PathLike] = TABLEBASE_PATH
+        batch,
+        pieces_layout: PiecesLayout,
+        tablebase_path: Union[str, os.PathLike] = TABLEBASE_PATH,
     ):
         results = []
         syzygy = chess.syzygy.open_tablebase(tablebase_path)
@@ -148,8 +159,18 @@ class EndgameGenerator:
                     try:
                         dtz = syzygy.probe_dtz(board)
                         dtm = gaviota.probe_dtm(board)
-                        result = 'win' if dtz > 0 else 'loss' if dtz < 0 else 'draw'
-                        results.append((board.fen(), int(dtz), int(dtm), white, bool(side), result, bishop_color))
+                        result = "win" if dtz > 0 else "loss" if dtz < 0 else "draw"
+                        results.append(
+                            (
+                                board.fen(),
+                                int(dtz),
+                                int(dtm),
+                                white,
+                                bool(side),
+                                result,
+                                bishop_color,
+                            )
+                        )
                     except Exception as e:
                         print(e)
 
@@ -162,61 +183,64 @@ class EndgameGenerator:
 
     @staticmethod
     def save_partial_results(path: Union[str, os.PathLike], items: List[Tuple]) -> None:
-        with open(path, 'wb') as file:
+        with open(path, "wb") as file:
             pickle.dump(items, file)
 
     @staticmethod
     def load_partial_results(path: Union[str, os.PathLike]) -> List[Tuple]:
-        with open(path, 'rb') as file:
+        with open(path, "rb") as file:
             return pickle.load(file)
 
     def save_batch_to_database(self, layout: str, batch: List[Tuple]) -> None:
         connection = self.get_connection()
         cursor = connection.cursor()
-        cursor.execute('BEGIN TRANSACTION')
-        cursor.executemany(f'INSERT OR IGNORE INTO {layout} VALUES (?, ?, ?, ?, ?, ?, ?)', batch)
+        cursor.execute("BEGIN TRANSACTION")
+        cursor.executemany(f"INSERT OR IGNORE INTO {layout} VALUES (?, ?, ?, ?, ?, ?, ?)", batch)
         connection.commit()
         connection.close()
 
     def save_items_to_database(self, layout: str, partial_results_path: Path) -> None:
-        for pkl_file in tqdm(sorted(partial_results_path.glob('*.pkl')), desc='Saving batches to database'):
+        for pkl_file in tqdm(
+            sorted(partial_results_path.glob("*.pkl")),
+            desc="Saving batches to database",
+        ):
             batch = self.load_partial_results(pkl_file)
             self.save_batch_to_database(layout, batch)
 
         print(f"Database {layout} updated.")
 
     def find_positions(
-            self,
-            layout: str,
-            dtz: Optional[int] = None,
-            dtm: Optional[int] = None,
-            white: Optional[bool] = None,
-            white_to_move: Optional[bool] = None,
-            result: Optional[str] = None,
-            bishop_color: Optional[bool] = None,
+        self,
+        layout: str,
+        dtz: Optional[int] = None,
+        dtm: Optional[int] = None,
+        white: Optional[bool] = None,
+        white_to_move: Optional[bool] = None,
+        result: Optional[str] = None,
+        bishop_color: Optional[bool] = None,
     ):
         connection = self.get_connection()
         cursor = connection.cursor()
-        query = f'SELECT fen FROM {layout} WHERE 1=1'
+        query = f"SELECT fen FROM {layout} WHERE 1=1"
         params = []
 
         if dtz is not None:
-            query += ' AND dtz = ?'
+            query += " AND dtz = ?"
             params.append(dtz)
         if dtm is not None:
-            query += ' AND dtm = ?'
+            query += " AND dtm = ?"
             params.append(dtm)
         if white is not None:
-            query += ' AND white = ?'
+            query += " AND white = ?"
             params.append(white)
         if white_to_move is not None:
-            query += ' AND white_to_move = ?'
+            query += " AND white_to_move = ?"
             params.append(white_to_move)
         if result is not None:
-            query += ' AND result = ?'
+            query += " AND result = ?"
             params.append(result)
         if bishop_color is not None:
-            query += ' AND bishop_color = ?'
+            query += " AND bishop_color = ?"
             params.append(bishop_color)
 
         cursor.execute(query, params)
@@ -225,11 +249,14 @@ class EndgameGenerator:
         return result
 
     def get_record_by_fen(self, layout: str, fen: str) -> Optional[Record]:
-        fen = ' '.join(fen.split(' ')[:4])
+        fen = " ".join(fen.split(" ")[:4])
 
         connection = self.get_connection()
         cursor = connection.cursor()
-        cursor.execute(f'SELECT dtz, dtm, white, white_to_move, result, bishop_color FROM {layout} WHERE fen LIKE ?', (fen + '%',))
+        cursor.execute(
+            f"SELECT dtz, dtm, white, white_to_move, result, bishop_color FROM {layout} WHERE fen LIKE ?",
+            (fen + "%",),
+        )
         result = cursor.fetchone()
         connection.close()
 

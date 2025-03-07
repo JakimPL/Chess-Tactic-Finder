@@ -1,4 +1,4 @@
-from modules.application.app import app, PORT
+from modules.application.app import PORT, app
 
 if __name__ == "__main__":
     import uvicorn
