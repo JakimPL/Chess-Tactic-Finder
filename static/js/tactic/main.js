@@ -1,125 +1,126 @@
-var puzzles = null
-var puzzlesPath = null
-var filteredPuzzles = null
-var favorites = {}
-var hashes = {}
+const puzzles = null;
+const puzzlesPath = null;
+const filteredPuzzles = null;
+const favorites = {};
+const hashes = {};
 
-var puzzlesHistory = new History()
+const puzzlesHistory = new History();
 
-var path = null
-var board = null
-var tactic = null
-var player = null
-var game = null
-var pgn = null
-var currentPuzzleId = null
+const path = null;
+let board = null;
+let tactic = null;
+let player = null;
+let game = null;
+let pgn = null;
+let currentPuzzleId = null;
 
-var action = 0
-var wait = false
-var delayTime = 1000
+const action = 0;
+const wait = false;
+const delayTime = 1000;
 
-var panelTextCallback = null
-var statusTextCallback = null
-var loadPuzzlesCallback = null
-var filterPuzzlesCallback = null
+const panelTextCallback = null;
+const statusTextCallback = null;
+const loadPuzzlesCallback = null;
+const filterPuzzlesCallback = null;
 
-var beforeLoadCallback = null
-var afterLoadCallback = null
+const beforeLoadCallback = null;
+const afterLoadCallback = null;
 
-var hideFirstMove = true
-var keepPlaying = true
-var hardEvaluation = true
+const hideFirstMove = true;
+const keepPlaying = true;
+const hardEvaluation = true;
 
 function loadNextPuzzle() {
-    filterPuzzles(puzzles)
+    filterPuzzles(puzzles);
     if (filteredPuzzles == null) {
-        return
+        return;
     } else if (!filteredPuzzles.length) {
-        return
+        return;
     }
 
-    var puzzle = filteredPuzzles[(Math.floor(Math.random() * (filteredPuzzles.length)))]
-    var path = getPath(puzzle.path)
-    loadPGN(path, puzzle.hash)
+    const puzzle =
+        filteredPuzzles[Math.floor(Math.random() * filteredPuzzles.length)];
+    const path = getPath(puzzle.path);
+    loadPGN(path, puzzle.hash);
 }
 
 function loadPGN(path, puzzleId, addToHistory) {
-    beforeLoadCallback()
-    currentPuzzleId = puzzleId
+    beforeLoadCallback();
+    currentPuzzleId = puzzleId;
     fetch(path)
-    .then(response => {
-        if (!response.ok) {
-            alert('Failed to load a puzzle.')
-            throw new Error('Failed to load a puzzle.')
-        }
+        .then((response) => {
+            if (!response.ok) {
+                alert("Failed to load a puzzle.");
+                throw new Error("Failed to load a puzzle.");
+            }
 
-        return response.text()
-    }).
-    then(text => {
-        pgn = text
-        reset()
-        afterLoadCallback(puzzleId)
+            return response.text();
+        })
+        .then((text) => {
+            pgn = text;
+            reset();
+            afterLoadCallback(puzzleId);
 
-        if (addToHistory != false) {
-            puzzlesHistory.add([path, puzzleId])
-        }
-    })
+            if (addToHistory != false) {
+                puzzlesHistory.add([path, puzzleId]);
+            }
+        });
 }
 
 function calculateSuccessRate() {
     if (puzzles == null || progress.container == null || hashes == null) {
-        return [0, 0, 0.0]
+        return [0, 0, 0.0];
     }
 
-    var correct = 0
-    var total = 0
+    let correct = 0;
+    let total = 0;
     for (const [hash, correctMoves] of Object.entries(progress.container)) {
-        var puzzle = puzzles[hashes[hash]]
+        const puzzle = puzzles[hashes[hash]];
         if (puzzle != null) {
             if (hardEvaluation) {
-                total += 1
+                total += 1;
                 if (correctMoves >= puzzle.moves) {
-                    correct += 1
+                    correct += 1;
                 }
             } else {
-                total += puzzle.moves
-                correct += correctMoves
+                total += puzzle.moves;
+                correct += correctMoves;
             }
         }
     }
 
-    return [correct, total, total > 0 ? correct / total : 0.0]
+    return [correct, total, total > 0 ? correct / total : 0.0];
 }
 
 function getFullPieceName(piece) {
-    piece = piece.toLowerCase()
+    piece = piece.toLowerCase();
     switch (piece) {
-        case 'p':
-            return 'Pawn'
-        case 'n':
-            return 'Knight'
-        case 'b':
-            return 'Bishop'
-        case 'r':
-            return 'Rook'
-        case 'q':
-            return 'Queen'
-        case 'k':
-            return 'King'
+        case "p":
+            return "Pawn";
+        case "n":
+            return "Knight";
+        case "b":
+            return "Bishop";
+        case "r":
+            return "Rook";
+        case "q":
+            return "Queen";
+        case "k":
+            return "King";
     }
 }
 
 function makeMove(move, instant) {
-    animation = instant == null || instant
-	if (move !== null) {
-		move = game.move(move)
-		board.position(game.fen(), !instant)
-	}
+    animation = instant == null || instant;
+    if (move !== null) {
+        move = game.move(move);
+        board.position(game.fen(), !instant);
+    }
 }
 
 function getMoves(game) {
-    moves = game.moves({verbose: true})
-    return game.pgn().split(/\d+\./).slice(1).join('')
+    moves = game.moves({ verbose: true });
+    return game.pgn().split(/\d+\./).slice(1).join("");
 }
 
 function getConfig(tactic) {
@@ -128,165 +129,170 @@ function getConfig(tactic) {
         position: tactic.base_fen,
         onDragStart: onDragStart,
         onDrop: onDrop,
-        onSnapEnd: onSnapEnd
-    }
+        onSnapEnd: onSnapEnd,
+    };
 }
 
 function onDrop(source, target) {
-    document.getElementsByTagName('body')[0].style.overflow = 'scroll'
-	var move = game.move({
-		from: source,
-		to: target,
-		promotion: 'q'
-	})
+    document.getElementsByTagName("body")[0].style.overflow = "scroll";
+    let move = game.move({
+        from: source,
+        to: target,
+        promotion: "q",
+    });
 
-	if (wait || move === null) {
-		return 'snapback'
-	} else {
-		nextMove = tactic.nextMove
-		if (nextMove != move.san) {
-			panelTextCallback('Incorrect move!')
-            save(currentPuzzleId, tactic.moveIndex - 1)
-			delay(() => {
-				game.undo()
-				board.position(game.fen())
-				panelTextCallback()
-			})
-		}
-		else {
-			move = tactic.forward()
-			if (move !== null) {
-				delay(() => {
-                    makeMove(move)
-                    tactic.forward()
-                })
-			}
-		}
-	}
+    if (wait || move === null) {
+        return "snapback";
+    } else {
+        nextMove = tactic.nextMove;
+        if (nextMove != move.san) {
+            panelTextCallback("Incorrect move!");
+            save(currentPuzzleId, tactic.moveIndex - 1);
+            delay(() => {
+                game.undo();
+                board.position(game.fen());
+                panelTextCallback();
+            });
+        } else {
+            move = tactic.forward();
+            if (move !== null) {
+                delay(() => {
+                    makeMove(move);
+                    tactic.forward();
+                });
+            }
+        }
+    }
 
-	updateStatus()
+    updateStatus();
 }
 
 function onDragStart(source, piece, position, orientation) {
-	if (tactic == null || game == null) {
-	    return false
-	}
+    if (tactic == null || game == null) {
+        return false;
+    }
 
-	if (wait || tactic.solved || game.game_over() || game.turn() != player) {
-	    return false
-	}
+    if (wait || tactic.solved || game.game_over() || game.turn() != player) {
+        return false;
+    }
 
-	if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
-		(game.turn() === 'b' && piece.search(/^w/) !== -1)) {
-		return false
-	}
+    if (
+        (game.turn() === "w" && piece.search(/^b/) !== -1) ||
+        (game.turn() === "b" && piece.search(/^w/) !== -1)
+    ) {
+        return false;
+    }
 
-	document.getElementsByTagName('body')[0].style.overflow = 'hidden'
+    document.getElementsByTagName("body")[0].style.overflow = "hidden";
 }
 
 function onSnapEnd() {
-	board.position(game.fen())
+    board.position(game.fen());
 }
 
 function forward() {
-    game.move(tactic.nextMove)
-    tactic.forward()
-    board.position(game.fen())
-    updateStatus()
+    game.move(tactic.nextMove);
+    tactic.forward();
+    board.position(game.fen());
+    updateStatus();
 }
 
 function backward() {
-    game.undo()
-    tactic.backward()
-    board.position(game.fen())
-    updateStatus()
+    game.undo();
+    tactic.backward();
+    board.position(game.fen());
+    updateStatus();
 }
 
 function reset() {
-    player = null
-    tactic = new Tactic(pgn)
-    game = new Chess(tactic.base_fen)
-    board = Chessboard('game_board', getConfig(tactic))
+    player = null;
+    tactic = new Tactic(pgn);
+    game = new Chess(tactic.base_fen);
+    board = Chessboard("game_board", getConfig(tactic));
 
-    if (game.turn() == 'w') {
-        board.flip()
+    if (game.turn() == "w") {
+        board.flip();
     }
 
     if (hideFirstMove) {
-        makeMove(tactic.firstMove, true)
-        player = game.turn()
+        makeMove(tactic.firstMove, true);
+        player = game.turn();
     } else {
         delay(() => {
-            makeMove(tactic.firstMove)
-            player = game.turn()
-        })
+            makeMove(tactic.firstMove);
+            player = game.turn();
+        });
     }
 
-    panelTextCallback()
-    updateStatus()
+    panelTextCallback();
+    updateStatus();
 }
 
 function checkIfSolved() {
     if (tactic == null) {
-        return
+        return;
     }
 
     if (tactic.solved) {
-        panelTextCallback('Puzzle solved!')
-        save(currentPuzzleId, tactic.moveIndex)
-        tactic = null
+        panelTextCallback("Puzzle solved!");
+        save(currentPuzzleId, tactic.moveIndex);
+        tactic = null;
         if (keepPlaying) {
-            delay(loadNextPuzzle)
+            delay(loadNextPuzzle);
         } else {
-            delay(() => {filterPuzzles(puzzles)}, 500)
+            delay(() => {
+                filterPuzzles(puzzles);
+            }, 500);
         }
     }
 }
 
 function updateStatus() {
     if (game == null) {
-        return
+        return;
     }
 
-	var statusText = game.turn() === 'b' ? '◉ ' : '○ '
-	var moveColor = game.turn() === 'b' ? 'Black' : 'White'
-	if (game.in_checkmate()) {
-		statusText += 'Game over, ' + moveColor + ' is checkmated.'
-	} else if (game.in_draw()) {
-		statusText += 'Game over, drawn position'
-	} else {
-		statusText += moveColor + ' to move'
-	}
+    let statusText = game.turn() === "b" ? "◉ " : "○ ";
+    const moveColor = game.turn() === "b" ? "Black" : "White";
+    if (game.in_checkmate()) {
+        statusText += "Game over, " + moveColor + " is checkmated.";
+    } else if (game.in_draw()) {
+        statusText += "Game over, drawn position";
+    } else {
+        statusText += moveColor + " to move";
+    }
 
-    statusTextCallback(statusText)
-    checkIfSolved()
+    statusTextCallback(statusText);
+    checkIfSolved();
 }
 
 function getMovesCount(number) {
-    return 1 + Math.floor((number - 1) / 2)
+    return 1 + Math.floor((number - 1) / 2);
 }
 
 function save(hash, value) {
-    var targetValue = getMovesCount(value)
-    var moves = Math.floor(tactic.moves.length / 2)
-    progress.saveItem(hash, targetValue, moves)
+    const targetValue = getMovesCount(value);
+    const moves = Math.floor(tactic.moves.length / 2);
+    progress.saveItem(hash, targetValue, moves);
 }
 
 function refresh(gather) {
     if (gather) {
-        clearTable('games_list_table', 10)
+        clearTable("games_list_table", 10);
     }
 
     $.ajax({
-        url: gather == true ? '/refresh?gather=true' : '/refresh',
-        type: 'GET',
+        url: gather == true ? "/refresh?gather=true" : "/refresh",
+        type: "GET",
         success: () => {
-            loadPuzzlesCallback()
-            progress.load()
+            loadPuzzlesCallback();
+            progress.load();
         },
         error: () => {
-            console.error('Unable to refresh puzzles.')
-            $('#number_of_puzzles').html('Unable to refresh puzzles. Please refresh the page.')
-        }
-    })
+            console.error("Unable to refresh puzzles.");
+            $("#number_of_puzzles").html(
+                "Unable to refresh puzzles. Please refresh the page.",
+            );
+        },
+    });
 }
