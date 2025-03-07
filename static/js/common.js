@@ -1,5 +1,5 @@
 function getPath(path) {
-    return "/" + path.replace(/[\\/]+/g, '/').replace(/^([a-zA-Z]+:|\.\/)/, '')
+    return '/' + path.replace(/[\\/]+/g, '/').replace(/^([a-zA-Z]+:|\.\/)/, '')
 }
 
 function markButton(button) {

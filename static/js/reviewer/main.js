@@ -123,7 +123,7 @@ function loadConfiguration() {
     .then(response => response.json())
     .then(json => {
         configuration = json
-        reviewsPath = "/" + configuration['paths']['gathered_reviews']
+        reviewsPath = `/${configuration['paths']['gathered_reviews']}`
         refresh()
     })
 }

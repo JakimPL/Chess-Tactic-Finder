@@ -2,27 +2,29 @@ import logging
 import os
 import platform
 import subprocess
+import threading
 import urllib.parse
+import webbrowser
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
 
 from modules.configuration import load_configuration, save_configuration
 from modules.json import json_load
+from modules.requests.configuration import Configuration
+from modules.requests.move import MoveData
 from modules.server.auxiliary import refresh
 from modules.server.endgame import EndgameStudySingleton
 from modules.server.run import run_windows, run_linux
 from modules.server.status_server import StatusServer
 from modules.structures.review import Review
 
-app = FastAPI()
-
 configuration = load_configuration()
 INPUT_PGN_FILE = configuration['paths']['input_pgn']
 LOG_FILE = configuration['paths']['log']
 PORT = configuration['server']['port']
+OPEN_BROWSER = configuration['server']['open_browser']
 
 logging.basicConfig(filename=LOG_FILE, level=logging.DEBUG)
 logger = logging.getLogger('handler')
@@ -46,21 +48,26 @@ DEFAULT_ERROR_MESSAGE = """
 </html>
 """
 
-
+app = FastAPI()
+status_server = StatusServer()
 app.mount("/chess", StaticFiles(directory='static', html=True), name='html')
 app.mount("/json", StaticFiles(directory='json', html=False), name='json')
 app.mount("/reviews", StaticFiles(directory='reviews', html=False), name='reviews')
 app.mount("/tactics", StaticFiles(directory='tactics', html=False), name='tactics')
 
 
-class Configuration(BaseModel):
-    paths: dict
+@app.on_event("startup")
+async def startup_event():
+    listener_thread = threading.Thread(target=status_server.communicate, daemon=True)
+    listener_thread.start()
+
+    if OPEN_BROWSER:
+        webbrowser.open(f'http://localhost:{PORT}/chess/index.html')
 
 
-class MoveData(BaseModel):
-    fen: str
-    move: str
-    beta: float
+@app.on_event("shutdown")
+async def shutdown_event():
+    status_server.close()
 
 
 @app.get("/configuration.json")
@@ -76,8 +83,8 @@ async def refresh_endpoint(gather: bool = False):
 
 @app.get("/analysis_state")
 async def analysis_state():
-    return JSONResponse({"error": "Not implemented yet"})
-    message = StatusServer.message
+    status_server = StatusServer.get_instance()
+    message = status_server.message
     dictionary = dict(urllib.parse.parse_qsl(message))
     return JSONResponse(dictionary)
 
@@ -110,7 +117,7 @@ async def analyze(request: Request):
 
 
 @app.post("/review")
-async def review(request: Request):
+async def review_endpoint(request: Request):
     return await analyze_mode(request, 'review')
 
 
@@ -133,7 +140,8 @@ async def save_configuration_endpoint(config: Configuration):
 
 @app.post("/endgame/start")
 async def endgame_start(data: dict):
-    endgame_study = EndgameStudySingleton().get_instance()
+    endgame_singleton = EndgameStudySingleton().get_instance()
+    endgame_study = endgame_singleton.endgame_study
     layout = data.get('layout')
     dtm = data.get('dtm')
     white = data.get('white')
@@ -150,7 +158,8 @@ async def endgame_start(data: dict):
 
 @app.post("/endgame/move")
 async def endgame_move(data: MoveData):
-    endgame_study = EndgameStudySingleton().get_instance()
+    endgame_singleton = EndgameStudySingleton().get_instance()
+    endgame_study = endgame_singleton.endgame_study
     reply = endgame_study.move(data.fen, data.move, data.beta)
     return JSONResponse(reply.__dict__)
 
@@ -173,9 +182,3 @@ async def analyze_mode(request: Request, mode: str):
         raise HTTPException(status_code=501, detail=f'Platform {platform.system()} is not supported')
 
     return PlainTextResponse("Analysis started.")
-
-
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(app, host="0.0.0.0", port=PORT)

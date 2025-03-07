@@ -146,7 +146,7 @@ function run(argument) {
         var pgn = event.target.result
         analysis = true
         $.ajax({
-            url: argument,
+            url: `/${argument}`,
             type: 'POST',
             data: pgn,
             success: () => {

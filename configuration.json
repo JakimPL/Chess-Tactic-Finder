@@ -52,7 +52,6 @@
         "progress": "json/progress.json",
         "tablebase": "tables",
         "database": "database/database.db",
-        "unix_socket": "./temp/http.socket",
         "log": "log.txt"
     },
     "export": {
@@ -62,14 +61,10 @@
     "server": {
         "port": 8000,
         "listener_port": 6000,
-        "socket": false,
         "open_browser": true
     },
     "tactic_player": {
         "hard_progress": true,
         "count_moves_instead_of_puzzles": false
-    },
-    "endgame_study": {
-
     }
 }

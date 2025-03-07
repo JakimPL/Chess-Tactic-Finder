@@ -10,9 +10,7 @@ from modules.structures.message import Message
 from modules.structures.message_sender import MessageSender
 
 configuration = load_configuration()
-
 INPUT_DIRECTORY = configuration['paths']['processed']
-
 STOCKFISH_DEPTH = configuration['stockfish']['depth']
 
 if __name__ == '__main__':

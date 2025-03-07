@@ -281,8 +281,8 @@ function loadConfiguration() {
     .then(response => response.json())
     .then(json => {
         configuration = json
-        progress.path = "/" + configuration['paths']['progress']
-        puzzlesPath = "/" + configuration['paths']['gathered_puzzles']
+        progress.path = `/${configuration['paths']['progress']}`
+        puzzlesPath = `/${configuration['paths']['gathered_puzzles']}`
         hardEvaluation = !configuration['tactic_player']['count_moves_instead_of_puzzles']
         refresh()
     })

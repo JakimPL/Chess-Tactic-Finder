@@ -2,12 +2,16 @@ from urllib import parse
 from multiprocessing.connection import Listener
 
 from modules.server.connection import get_listener
+from modules.singleton import Singleton
 
 NO_ANALYSIS_MESSAGE = 'No analysis in progress.'
 
 
-class StatusServer:
-    def __init__(self):
+class StatusServer(Singleton):
+    listener: Listener
+    message: str
+
+    def init(self):
         self.listener: Listener = get_listener()
         self.message: str = NO_ANALYSIS_MESSAGE
 
@@ -31,3 +35,6 @@ class StatusServer:
 
     def close(self):
         self.listener.close()
+
+    def __del__(self):
+        self.close()
