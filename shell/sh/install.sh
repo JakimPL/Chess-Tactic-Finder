@@ -49,5 +49,9 @@ wget -P tables/gaviota "https://chess.cygnitec.com/tablebases/gaviota/4/4.7z"
 
 7z x tables/gaviota/3.7z -otables/gaviota
 7z x tables/gaviota/4.7z -otables/gaviota
+mv tables/gaviota/3/*.cp4 tables/gaviota/
+mv tables/gaviota/4/*.cp4 tables/gaviota/
+rm -rf tables/gaviota/3
+rm -rf tables/gaviota/4
 
 rm tables/gaviota/*.7z

@@ -58,7 +58,11 @@ mkdir tables\gaviota
 curl -o tables\gaviota\3.7z "https://chess.cygnitec.com/tablebases/gaviota/3/3.7z"
 curl -o tables\gaviota\4.7z "https://chess.cygnitec.com/tablebases/gaviota/4/4.7z"
 
-"C:\Program Files\7-Zip\7z.exe" x tables\gaviota\3.7z -otables\gaviota
-"C:\Program Files\7-Zip\7z.exe" x tables\gaviota\4.7z -otables\gaviota
+"C:\Program Files\7-Zip\7z.exe" x tables\gaviota\3.7z -otables\gaviota -aos
+"C:\Program Files\7-Zip\7z.exe" x tables\gaviota\4.7z -otables\gaviota -aos
+move tables\gaviota\3\*.cp4 tables\gaviota\
+move tables\gaviota\4\*.cp4 tables\gaviota\
+rmdir /s /q tables\gaviota\3
+rmdir /s /q tables\gaviota\4
 
 del tables\gaviota\*.7z
