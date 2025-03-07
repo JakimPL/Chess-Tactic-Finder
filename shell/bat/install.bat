@@ -33,3 +33,26 @@ curl "https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.mi
 curl "https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.2/chess.js" > static\js\import\chess.js
 curl "https://unpkg.com/chess-pgn-parser@1.3.9/dist/parser.js" > static\js\import\parser.js
 curl "https://www.kryogenix.org/code/browser/sorttable/sorttable.js" > static\js\import\sorttable.js
+
+:: install syzygy tablebases
+echo Downloading Syzygy tablebases.
+set layouts=KRvK KQvK KPvK KRRvK KBBvK KBNvK KQvKR KQvKN KQvKB
+rmdir /s /q tables\syzygy
+mkdir tables\syzygy
+for %%l in (%layouts%) do (
+    curl -o tables\syzygy\%%l.rtbz "https://tablebase.lichess.ovh/tables/standard/3-4-5-dtz/%%l.rtbz"
+    curl -o tables\syzygy\%%l.rtbw "https://tablebase.lichess.ovh/tables/standard/3-4-5-wdl/%%l.rtbw"
+)
+
+:: install gaviota tablebases
+rmdir /s /q tables\gaviota
+mkdir tables\gaviota
+curl -o tables\gaviota\3.7z "https://chess.cygnitec.com/tablebases/gaviota/3/3.7z"
+curl -o tables\gaviota\4.7z "https://chess.cygnitec.com/tablebases/gaviota/4/4.7z"
+
+:: unpack gaviota tablebases
+7z x tables\gaviota\3.7z -otables\gaviota
+7z x tables\gaviota\4.7z -otables\gaviota
+
+:: remove downloaded archives
+del tables\gaviota\*.7z

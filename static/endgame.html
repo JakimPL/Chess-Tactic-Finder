@@ -49,10 +49,6 @@
                 <div><h3>Board</h3></div>
                 <p id="game_info">&nbsp</p>
                 <div id="board_with_evaluation">
-                    <div id="evaluation">
-                        <div id="evaluation_bar"></div>
-                        <div id="evaluation_value"></div>
-                    </div>
                     <div id="endgame_board"></div>
                 </div>
                 <div class="buttons">
@@ -117,17 +113,26 @@
                                 </td>
                                 <td>
                                     <select id="study_layout" class="options">
-                                        <option value="KRvK">
-                                            King + Rook vs King
+                                        <option value="KRRvK">
+                                            King + 2 Rooks vs King
                                         </option>
                                         <option value="KQvK">
                                             King + Queen vs King
                                         </option>
+                                        <option value="KRvK">
+                                            King + Rook vs King
+                                        </option>
                                         <option value="KPvK">
                                             King + Pawn vs King
                                         </option>
-                                        <option value="KRRvK">
-                                            King + 2 Rooks vs King
+                                        <option value="KQvKB">
+                                            King + Queen vs King + Bishop
+                                        </option>
+                                        <option value="KQvKN">
+                                            King + Queen vs King + Knight
+                                        </option>
+                                        <option value="KQvKR">
+                                            King + Queen vs King + Rook
                                         </option>
                                         <option value="KBBvK">
                                             King + 2 Bishops vs King

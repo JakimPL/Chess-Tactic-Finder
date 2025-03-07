@@ -142,8 +142,9 @@ class EndgameGenerator:
         tablebase_path: Union[str, os.PathLike] = TABLEBASE_PATH,
     ):
         results = []
-        syzygy = chess.syzygy.open_tablebase(tablebase_path)
-        gaviota = chess.gaviota.open_tablebase(tablebase_path)
+        tablebase_path = Path(tablebase_path)
+        syzygy = chess.syzygy.open_tablebase(str(tablebase_path / "syzygy"))
+        gaviota = chess.gaviota.open_tablebase(str(tablebase_path / "gaviota"))
 
         for squares in batch:
             for white, colors in pieces_layout.colors.items():

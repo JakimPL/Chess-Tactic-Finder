@@ -11,7 +11,7 @@ from modules.structures.move_reply import MoveReply
 class EndgameStudy:
     def __init__(self, endgame_generator: EndgameGenerator):
         self.generator = endgame_generator
-        self.tablebase = chess.gaviota.open_tablebase(self.generator.tablebase_path)
+        self.tablebase = chess.gaviota.open_tablebase(self.generator.tablebase_path / "gaviota")
 
         self.board = chess.Board()
         self.starting_position: Optional[str] = None

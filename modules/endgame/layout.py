@@ -12,7 +12,7 @@ PIECES = {
     "K": chess.KING,
 }
 
-LAYOUTS = ["KRvK", "KQvK", "KPvK", "KRRvK", "KBBvK", "KBNvK"]
+LAYOUTS = ["KRvK", "KQvK", "KPvK", "KRRvK", "KBBvK", "KBNvK", "KQvKR", "KQvKN", "KQvKB"]
 
 
 @dataclass(frozen=True)
