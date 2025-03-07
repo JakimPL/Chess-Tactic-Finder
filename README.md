@@ -160,6 +160,41 @@ The _Tactic Finder_ algorithm parameters are contained in `algorithm` dictionary
 -   `min_relative_material_balance` - the minimal material difference in points to consider a `material advantage` puzzle.
     The default value is `3`.
 
+## Reviewer
+
+The Reviewer is a tool designed for reviewing the games, finding the best moves and the mistakes. The Reviewer needs games to be analyzed in a similar fashion as the Tactic Finder.
+
+The output of the reviewing algorithm is in the `reviews` directory by default.
+
+## Endgame study
+
+Endgame study is a training tool for common endgame positions. It allows to practice endgame positions with a computer, with different settings such as number of moves to mate or opponent difficulty (from random moves to perfect play).
+
+```bash
+python endgame.py [layout]
+```
+
+Supported layouts are:
+
+-   `KvK` - King vs King
+-   `KRvK` - King and Rook vs King
+-   `KQvK` - King and Queen vs King
+-   `KPvK` - King and Pawn vs King
+-   `KQvKB` - King and Queen vs King and Bishop
+-   `KQvKN` - King and Queen vs King and Knight
+-   `KQvKR` - King and Queen vs King and Rook
+-   `KRRvK` - King and two Rooks vs King
+-   `KBBvK` - King and two Bishops vs King
+-   `KBNvK` - King, Bishop and Knight vs King
+
+For example, to generate all endgame studies for King and Rook vs King, run:
+
+```bash
+python endgame.py KRvK
+```
+
+**Warning**. The generator may take a long time to generate all possible positions for some endgames.
+
 ## Dependencies
 
 _Chess Tactic Finder_ is primarily based on Stockfish, a UCI chess engine. Stockfish installation process is described
