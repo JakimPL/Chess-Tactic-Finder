@@ -15,12 +15,12 @@ let movesList = null;
 let chess = null;
 let game = null;
 
-const storage = new Storage();
-const localConfiguration = {};
+let storage = new Storage();
+let localConfiguration = {};
 let reviews = {};
-const hashes = {};
-const favorites = {};
-const accuracies = {};
+let hashes = {};
+let favorites = {};
+let accuracies = {};
 
 $("#backward").on("click", function () {
     backward();
@@ -373,7 +373,7 @@ function createReviewsTable(reviews) {
 
         const path = getPath(review.path);
         const link = new Link(
-            `javascript:loadReview('/${path}', '${review.hash}')`,
+            `javascript:loadReview('${path}', '${review.hash}')`,
         );
 
         const reviewId = `review${review.hash}`;

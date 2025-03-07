@@ -14,7 +14,7 @@ let game = null;
 let player = null;
 let movesList = null;
 
-let delay = false;
+let wait = false;
 const delayTime = 500;
 
 let moveIndex = null;
@@ -109,7 +109,7 @@ function onSnapEnd() {
 
 function forward() {
     const previousMoveIndex = moveIndex;
-    if (!delay && game !== null && game.forward()) {
+    if (!wait && game !== null && game.forward()) {
         moveIndex = game.currentMove - 1;
         movesList.highlightNextMove(previousMoveIndex, moveIndex);
         setPosition();
@@ -118,7 +118,7 @@ function forward() {
 
 function backward() {
     const previousMoveIndex = moveIndex;
-    if (!delay && game !== null && game.backward()) {
+    if (!wait && game !== null && game.backward()) {
         moveIndex = game.currentMove - 1;
         movesList.highlightNextMove(previousMoveIndex, moveIndex);
         setPosition();
@@ -126,7 +126,7 @@ function backward() {
 }
 
 function goTo(moveIndex) {
-    if (!delay && game !== null) {
+    if (!wait && game !== null) {
         // not implemented
         setPosition();
     }
@@ -190,7 +190,7 @@ function sendMove(fen, uci) {
             setMateCounter(data.previous_dtm);
             updateMoveRating(data.previous_rating);
 
-            delay = true;
+            wait = true;
             setTimeout(() => {
                 moveIndex = game.currentMove;
                 board.position(data.fen);
@@ -200,12 +200,12 @@ function sendMove(fen, uci) {
                     movesList.addMove(data.uci, data.san, true);
                     updateMoveRating(data.current_rating);
                 }
-                delay = false;
+                wait = false;
             }, delayTime);
         })
         .catch((error) => {
             console.error("Error making move:", error);
-            delay = false;
+            wait = false;
         });
 }
 

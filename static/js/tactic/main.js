@@ -1,12 +1,11 @@
-const puzzles = null;
-const puzzlesPath = null;
-const filteredPuzzles = null;
-const favorites = {};
-const hashes = {};
+let puzzles = null;
+let puzzlesPath = null;
+let filteredPuzzles = null;
+let favorites = {};
+let hashes = {};
+let puzzlesHistory = new History();
 
-const puzzlesHistory = new History();
-
-const path = null;
+let path = null;
 let board = null;
 let tactic = null;
 let player = null;
@@ -14,21 +13,21 @@ let game = null;
 let pgn = null;
 let currentPuzzleId = null;
 
-const action = 0;
-const wait = false;
+let action = 0;
+let wait = false;
 const delayTime = 1000;
 
-const panelTextCallback = null;
-const statusTextCallback = null;
-const loadPuzzlesCallback = null;
-const filterPuzzlesCallback = null;
+let panelTextCallback = null;
+let statusTextCallback = null;
+let loadPuzzlesCallback = null;
+let filterPuzzlesCallback = null;
 
-const beforeLoadCallback = null;
-const afterLoadCallback = null;
+let beforeLoadCallback = null;
+let afterLoadCallback = null;
 
-const hideFirstMove = true;
-const keepPlaying = true;
-const hardEvaluation = true;
+let hideFirstMove = true;
+let keepPlaying = true;
+let hardEvaluation = true;
 
 function loadNextPuzzle() {
     filterPuzzles(puzzles);
