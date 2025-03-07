@@ -35,7 +35,7 @@ from [here](https://www.python.org/downloads/). You also need to have:
 3. Download `pgn-extract` from [here](https://www.cs.kent.ac.uk/people/staff/djb/pgn-extract/). Copy `pgn-extract.exe`
    to the main directory of this tool.
 4. Run `run.bat` from Explorer or Launch the file from the command line (`cmd`). This will create a virtual environment and install necessary JavaScript/Python
-   dependencies.
+   dependencies. The script requires having installed _7-Zip_ in `C:\Program Files\7-Zip\7z.exe`. Change the corresponding lines in `run.bat` if you have _7-Zip_ installed in a different location.
 5. After the installation, a server will start on `http://localhost:8000/`. After a successful installation you need to
    set a Stockfish executable path in the `Set paths > Stockfish` box. You can also set the path by running:
 

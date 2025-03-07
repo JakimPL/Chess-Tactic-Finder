@@ -50,9 +50,7 @@ mkdir tables\gaviota
 curl -o tables\gaviota\3.7z "https://chess.cygnitec.com/tablebases/gaviota/3/3.7z"
 curl -o tables\gaviota\4.7z "https://chess.cygnitec.com/tablebases/gaviota/4/4.7z"
 
-:: unpack gaviota tablebases
-7z x tables\gaviota\3.7z -otables\gaviota
-7z x tables\gaviota\4.7z -otables\gaviota
+"C:\Program Files\7-Zip\7z.exe" x tables\gaviota\3.7z -otables\gaviota
+"C:\Program Files\7-Zip\7z.exe" x tables\gaviota\4.7z -otables\gaviota
 
-:: remove downloaded archives
 del tables\gaviota\*.7z
