@@ -1,6 +1,7 @@
 import logging
 import os
 import platform
+import sqlite3
 import subprocess
 import threading
 import urllib.parse
@@ -148,6 +149,8 @@ async def endgame_start(data: dict):
             return JSONResponse({"fen": fen})
         except ValueError:
             raise HTTPException(status_code=400, detail="No position matching the criteria")
+        except sqlite3.OperationalError:
+            return JSONResponse({"error": f"No database {layout} found"}, status_code=500)
     else:
         raise HTTPException(status_code=400, detail="Required parameters not provided")
 

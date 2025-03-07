@@ -249,7 +249,10 @@ function requestNewGame() {
         })
         .catch((error) => {
             console.error("Error starting new game:", error);
-            unmarkButton("new_study");
+            alert(
+                `Endgame positions for ${layout} are not generated yet. Please generate them first.`,
+            );
+            markButton("new_study");
         });
 }
 
