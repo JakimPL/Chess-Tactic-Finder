@@ -44,7 +44,7 @@ curl "https://www.kryogenix.org/code/browser/sorttable/sorttable.js" > static\js
 
 :: install syzygy tablebases
 echo Downloading Syzygy tablebases.
-set layouts=KRvK KQvK KPvK KRRvK KBBvK KBNvK KQvKR KQvKN KQvKB
+set layouts=KNvK KBvK KRvK KQvK KPvK KRRvK KBBvK KBNvK KQvKR KQvKN KQvKB
 rmdir /s /q tables\syzygy
 mkdir tables\syzygy
 for %%l in (%layouts%) do (

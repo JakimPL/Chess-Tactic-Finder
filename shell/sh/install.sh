@@ -33,7 +33,7 @@ wget -P static/js/import/ "https://www.kryogenix.org/code/browser/sorttable/sort
 
 # install syzygy tablebases
 echo "Downloading Syzygy tablebases."
-layouts=("KRvK" "KQvK" "KPvK" "KRRvK" "KBBvK" "KBNvK" "KQvKR" "KQvKN" "KQvKB")
+layouts=("KNvK" "KBvK" "KRvK" "KQvK" "KPvK" "KRRvK" "KBBvK" "KBNvK" "KQvKR" "KQvKN" "KQvKB")
 rm tables/syzygy -rf
 mkdir tables/syzygy
 for layout in "${layouts[@]}"; do

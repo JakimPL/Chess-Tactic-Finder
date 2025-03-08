@@ -43,6 +43,8 @@ class EndgameGenerator:
                 white BOOLEAN,
                 white_to_move BOOLEAN,
                 result TEXT,
+                white_pieces TEXT,
+                black_pieces TEXT,
                 bishop_color BOOLEAN,
                 PRIMARY KEY (fen)
             )
@@ -60,6 +62,10 @@ class EndgameGenerator:
         cursor.execute(f"DELETE FROM {layout}")
         connection.commit()
         connection.close()
+
+    @staticmethod
+    def get_side_pieces(pieces_layout: PiecesLayout, white: bool) -> str:
+        return "".join(map(lambda piece: chess.piece_symbol(piece).upper(), pieces_layout.layout[not white]))
 
     @staticmethod
     def get_bishop_color(square: int) -> bool:
@@ -81,10 +87,29 @@ class EndgameGenerator:
         if sum(piece == chess.BISHOP for piece in pieces) == 1:
             return bishop_color
 
+    @staticmethod
+    def deduplicate_permutations(perms: permutations, pieces_layout: PiecesLayout) -> List[Tuple[int, ...]]:
+        indices = set()
+        signature = zip(pieces_layout.pieces, pieces_layout.colors[chess.WHITE])
+        signature = tuple(piece - 1 + 6 * color for piece, color in signature)
+
+        deduplicated_perms = []
+        for perm in perms:
+            index = frozenset(square | (sig << 6) for square, sig in zip(perm, signature))
+
+            if index in indices:
+                continue
+
+            indices.add(index)
+            deduplicated_perms.append(perm)
+
+        return deduplicated_perms
+
     def generate_positions(self, layout: str, batch_size: int = 4096, max_workers: int = 8) -> None:
         pieces_layout = PiecesLayout.from_string(layout)
-        perms = list(permutations(chess.SQUARES, pieces_layout.count))
-        batches = self.batch(perms, batch_size)
+        perms = permutations(chess.SQUARES, pieces_layout.count)
+        deduplicated_perms = self.deduplicate_permutations(perms, pieces_layout)
+        batches = self.batch(deduplicated_perms, batch_size)
 
         partial_results_path = self.database_path.parent / layout
         partial_results_path.mkdir(exist_ok=True)
@@ -151,7 +176,8 @@ class EndgameGenerator:
                 board = chess.Board(None)
                 board.clear()
                 bishop_color = EndgameGenerator.set_board(board, pieces_layout.pieces, squares, colors)
-
+                white_pieces = EndgameGenerator.get_side_pieces(pieces_layout, white)
+                black_pieces = EndgameGenerator.get_side_pieces(pieces_layout, not white)
                 for side in (chess.WHITE, chess.BLACK):
                     board.turn = side
                     if not board.is_valid():
@@ -169,6 +195,8 @@ class EndgameGenerator:
                                 white,
                                 bool(side),
                                 result,
+                                white_pieces,
+                                black_pieces,
                                 bishop_color,
                             )
                         )
@@ -196,7 +224,7 @@ class EndgameGenerator:
         connection = self.get_connection()
         cursor = connection.cursor()
         cursor.execute("BEGIN TRANSACTION")
-        cursor.executemany(f"INSERT OR IGNORE INTO {layout} VALUES (?, ?, ?, ?, ?, ?, ?)", batch)
+        cursor.executemany(f"INSERT OR IGNORE INTO {layout} VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", batch)
         connection.commit()
         connection.close()
 

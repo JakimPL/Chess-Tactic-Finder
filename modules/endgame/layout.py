@@ -18,6 +18,7 @@ LAYOUTS = ["KRvK", "KQvK", "KPvK", "KRRvK", "KBBvK", "KBNvK", "KQvKR", "KQvKN", 
 @dataclass(frozen=True)
 class PiecesLayout:
     name: str
+    layout: List[List[chess.Piece]]
     pieces: List[chess.Piece]
     colors: Dict[chess.Color, List[chess.Color]]
 
@@ -31,7 +32,7 @@ class PiecesLayout:
         pieces_layout = PiecesLayout.get_pieces_layout_from_string(name)
         pieces = sum(pieces_layout, [])
         colors = PiecesLayout.generate_colors(pieces_layout)
-        return PiecesLayout(name, pieces, colors)
+        return PiecesLayout(name, pieces_layout, pieces, colors)
 
     @staticmethod
     def generate_colors(
