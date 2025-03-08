@@ -151,9 +151,10 @@ export function bindKeys(backward, forward) {
     document.onkeydown = function checkKey(event) {
         event = event || window.event;
 
-        if (event.keyCode === "37") {
+        const key = parseInt(event.keyCode);
+        if (key === 37) {
             backward();
-        } else if (event.keyCode === "39") {
+        } else if (key === 39) {
             forward();
         }
     };

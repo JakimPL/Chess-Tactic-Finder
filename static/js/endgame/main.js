@@ -156,7 +156,7 @@ function updateMoveRating(rating) {
 
 function prepareMateCounter(dtm) {
     const result = game.getResult();
-    if (result !== null) {
+    if (result !== null && result !== undefined) {
         return result;
     }
 
@@ -335,7 +335,7 @@ function startNewGame(fen, dtm) {
 function colorSquares() {
     clearSquaresColors();
     const move = movesList.review[game.currentMove - 1];
-    if (move !== null) {
+    if (move !== null && move !== undefined) {
         const color = movesList.getMoveColor(
             movesList.getMoveType(move.classification),
         );
