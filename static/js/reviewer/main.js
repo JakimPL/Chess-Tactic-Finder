@@ -1,11 +1,33 @@
-board = Chessboard("game_board", "start");
+import Colors from "../colors.js";
+import Link from "../link.js";
+import MovesList from "../movesList.js";
+import Storage from "../storage.js";
+import {
+    bindKeys,
+    clearSquaresColors,
+    clearTable,
+    colorSquare,
+    createTableRowEntry,
+    getPath,
+    loadFavorites,
+    markButton,
+    setButton,
+    setLinks,
+    setPanel,
+    unmarkButton,
+} from "../common.js";
+
+import Game from "./game.js";
 
 const $panel = $("#panel");
+
+window.loadReview = loadReview;
 
 const emptyImage =
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 let image = emptyImage;
 
+let board = Chessboard("game_board", "start");
 let pgn = null;
 let fen = null;
 let review = null;
@@ -15,6 +37,7 @@ let movesList = null;
 let chess = null;
 let game = null;
 
+let reviewsPath = null;
 let storage = new Storage();
 let localConfiguration = {};
 let reviews = {};
@@ -127,7 +150,7 @@ function loadConfiguration() {
     fetch("/configuration.json", { cache: "no-cache" })
         .then((response) => response.json())
         .then((json) => {
-            configuration = json;
+            const configuration = json;
             reviewsPath = `/${configuration["paths"]["gathered_reviews"]}`;
             refresh();
         });
@@ -253,12 +276,12 @@ function setEngineLines() {
     const bestMoves = move["best_moves"];
     clearTable("engine_lines_table");
     const tableObject = document.getElementById("engine_lines_table");
-    bestChoice = false;
+    let bestChoice = false;
     for (const bestMove of bestMoves) {
         var tr = document.createElement("tr");
         createTableRowEntry(tr, bestMove[0]);
         if (bestMove[0] == game.moves[index]) {
-            tr.style.backgroundColor = darkSquareColor;
+            tr.style.backgroundColor = Colors.darkSquareColor;
             bestChoice = true;
         }
 
@@ -272,7 +295,7 @@ function setEngineLines() {
         var tr = document.createElement("tr");
         createTableRowEntry(tr, game.moves[index]);
         createTableRowEntry(tr, evaluationToString(reviewMove.evaluation));
-        tr.style.backgroundColor = darkSquareColor;
+        tr.style.backgroundColor = Colors.darkSquareColor;
         tableObject.appendChild(tr);
     }
 
@@ -333,6 +356,7 @@ function setFEN(previousMoveIndex) {
 
     setEvaluation();
     setEngineLines();
+    setLinks(pgn, fen);
 }
 
 function forward() {
@@ -379,7 +403,7 @@ function createReviewsTable(reviews) {
         const playSymbol = favorites[review.hash] == true ? "★" : "▶";
 
         if (favorites[review.hash]) {
-            tr.style.backgroundColor = darkSquareColor;
+            tr.style.backgroundColor = Colors.darkSquareColor;
         }
 
         const whiteAccuracy = (100 * accuracies[review.hash][0]).toFixed(2);
@@ -423,5 +447,5 @@ function refresh(gather) {
 }
 
 loadConfiguration();
-loadFavorites();
+favorites = loadFavorites(storage);
 bindKeys(backward, forward);

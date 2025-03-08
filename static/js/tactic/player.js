@@ -269,7 +269,7 @@ function saveLocalConfiguration() {
     storage.set("configuration", localConfiguration);
 }
 
-function loadLocalConfiguration() {
+function loadLocalConfiguration(storage) {
     const localStorageConfiguration = storage.get("configuration");
     if (localStorageConfiguration != null) {
         localConfiguration = localStorageConfiguration;
@@ -461,7 +461,7 @@ progress = new Progress(
 
 configuration = loadConfiguration();
 loadLocalConfiguration();
-loadFavorites();
+favorites = loadFavorites(storage);
 
 hideFirstMove = document.getElementById("hide_first_move").checked;
 keepPlaying = document.getElementById("keep_playing").checked;

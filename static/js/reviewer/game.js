@@ -1,4 +1,4 @@
-class Game {
+export default class Game {
     constructor(pgn) {
         this.gameJSON = JSON.parse(parser.pgn2json(pgn));
 

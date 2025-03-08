@@ -106,8 +106,8 @@ export function createTableRowEntry(
     return td;
 }
 
-export function loadFavorites() {
-    favorites = storage.get("favorites");
+export function loadFavorites(storage) {
+    return storage.get("favorites");
 }
 
 export function colorSquare(square, color) {
