@@ -23,6 +23,7 @@ const maxMateInValues = {
 let board = Chessboard("endgame_board");
 let game = null;
 let player = null;
+let moveIndex = null;
 let movesList = null;
 let hint = null;
 
@@ -61,7 +62,7 @@ $("#hint").on("click", function () {
     getHint();
 });
 
-function getConfig() {
+function getConfig(fen) {
     return {
         draggable: true,
         position: fen,
@@ -178,7 +179,6 @@ function getHint() {
         return;
     }
 
-    console.log("Hint:", hint);
     if (hint !== null) {
         const source = hint.slice(0, 2);
         const target = hint.slice(2, 4);
@@ -221,7 +221,7 @@ function getHint() {
 
 function sendMove(fen, uci) {
     const difficulty = document.getElementById("difficulty").value;
-    const beta = difficulty === 1.0 ? "inf" : difficulty / (1 - difficulty);
+    const beta = parseFloat(difficulty) === 1.0 ? "inf" : difficulty / (1 - difficulty);
 
     clearSquaresColors();
     const data = {
@@ -321,7 +321,7 @@ function requestNewGame() {
 }
 
 function startNewGame(fen, dtm) {
-    board = Chessboard("endgame_board", getConfig());
+    board = Chessboard("endgame_board", getConfig(fen));
     game = new Game(fen, dtm);
     player = game.getTurn();
     setMateCounter(dtm);
