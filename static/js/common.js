@@ -31,7 +31,7 @@ export function setLinks(pgn, fen) {
 }
 
 export function setPanel(element, text) {
-    if (text == null || text == "") {
+    if (text === null || text === undefined || text === "") {
         element.html("&nbsp");
     } else {
         element.html(text);
@@ -44,7 +44,7 @@ export function clearTable(table, loading) {
         node.removeChild(node.lastChild);
     }
 
-    if (loading != null) {
+    if (loading !== null) {
         const tr = document.createElement("tr");
         const td = document.createElement("td");
         td.colSpan = loading;
@@ -64,13 +64,13 @@ export function setTableRowEntry(tdId, text, link, rowClass, backgroundColor) {
 
     td.innerHTML = "";
     const textNode = document.createTextNode(text);
-    if (link != null) {
+    if (link !== null && link !== undefined) {
         const a = document.createElement("a");
-        if (link.code != null) {
+        if (link.code !== null) {
             a.onclick = link.code;
             a.style.cursor = "pointer";
         }
-        if (link.link != null) {
+        if (link.link !== null) {
             a.href = link.link;
         }
         a.appendChild(textNode);
@@ -79,11 +79,11 @@ export function setTableRowEntry(tdId, text, link, rowClass, backgroundColor) {
         td.appendChild(textNode);
     }
 
-    if (backgroundColor != null) {
+    if (backgroundColor !== null) {
         td.style.backgroundColor = backgroundColor;
     }
 
-    if (rowClass != null) {
+    if (rowClass !== null) {
         td.classList.add(rowClass);
     }
 }
@@ -97,7 +97,7 @@ export function createTableRowEntry(
     backgroundColor,
 ) {
     const td = document.createElement("td");
-    if (id != null) {
+    if (id !== null) {
         td.id = id;
     }
 
@@ -111,7 +111,7 @@ export function loadFavorites(storage) {
 }
 
 export function colorSquare(square, color) {
-    if (square == null || color == null) {
+    if (square === null || color === null) {
         return;
     }
 
@@ -133,9 +133,9 @@ export function bindKeys(backward, forward) {
     document.onkeydown = function checkKey(event) {
         event = event || window.event;
 
-        if (event.keyCode == "37") {
+        if (event.keyCode === "37") {
             backward();
-        } else if (event.keyCode == "39") {
+        } else if (event.keyCode === "39") {
             forward();
         }
     };

@@ -246,7 +246,7 @@ export default class MovesList {
     }
 
     truncate(index) {
-        this.moves = movesList.moves.slice(0, index);
-        this.review = movesList.review.slice(0, index);
+        this.moves = this.moves.slice(0, index);
+        this.review = this.review.slice(0, index);
     }
 }
