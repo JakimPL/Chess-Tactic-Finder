@@ -5,7 +5,10 @@ import chess.gaviota
 import numpy as np
 
 from modules.endgame.generator import EndgameGenerator
+from modules.endgame.hint import Hint
 from modules.structures.move_reply import MoveReply
+
+SEED = 137
 
 
 class EndgameStudy:
@@ -52,7 +55,10 @@ class EndgameStudy:
         self.board.push(move)
 
     @staticmethod
-    def choose_move(moves: Dict[chess.Move, int], beta: float) -> chess.Move:
+    def choose_move(moves: Dict[chess.Move, int], beta: float, seed: Optional[int] = None) -> chess.Move:
+        if seed is not None:
+            np.random.seed(seed)
+
         signs = np.sign(list(moves.values()))
         min_sign = min(signs)
         moves = {move: dtm for move, dtm in moves.items() if np.sign(dtm) == min_sign}
@@ -78,13 +84,13 @@ class EndgameStudy:
 
         return replies
 
-    def reply(self, beta: float) -> chess.Move:
+    def reply(self, beta: float, seed: Optional[int] = None) -> chess.Move:
         replies = self.prepare_replies()
 
         if not replies:
             raise ValueError("No legal moves with DTZ found")
 
-        return self.choose_move(replies, beta)
+        return self.choose_move(replies, beta, seed)
 
     @staticmethod
     def rate_move(legal_moves: int, previous_dtm: int, current_dtm: int) -> str:
@@ -106,6 +112,16 @@ class EndgameStudy:
                 return "blunder"
 
         return ""
+
+    def get_best_move(self, fen: str) -> Hint:
+        self.board = chess.Board(fen)
+        replies = self.prepare_replies()
+        move = self.choose_move(replies, float("inf"), SEED)
+        uci = move.uci()
+        return Hint(
+            piece=self.board.piece_at(move.from_square).symbol(),
+            uci=uci,
+        )
 
     def move(self, fen: str, uci: str, beta: float) -> MoveReply:
         self.board = chess.Board(fen)

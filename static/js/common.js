@@ -4,6 +4,24 @@ export function getPath(path) {
     return "/" + path.replace(/[\\/]+/g, "/").replace(/^([a-zA-Z]+:|\.\/)/, "");
 }
 
+export function getFullPieceName(piece) {
+    piece = piece.toLowerCase();
+    switch (piece) {
+    case "p":
+        return "Pawn";
+    case "n":
+        return "Knight";
+    case "b":
+        return "Bishop";
+    case "r":
+        return "Rook";
+    case "q":
+        return "Queen";
+    case "k":
+        return "King";
+    }
+}
+
 export function markButton(button) {
     document.getElementById(button).style.backgroundColor =
         Colors.darkSquareColor;
@@ -44,7 +62,7 @@ export function clearTable(table, loading) {
         node.removeChild(node.lastChild);
     }
 
-    if (loading !== null) {
+    if (loading !== undefined) {
         const tr = document.createElement("tr");
         const td = document.createElement("td");
         td.colSpan = loading;

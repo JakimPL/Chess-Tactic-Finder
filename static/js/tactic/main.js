@@ -4,6 +4,7 @@ import Storage from "../storage.js";
 import {
     clearTable,
     createTableRowEntry,
+    getFullPieceName,
     getPath,
     loadFavorites,
     markButton,
@@ -24,7 +25,7 @@ window.loadPGN = loadPGN;
 const $status = $("#status");
 const $panel = $("#panel");
 
-let storage = new Storage();
+const storage = new Storage();
 let localConfiguration = {};
 const progressLoaded = $.Deferred();
 const puzzlesLoaded = $.Deferred();
@@ -34,10 +35,10 @@ let puzzles = null;
 let puzzlesPath = null;
 let filteredPuzzles = null;
 let favorites = {};
-let hashes = {};
-let puzzlesHistory = new History();
+const hashes = {};
+const puzzlesHistory = new History();
 
-let path = null;
+const path = null;
 let tactic = null;
 let player = null;
 let game = null;
@@ -138,24 +139,6 @@ function calculateSuccessRate() {
     }
 
     return [correct, total, total > 0 ? correct / total : 0.0];
-}
-
-function getFullPieceName(piece) {
-    piece = piece.toLowerCase();
-    switch (piece) {
-        case "p":
-            return "Pawn";
-        case "n":
-            return "Knight";
-        case "b":
-            return "Bishop";
-        case "r":
-            return "Rook";
-        case "q":
-            return "Queen";
-        case "k":
-            return "King";
-    }
 }
 
 function makeMove(move, instant) {

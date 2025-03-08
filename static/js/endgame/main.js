@@ -1,3 +1,4 @@
+import Colors from "../colors.js";
 import MovesList from "../movesList.js";
 import {
     bindKeys,
@@ -26,6 +27,7 @@ let fen = null;
 let game = null;
 let player = null;
 let movesList = null;
+let hint = null;
 
 let wait = false;
 const delayTime = 500;
@@ -60,6 +62,10 @@ $("#copyPGN").on("click", function () {
     // not implemented yet
 });
 
+$("#hint").on("click", function () {
+    getHint();
+});
+
 function getConfig() {
     return {
         draggable: true,
@@ -74,6 +80,7 @@ function setPosition() {
     board.position(game.getFEN());
     setMateCounter(game.getDTZ());
     colorSquares();
+    hint = null;
 }
 
 function onDrop(source, target) {
@@ -96,7 +103,7 @@ function onDrop(source, target) {
     }
 }
 
-function onDragStart(source, piece, position, orientation) {
+function onDragStart(source, piece) {
     if (game == null) {
         return false;
     }
@@ -172,6 +179,52 @@ function setMateCounter(dtm) {
     document.getElementById("mate_counter").innerText = mateCounter;
 }
 
+function getHint() {
+    if (game === null) {
+        return;
+    }
+
+    console.log("Hint:", hint);
+    if (hint !== null) {
+        const source = hint.slice(0, 2);
+        const target = hint.slice(2, 4);
+        colorSquare(source, Colors.bestMoveColor);
+        colorSquare(target, Colors.bestMoveColor);
+        return;
+    }
+
+    const fen = game.getFEN();
+    const data = {
+        fen: fen,
+        move: "",
+        beta: "inf",
+    };
+
+    fetch("/endgame/hint", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+    })
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error(
+                    "Network error: " + response.statusText,
+                );
+            }
+            return response.json();
+        })
+        .then((data) => {
+            hint = data.uci;
+            const source = hint.slice(0, 2);
+            colorSquare(source, Colors.bestMoveColor);
+        })
+        .catch((error) => {
+            console.error("Error during retrieving a hint:", error);
+        });
+}
+
 function sendMove(fen, uci) {
     const difficulty = document.getElementById("difficulty").value;
     const beta = difficulty == 1.0 ? "inf" : difficulty / (1 - difficulty);
@@ -193,7 +246,7 @@ function sendMove(fen, uci) {
         .then((response) => {
             if (!response.ok) {
                 throw new Error(
-                    "Network response was not ok " + response.statusText,
+                    "Network error: " + response.statusText,
                 );
             }
             return response.json();
