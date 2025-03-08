@@ -17,7 +17,7 @@ export default class Game {
             promotion: "q",
         });
 
-        if (move != null) {
+        if (move !== null && move !== undefined) {
             if (!this.isLastMove()) {
                 this.truncate();
             }
@@ -62,7 +62,7 @@ export default class Game {
             if (this.chess.in_draw()) {
                 return "½-½";
             } else if (this.chess.in_checkmate()) {
-                return this.chess.turn() == "w" ? "0-1" : "1-0";
+                return this.chess.turn() === "w" ? "0-1" : "1-0";
             }
         }
     }
@@ -76,7 +76,7 @@ export default class Game {
     }
 
     isLastMove() {
-        return this.currentMove == this.states.length - 1;
+        return this.currentMove === this.states.length - 1;
     }
 
     getDTZ() {
