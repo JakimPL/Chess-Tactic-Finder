@@ -1,4 +1,8 @@
-class MovesList {
+import Colors from "./colors.js";
+import Link from "./link.js";
+import { createTableRowEntry, setTableRowEntry, clearTable } from "./common.js";
+
+export default class MovesList {
     constructor(moves, review, firstMove, callback) {
         this.element = "moves_list_table";
         this.moves = moves;
@@ -96,21 +100,21 @@ class MovesList {
     getMoveColor(moveType) {
         switch (moveType) {
             case "!!":
-                return brilliantMoveColor;
+                return Colors.brilliantMoveColor;
             case "!":
-                return greatMoveColor;
+                return Colors.greatMoveColor;
             case "★":
-                return bestMoveColor;
+                return Colors.bestMoveColor;
             case "?!":
-                return inaccuracyColor;
+                return Colors.inaccuracyColor;
             case "?":
-                return mistakeColor;
+                return Colors.mistakeColor;
             case "×":
-                return missColor;
+                return Colors.missColor;
             case "??":
-                return blunderColor;
+                return Colors.blunderColor;
             case "⮕":
-                return forcedColor;
+                return Colors.forcedColor;
             default:
                 return null;
         }
@@ -146,7 +150,6 @@ class MovesList {
 
     renderMove(index) {
         if (index < 0) {
-            console.log("");
             setTableRowEntry(`half_move0`, "", null, null, null);
             setTableRowEntry(`half_move0c`, "", null, null, null);
             setTableRowEntry(`half_move0d`, "");
@@ -214,7 +217,7 @@ class MovesList {
                       : color.lightSquare;
             moveElement.style.backgroundColor = backgroundColor;
             moveTypeElement.style.backgroundColor = backgroundColor;
-            if (backgroundColor == darkSquareColor) {
+            if (backgroundColor == Colors.darkSquareColor) {
                 moveElement.style.color = "white";
                 moveTypeElement.style.color = "white";
             } else {
@@ -232,7 +235,7 @@ class MovesList {
         this.highlightMove(previousMoveIndex, moveColor);
 
         move = this.review[currentMoveIndex];
-        this.highlightMove(currentMoveIndex, highlightColor);
+        this.highlightMove(currentMoveIndex, Colors.highlightColor);
     }
 
     updateReview(index, moveType = "", moveDescription = "") {

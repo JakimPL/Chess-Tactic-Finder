@@ -29,6 +29,21 @@ let hideFirstMove = true;
 let keepPlaying = true;
 let hardEvaluation = true;
 
+function delay(callback, time) {
+    var time = time == null ? delayTime : time;
+    wait = true;
+    action += 1;
+    const currentAction = action;
+    setTimeout(() => {
+        if (action == currentAction) {
+            callback();
+        }
+
+        wait = false;
+        updateStatus();
+    }, time);
+}
+
 function loadNextPuzzle() {
     filterPuzzles(puzzles);
     if (filteredPuzzles == null) {

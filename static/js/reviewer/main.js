@@ -237,10 +237,10 @@ function setEvaluationBar(value, scale) {
     }
 
     document.getElementById("evaluation").style.backgroundColor = orientation
-        ? darkSquareColor
-        : lightSquareColor;
+        ? Colors.darkSquareColor
+        : Colors.lightSquareColor;
     document.getElementById("evaluation_bar").style.backgroundColor =
-        orientation ? lightSquareColor : darkSquareColor;
+        orientation ? Colors.lightSquareColor : Colors.darkSquareColor;
 }
 
 function setEngineLines() {

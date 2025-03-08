@@ -1,31 +1,20 @@
-function getPath(path) {
+import Colors from "./colors.js";
+
+export function getPath(path) {
     return "/" + path.replace(/[\\/]+/g, "/").replace(/^([a-zA-Z]+:|\.\/)/, "");
 }
 
-function markButton(button) {
-    document.getElementById(button).style.backgroundColor = darkSquareColor;
+export function markButton(button) {
+    document.getElementById(button).style.backgroundColor =
+        Colors.darkSquareColor;
 }
 
-function unmarkButton(button) {
-    document.getElementById(button).style.backgroundColor = lightSquareColor;
+export function unmarkButton(button) {
+    document.getElementById(button).style.backgroundColor =
+        Colors.lightSquareColor;
 }
 
-function delay(callback, time) {
-    var time = time == null ? delayTime : time;
-    wait = true;
-    action += 1;
-    const currentAction = action;
-    setTimeout(() => {
-        if (action == currentAction) {
-            callback();
-        }
-
-        wait = false;
-        updateStatus();
-    }, time);
-}
-
-function setButton(buttonId, value) {
+export function setButton(buttonId, value) {
     if (value) {
         markButton(buttonId);
     } else {
@@ -33,7 +22,7 @@ function setButton(buttonId, value) {
     }
 }
 
-function setLinks(pgn, fen) {
+export function setLinks(pgn, fen) {
     const chessLink = `https://www.chess.com/analysis?pgn=${pgn}`;
     document.getElementById("analyze_chess").href = encodeURI(chessLink);
 
@@ -41,7 +30,7 @@ function setLinks(pgn, fen) {
     document.getElementById("analyze_lichess").href = encodeURI(lichessLink);
 }
 
-function setPanel(element, text) {
+export function setPanel(element, text) {
     if (text == null || text == "") {
         element.html("&nbsp");
     } else {
@@ -49,7 +38,7 @@ function setPanel(element, text) {
     }
 }
 
-function clearTable(table, loading) {
+export function clearTable(table, loading) {
     const node = document.getElementById(table);
     while (node.firstChild) {
         node.removeChild(node.lastChild);
@@ -65,7 +54,7 @@ function clearTable(table, loading) {
     }
 }
 
-function setTableRowEntry(tdId, text, link, rowClass, backgroundColor) {
+export function setTableRowEntry(tdId, text, link, rowClass, backgroundColor) {
     let td;
     if (typeof tdId === "string") {
         td = document.getElementById(tdId);
@@ -99,7 +88,14 @@ function setTableRowEntry(tdId, text, link, rowClass, backgroundColor) {
     }
 }
 
-function createTableRowEntry(tr, text, link, id, rowClass, backgroundColor) {
+export function createTableRowEntry(
+    tr,
+    text,
+    link,
+    id,
+    rowClass,
+    backgroundColor,
+) {
     const td = document.createElement("td");
     if (id != null) {
         td.id = id;
@@ -110,11 +106,11 @@ function createTableRowEntry(tr, text, link, id, rowClass, backgroundColor) {
     return td;
 }
 
-function loadFavorites() {
+export function loadFavorites() {
     favorites = storage.get("favorites");
 }
 
-function colorSquare(square, color) {
+export function colorSquare(square, color) {
     if (square == null || color == null) {
         return;
     }
@@ -129,11 +125,11 @@ function colorSquare(square, color) {
     $square.css("background", background);
 }
 
-function clearSquaresColors() {
+export function clearSquaresColors() {
     $(".square-55d63").css("background", "");
 }
 
-function bindKeys(backward, forward) {
+export function bindKeys(backward, forward) {
     document.onkeydown = function checkKey(event) {
         event = event || window.event;
 

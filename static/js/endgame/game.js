@@ -1,4 +1,6 @@
-class Game {
+import State from "./state.js";
+
+export default class Game {
     constructor(fen, dtm) {
         this.fen = fen;
         this.chess = new Chess(fen);

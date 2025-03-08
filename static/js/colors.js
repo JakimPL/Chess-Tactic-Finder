@@ -23,3 +23,19 @@ const highlightColor = new SquareColor(
     darkSquareColor,
     darkSquareColor,
 );
+
+const Colors = {
+    lightSquareColor,
+    darkSquareColor,
+    brilliantMoveColor,
+    greatMoveColor,
+    bestMoveColor,
+    inaccuracyColor,
+    mistakeColor,
+    missColor,
+    blunderColor,
+    forcedColor,
+    highlightColor,
+};
+
+export default Colors;

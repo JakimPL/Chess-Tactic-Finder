@@ -1,4 +1,15 @@
-board = Chessboard("endgame_board");
+import MovesList from "../movesList.js";
+import {
+    bindKeys,
+    clearSquaresColors,
+    clearTable,
+    colorSquare,
+    markButton,
+    unmarkButton,
+} from "../common.js";
+
+import State from "./state.js";
+import Game from "./game.js";
 
 const $panel = $("#panel");
 const maxMateInValues = {
@@ -10,6 +21,8 @@ const maxMateInValues = {
     KBNvK: 33,
 };
 
+let board = Chessboard("endgame_board");
+let fen = null;
 let game = null;
 let player = null;
 let movesList = null;

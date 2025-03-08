@@ -1,4 +1,4 @@
-class Link {
+export default class Link {
     constructor(link, code) {
         this.link = link;
         this.code = code;
