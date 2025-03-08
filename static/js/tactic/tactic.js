@@ -1,4 +1,4 @@
-class Tactic {
+export default class Tactic {
     constructor(pgn) {
         this.gameJSON = JSON.parse(parser.pgn2json(pgn));
         this.base_pgn = pgn;

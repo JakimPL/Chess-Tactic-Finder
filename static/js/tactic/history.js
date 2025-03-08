@@ -1,4 +1,4 @@
-class History {
+export default class History {
     constructor() {
         this.currentItem = -1;
         this.history = [];

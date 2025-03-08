@@ -1,20 +1,21 @@
-class Progress {
-    constructor(afterLoad, afterSave) {
+export default class Progress {
+    constructor(storage, afterLoad, afterSave) {
         this.path = "";
         this.container = {};
 
+        this.storage = storage;
         this.afterLoad = afterLoad;
         this.afterSave = afterSave;
     }
 
     clear() {
         this.container = {};
-        storage.set("progress", progress.container);
+        this.storage.set("progress", this.container);
     }
 
     update(data) {
         this.container = data;
-        storage.set("progress", progress.container);
+        this.storage.set("progress", this.container);
     }
 
     get(key) {
@@ -23,18 +24,18 @@ class Progress {
 
     set(key, value) {
         this.container[key] = value;
-        storage.set("progress", progress.container);
+        this.storage.set("progress", this.container);
     }
 
     saveItem(key, value, moves) {
-        if (!(key in progress.container)) {
+        if (!(key in this.container)) {
             this.set(key, value);
             this.afterSave(key, value, moves);
         }
     }
 
     load() {
-        this.container = storage.get("progress");
+        this.container = this.storage.get("progress");
         this.afterLoad();
     }
 
