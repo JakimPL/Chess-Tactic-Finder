@@ -3,6 +3,7 @@ import Link from "../link.js";
 import Storage from "../storage.js";
 import {
     clearTable,
+    colorSquare,
     createTableRowEntry,
     getFullPieceName,
     getPath,
@@ -364,6 +365,10 @@ $("#reset").on("click", function () {
 $("#hint").on("click", function () {
     if (tactic !== null) {
         if (!tactic.solved && tactic.nextMove !== null) {
+            const san = sanToUci(tactic.nextMove);
+            const source = san.slice(0, 2);
+            colorSquare(source, Colors.bestMoveColor);
+
             const move = game.move(tactic.nextMove);
             game.undo();
             setPanel($panel, "Hint: " + getFullPieceName(move.piece));
@@ -377,6 +382,11 @@ $("#hint").on("click", function () {
 $("#solution").on("click", function () {
     if (tactic !== null) {
         if (!tactic.solved && tactic.nextMove !== null) {
+            const san = sanToUci(tactic.nextMove);
+            const source = san.slice(0, 2);
+            const target = san.slice(2, 4);
+            colorSquare(source, Colors.bestMoveColor);
+            colorSquare(target, Colors.bestMoveColor);
             setPanel($panel, "Hint: " + tactic.nextMove);
             delay(() => {
                 setPanel($panel);
@@ -496,6 +506,12 @@ $("#progressImport").on("click", function () {
         readProgress(file);
     }
 });
+
+function sanToUci(san) {
+    const tempGame = new Chess(game.fen());
+    const move = tempGame.move(san);
+    return move ? `${move.from}${move.to}` : null;
+}
 
 function loadHistoryElement(historyElement) {
     if (historyElement !== null) {
