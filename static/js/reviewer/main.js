@@ -111,7 +111,6 @@ function loadReview(path, reviewId) {
                 game.turn == "b",
                 goTo,
             );
-            movesList.render();
 
             updateAccuracyInfo();
 

@@ -1,10 +1,11 @@
 class MovesList {
-    constructor(moves, review, first_move, callback) {
+    constructor(moves, review, firstMove, callback) {
         this.element = "moves_list_table";
         this.moves = moves;
         this.review = review;
-        this.first_move = first_move;
+        this.firstMove = firstMove ? 1 : 0;
         this.callback = callback;
+        this.render();
     }
 
     addMove(uci, san, highlight = false, moveType = "", moveDescription = "") {
@@ -15,11 +16,12 @@ class MovesList {
         });
 
         const index = this.moves.length - 1;
-        if (index % 2 == 0) {
-            this.addLine(index);
+        const j = index + this.firstMove;
+        if (j % 2 == 0) {
+            this.addLine(j);
         }
 
-        this.renderMove(san, index);
+        this.renderMove(index);
         if (highlight) {
             this.highlightNextMove(index - 1, index);
         }
@@ -130,8 +132,9 @@ class MovesList {
         tableObject.appendChild(tr);
         const evenRow = Math.floor(index / 2) % 2 === 0;
         const rowClass = `row_${evenRow ? "even" : "odd"}`;
+        const j = index + this.firstMove;
 
-        const moveId = Math.floor(index / 2) + 1;
+        const moveId = Math.floor(j / 2) + 1;
         createTableRowEntry(tr, `${moveId}.`, null, `move${moveId}`, rowClass);
         createTableRowEntry(tr, "", null, `half_move${index}`, rowClass);
         createTableRowEntry(tr, "", null, `half_move${index}c`, rowClass);
@@ -141,11 +144,21 @@ class MovesList {
         createTableRowEntry(tr, "", null, `half_move${index + 1}d`, rowClass);
     }
 
-    renderMove(move, index) {
+    renderMove(index) {
+        if (index < 0) {
+            console.log("");
+            setTableRowEntry(`half_move0`, "", null, null, null);
+            setTableRowEntry(`half_move0c`, "", null, null, null);
+            setTableRowEntry(`half_move0d`, "");
+            return;
+        }
+
+        const j = index + this.firstMove;
+        const move = this.moves[index];
         const tableObject = document.getElementById(this.element);
         const tr = tableObject.lastChild;
-        const turn = index % 2 === 0;
-        const evenRow = Math.floor(index / 2) % 2 === 0;
+        const turn = j % 2 === 0;
+        const evenRow = Math.floor(j / 2) % 2 === 0;
         const rowClass = `row_${evenRow ? "even" : "odd"}`;
 
         const moveClassification =
@@ -162,35 +175,35 @@ class MovesList {
         });
 
         setTableRowEntry(
-            `half_move${index}`,
+            `half_move${j}`,
             moveSymbol,
             moveLink,
             null,
             moveColor,
         );
-        setTableRowEntry(
-            `half_move${index}c`,
-            moveType,
-            moveLink,
-            null,
-            moveColor,
-        );
-        setTableRowEntry(`half_move${index}d`, moveDescription);
+        setTableRowEntry(`half_move${j}c`, moveType, moveLink, null, moveColor);
+        setTableRowEntry(`half_move${j}d`, moveDescription);
     }
 
     render() {
         clearTable(this.element);
+        if (this.firstMove === 1) {
+            this.addLine(0);
+            this.renderMove(-1);
+        }
         for (let i = 0; i < this.moves.length; i++) {
-            if (i % 2 === 0) {
-                this.addLine(i);
+            const j = i + this.firstMove;
+            if (j % 2 === 0) {
+                this.addLine(j);
             }
-            this.renderMove(this.moves[i], i);
+            this.renderMove(i);
         }
     }
 
     highlightMove(index, color) {
-        const moveElement = document.getElementById(`half_move${index}`);
-        const moveTypeElement = document.getElementById(`half_move${index}c`);
+        const j = index + this.firstMove;
+        const moveElement = document.getElementById(`half_move${j}`);
+        const moveTypeElement = document.getElementById(`half_move${j}c`);
         if (moveElement != null) {
             const $moveElement = $(moveElement);
             const backgroundColor =
@@ -225,7 +238,7 @@ class MovesList {
     updateReview(index, moveType = "", moveDescription = "") {
         this.review[index].classification.type = moveType;
         this.review[index].classification.description = moveDescription;
-        this.renderMove(this.moves[index], index);
+        this.renderMove(index);
     }
 
     truncate(index) {

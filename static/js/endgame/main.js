@@ -243,8 +243,12 @@ function requestNewGame() {
             console.log("New game started:", fen);
             setTimeout(() => {
                 startNewGame(fen, dtm);
-                movesList = new MovesList([], [], game.turn == "b", () => {});
-                movesList.render();
+                movesList = new MovesList(
+                    [],
+                    [],
+                    game.getTurn() == "b",
+                    () => {},
+                );
             }, 50);
         })
         .catch((error) => {
