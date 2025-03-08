@@ -2,6 +2,7 @@ import Colors from "../colors.js";
 import Link from "../link.js";
 import Storage from "../storage.js";
 import {
+    clearSquaresColors,
     clearTable,
     colorSquare,
     createTableRowEntry,
@@ -145,6 +146,7 @@ function makeMove(move, instant) {
     if (move !== null) {
         move = game.move(move);
         board.position(game.fen(), !instant);
+        clearSquaresColors();
     }
 }
 
@@ -174,6 +176,7 @@ function onDrop(source, target) {
     if (wait || move === null) {
         return "snapback";
     } else {
+        clearSquaresColors();
         const nextMove = tactic.nextMove;
         if (nextMove !== move.san) {
             panelTextCallback("Incorrect move!");
@@ -221,6 +224,7 @@ function onSnapEnd() {
 }
 
 function forward() {
+    clearSquaresColors();
     game.move(tactic.nextMove);
     tactic.forward();
     board.position(game.fen());
@@ -228,6 +232,7 @@ function forward() {
 }
 
 function backward() {
+    clearSquaresColors();
     game.undo();
     tactic.backward();
     board.position(game.fen());
@@ -239,6 +244,7 @@ function reset() {
     tactic = new Tactic(pgn);
     game = new Chess(tactic.baseFEN);
     board = Chessboard("game_board", getConfig());
+    clearSquaresColors();
 
     if (game.turn() === "w") {
         board.flip();
