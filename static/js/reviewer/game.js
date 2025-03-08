@@ -1,10 +1,11 @@
-class Game {
+export default class Game {
     constructor(pgn) {
         this.gameJSON = JSON.parse(parser.pgn2json(pgn));
 
         this.pgn = pgn;
-        if (this.gameJSON["str"]["FEN"] != null) {
-            this.fen = this.gameJSON["str"]["FEN"];
+        const fen = this.gameJSON["str"]["FEN"];
+        if (fen !== null && fen !== "" && fen !== undefined) {
+            this.fen = fen;
         } else {
             this.fen =
                 "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";

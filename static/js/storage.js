@@ -1,4 +1,4 @@
-class Storage {
+export default class Storage {
     set(key, value) {
         localStorage.setItem(key, JSON.stringify(value));
     }

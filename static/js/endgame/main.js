@@ -1,4 +1,14 @@
-board = Chessboard("endgame_board");
+import Colors from "../colors.js";
+import MovesList from "../movesList.js";
+import {
+    bindKeys,
+    clearSquaresColors,
+    colorSquare,
+    markButton,
+    unmarkButton,
+} from "../common.js";
+
+import Game from "./game.js";
 
 const $panel = $("#panel");
 const maxMateInValues = {
@@ -10,14 +20,15 @@ const maxMateInValues = {
     KBNvK: 33,
 };
 
+let board = Chessboard("endgame_board");
 let game = null;
 let player = null;
+let moveIndex = null;
 let movesList = null;
+let hint = null;
 
 let wait = false;
 const delayTime = 500;
-
-let moveIndex = null;
 
 $("#backward").on("click", function () {
     backward();
@@ -32,12 +43,12 @@ $("#flip").on("click", function () {
 });
 
 $("#copyFEN").on("click", function () {
-    if (game == null) {
+    if (game === null) {
         return;
     }
 
     const fen = game.chess.fen();
-    if (fen != null && fen != "") {
+    if (fen !== null && fen !== "") {
         navigator.clipboard.writeText(fen);
         setPanel($panel, "FEN copied to clipboard!");
     }
@@ -47,7 +58,11 @@ $("#copyPGN").on("click", function () {
     // not implemented yet
 });
 
-function getConfig() {
+$("#hint").on("click", function () {
+    getHint();
+});
+
+function getConfig(fen) {
     return {
         draggable: true,
         position: fen,
@@ -61,6 +76,7 @@ function setPosition() {
     board.position(game.getFEN());
     setMateCounter(game.getDTZ());
     colorSquares();
+    hint = null;
 }
 
 function onDrop(source, target) {
@@ -83,13 +99,13 @@ function onDrop(source, target) {
     }
 }
 
-function onDragStart(source, piece, position, orientation) {
-    if (game == null) {
+function onDragStart(source, piece) {
+    if (game === null) {
         return false;
     }
 
     const turn = game.getTurn();
-    if (game.isOver() || turn != player) {
+    if (game.isOver() || turn !== player) {
         return false;
     }
 
@@ -125,15 +141,14 @@ function backward() {
     }
 }
 
-function goTo(moveIndex) {
+function goTo() {
     if (!wait && game !== null) {
-        // not implemented
         setPosition();
     }
 }
 
 function updateMoveRating(rating) {
-    if (rating != "") {
+    if (rating !== "") {
         movesList.updateReview(game.currentMove - 1, rating);
         colorSquares();
     }
@@ -141,11 +156,11 @@ function updateMoveRating(rating) {
 
 function prepareMateCounter(dtm) {
     const result = game.getResult();
-    if (result != null) {
+    if (result !== null) {
         return result;
     }
 
-    if (dtm === null || dtm === undefined || dtm == 0) {
+    if (dtm === null || dtm === undefined || dtm === 0) {
         return "-";
     }
 
@@ -159,9 +174,54 @@ function setMateCounter(dtm) {
     document.getElementById("mate_counter").innerText = mateCounter;
 }
 
+function getHint() {
+    if (game === null) {
+        return;
+    }
+
+    if (hint !== null) {
+        const source = hint.slice(0, 2);
+        const target = hint.slice(2, 4);
+        colorSquare(source, Colors.bestMoveColor);
+        colorSquare(target, Colors.bestMoveColor);
+        return;
+    }
+
+    const fen = game.getFEN();
+    const data = {
+        fen: fen,
+        move: "",
+        beta: "inf",
+    };
+
+    fetch("/endgame/hint", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+    })
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error(
+                    "Network error: " + response.statusText,
+                );
+            }
+            return response.json();
+        })
+        .then((reply) => {
+            hint = reply.uci;
+            const source = hint.slice(0, 2);
+            colorSquare(source, Colors.bestMoveColor);
+        })
+        .catch((error) => {
+            console.error("Error during retrieving a hint:", error);
+        });
+}
+
 function sendMove(fen, uci) {
     const difficulty = document.getElementById("difficulty").value;
-    const beta = difficulty == 1.0 ? "inf" : difficulty / (1 - difficulty);
+    const beta = parseFloat(difficulty) === 1.0 ? "inf" : difficulty / (1 - difficulty);
 
     clearSquaresColors();
     const data = {
@@ -180,25 +240,25 @@ function sendMove(fen, uci) {
         .then((response) => {
             if (!response.ok) {
                 throw new Error(
-                    "Network response was not ok " + response.statusText,
+                    "Network error: " + response.statusText,
                 );
             }
             return response.json();
         })
-        .then((data) => {
-            game.updateDTZ(data.previous_dtm);
-            setMateCounter(data.previous_dtm);
-            updateMoveRating(data.previous_rating);
+        .then((reply) => {
+            game.updateDTZ(reply.previous_dtm);
+            setMateCounter(reply.previous_dtm);
+            updateMoveRating(reply.previous_rating);
 
             wait = true;
             setTimeout(() => {
                 moveIndex = game.currentMove;
-                board.position(data.fen);
-                if (data.uci != null) {
-                    game.move(data.uci, data.current_dtm);
-                    setMateCounter(data.current_dtm);
-                    movesList.addMove(data.uci, data.san, true);
-                    updateMoveRating(data.current_rating);
+                board.position(reply.fen);
+                if (reply.uci !== null) {
+                    game.move(reply.uci, reply.current_dtm);
+                    setMateCounter(reply.current_dtm);
+                    movesList.addMove(reply.uci, reply.san, true);
+                    updateMoveRating(reply.current_rating);
                 }
                 wait = false;
             }, delayTime);
@@ -219,8 +279,8 @@ function requestNewGame() {
     const data = {
         layout: layout,
         dtm: dtm,
-        white: whiteToPlay == "random" ? null : whiteToPlay == "white",
-        bishop_color: bishopColor == "random" ? null : bishopColor == "light",
+        white: whiteToPlay === "random" ? null : whiteToPlay === "white",
+        bishop_color: bishopColor === "random" ? null : bishopColor === "light",
     };
 
     markButton("new_study");
@@ -238,15 +298,15 @@ function requestNewGame() {
             }
             return response.json();
         })
-        .then((data) => {
-            fen = data.fen;
+        .then((reply) => {
+            const fen = reply.fen;
             console.log("New game started:", fen);
             setTimeout(() => {
                 startNewGame(fen, dtm);
                 movesList = new MovesList(
                     [],
                     [],
-                    game.getTurn() == "b",
+                    game.getTurn() === "b",
                     () => {},
                 );
             }, 50);
@@ -261,13 +321,13 @@ function requestNewGame() {
 }
 
 function startNewGame(fen, dtm) {
-    board = Chessboard("endgame_board", getConfig());
+    board = Chessboard("endgame_board", getConfig(fen));
     game = new Game(fen, dtm);
     player = game.getTurn();
     setMateCounter(dtm);
     unmarkButton("new_study");
 
-    if (player == "b") {
+    if (player === "b") {
         board.flip();
     }
 }
@@ -275,7 +335,7 @@ function startNewGame(fen, dtm) {
 function colorSquares() {
     clearSquaresColors();
     const move = movesList.review[game.currentMove - 1];
-    if (move != null) {
+    if (move !== null) {
         const color = movesList.getMoveColor(
             movesList.getMoveType(move.classification),
         );

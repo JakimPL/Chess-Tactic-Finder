@@ -84,7 +84,6 @@ async def refresh_endpoint(gather: bool = False):
 
 @app.get("/analysis_state")
 async def analysis_state():
-    status_server = StatusServer.get_instance()
     message = status_server.message
     dictionary = dict(urllib.parse.parse_qsl(message))
     return JSONResponse(dictionary)
@@ -153,6 +152,14 @@ async def endgame_start(data: dict):
             return JSONResponse({"error": f"No database {layout} found"}, status_code=500)
     else:
         raise HTTPException(status_code=400, detail="Required parameters not provided")
+
+
+@app.post("/endgame/hint")
+async def hint(data: MoveData):
+    endgame_singleton = EndgameStudySingleton().get_instance()
+    endgame_study = endgame_singleton.endgame_study
+    reply = endgame_study.get_best_move(data.fen)
+    return JSONResponse(reply.__dict__)
 
 
 @app.post("/endgame/move")

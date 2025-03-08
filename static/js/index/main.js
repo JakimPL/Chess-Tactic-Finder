@@ -1,3 +1,5 @@
+import { markButton, unmarkButton } from "../common.js";
+
 const board = Chessboard("game_board");
 
 let configuration = null;
@@ -10,12 +12,12 @@ let pgnExtractPath = "";
 
 $("#stockfish").on("change", function () {
     configuration["paths"]["stockfish"] = $(this).val();
-    saveConfiguration(configuration);
+    saveConfiguration();
 });
 
 $("#pgn_extract").on("change", function () {
     configuration["paths"]["pgn_extract"] = $(this).val();
-    saveConfiguration(configuration);
+    saveConfiguration();
 });
 
 $("#analyze").on("click", function () {
@@ -49,7 +51,7 @@ $("#reinstall").on("click", function () {
     });
 });
 
-function saveConfiguration(configuration) {
+function saveConfiguration() {
     $.ajax({
         url: "/save_configuration",
         type: "POST",
@@ -111,11 +113,11 @@ function getState() {
                 setProgressVisibility(true);
                 setProgressBar(data["text"], data["analyzed"], data["total"]);
 
-                if (data["fen"] != null) {
+                if (data["fen"] !== null) {
                     board.position(data["fen"]);
                 }
 
-                if (data["last_move"] != null && data["evaluation"] != null) {
+                if (data["last_move"] !== null && data["evaluation"] !== null) {
                     $("#move").html(
                         `${data["last_move"]}${data["evaluation"]}`,
                     );
@@ -140,7 +142,7 @@ function run(argument) {
     const fileElement = document.getElementById("pgn");
     const file = fileElement.files[0];
 
-    if (file == null) {
+    if (file === null) {
         alert("No file selected.");
         return;
     }

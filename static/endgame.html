@@ -37,10 +37,6 @@
             integrity="sha384-s3XgLpvmHyscVpijnseAmye819Ee3yaGa8NxstkJVyA6nuDFjt59u1QvuEl/mecz"
             crossorigin="anonymous"
         ></script>
-        <script src="js/link.js"></script>
-        <script src="js/color.js"></script>
-        <script src="js/common.js"></script>
-        <script src="js/movesList.js"></script>
     </head>
 
     <body>
@@ -60,12 +56,11 @@
                     <button id="copyFEN" type="button">Copy FEN</button>
                     <button id="copyPGN" type="button">Copy PGN</button>
                 </div>
+                <div class="buttons">
+                    <button id="hint" type="button">Hint</button>
+                </div>
                 <div id="panel">&nbsp</div>
                 <div id="status"></div>
-                <div id="engine_lines">
-                    <p>Engine choices:</p>
-                    <table id="engine_lines_table"></table>
-                </div>
                 <div>
                     Analyze:
                     <a
@@ -209,9 +204,7 @@
             </div>
         </div>
 
-        <script src="js/endgame/state.js"></script>
-        <script src="js/endgame/game.js"></script>
-        <script src="js/endgame/main.js"></script>
+        <script type="module" src="js/endgame/main.js"></script>
 
         <footer>
             <a href="https://github.com/JakimPL/Chess-Tactic-Finder/"

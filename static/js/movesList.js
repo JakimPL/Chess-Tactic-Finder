@@ -1,4 +1,8 @@
-class MovesList {
+import Colors from "./colors.js";
+import Link from "./link.js";
+import { createTableRowEntry, setTableRowEntry, clearTable } from "./common.js";
+
+export default class MovesList {
     constructor(moves, review, firstMove, callback) {
         this.element = "moves_list_table";
         this.moves = moves;
@@ -17,7 +21,7 @@ class MovesList {
 
         const index = this.moves.length - 1;
         const j = index + this.firstMove;
-        if (j % 2 == 0) {
+        if (j % 2 === 0) {
             this.addLine(j);
         }
 
@@ -32,7 +36,7 @@ class MovesList {
     }
 
     getMoveSymbol(move, turn) {
-        if (move == null) {
+        if (move === null || move === undefined) {
             return "";
         }
 
@@ -40,25 +44,25 @@ class MovesList {
         let symbol = move;
         let figurine = true;
         switch (piece) {
-            case "K":
-                symbol = turn ? "♔" : "♚";
-                break;
-            case "Q":
-                symbol = turn ? "♕" : "♛";
-                break;
-            case "R":
-                symbol = turn ? "♖" : "♜";
-                break;
-            case "B":
-                symbol = turn ? "♗" : "♝";
-                break;
-            case "N":
-                symbol = turn ? "♘" : "♞";
-                break;
-            default:
-                symbol = "⠀";
-                figurine = false;
-                break;
+        case "K":
+            symbol = turn ? "♔" : "♚";
+            break;
+        case "Q":
+            symbol = turn ? "♕" : "♛";
+            break;
+        case "R":
+            symbol = turn ? "♖" : "♜";
+            break;
+        case "B":
+            symbol = turn ? "♗" : "♝";
+            break;
+        case "N":
+            symbol = turn ? "♘" : "♞";
+            break;
+        default:
+            symbol = "⠀";
+            figurine = false;
+            break;
         }
 
         symbol += move.slice(figurine);
@@ -66,63 +70,63 @@ class MovesList {
     }
 
     getMoveType(moveClassification) {
-        if (moveClassification == null) {
+        if (moveClassification === null || moveClassification === undefined) {
             return "";
         }
 
         const moveType = moveClassification.type;
         switch (moveType) {
-            case "brilliant":
-                return "!!";
-            case "great":
-                return "!";
-            case "best":
-                return "★";
-            case "inaccuracy":
-                return "?!";
-            case "mistake":
-                return "?";
-            case "miss":
-                return "×";
-            case "blunder":
-                return "??";
-            case "forced":
-                return "⮕";
-            default:
-                return "";
+        case "brilliant":
+            return "!!";
+        case "great":
+            return "!";
+        case "best":
+            return "★";
+        case "inaccuracy":
+            return "?!";
+        case "mistake":
+            return "?";
+        case "miss":
+            return "×";
+        case "blunder":
+            return "??";
+        case "forced":
+            return "⮕";
+        default:
+            return "";
         }
     }
 
     getMoveColor(moveType) {
         switch (moveType) {
-            case "!!":
-                return brilliantMoveColor;
-            case "!":
-                return greatMoveColor;
-            case "★":
-                return bestMoveColor;
-            case "?!":
-                return inaccuracyColor;
-            case "?":
-                return mistakeColor;
-            case "×":
-                return missColor;
-            case "??":
-                return blunderColor;
-            case "⮕":
-                return forcedColor;
-            default:
-                return null;
+        case "!!":
+            return Colors.brilliantMoveColor;
+        case "!":
+            return Colors.greatMoveColor;
+        case "★":
+            return Colors.bestMoveColor;
+        case "?!":
+            return Colors.inaccuracyColor;
+        case "?":
+            return Colors.mistakeColor;
+        case "×":
+            return Colors.missColor;
+        case "??":
+            return Colors.blunderColor;
+        case "⮕":
+            return Colors.forcedColor;
+        default:
+            return null;
         }
     }
 
     getMoveColorForRow(moveType, evenRow) {
         const moveColor = this.getMoveColor(moveType);
-        return moveColor == null
+        return moveColor === null || moveColor === undefined
             ? null
             : evenRow
-              ? moveColor.lightSquare
-              : moveColor.darkSquare;
+                ? moveColor.lightSquare
+                : moveColor.darkSquare;
     }
 
     addLine(index) {
@@ -146,28 +150,26 @@ class MovesList {
 
     renderMove(index) {
         if (index < 0) {
-            console.log("");
-            setTableRowEntry(`half_move0`, "", null, null, null);
-            setTableRowEntry(`half_move0c`, "", null, null, null);
-            setTableRowEntry(`half_move0d`, "");
+            setTableRowEntry("half_move0", "", null, null, null);
+            setTableRowEntry("half_move0c", "", null, null, null);
+            setTableRowEntry("half_move0d", "");
             return;
         }
 
         const j = index + this.firstMove;
         const move = this.moves[index];
-        const tableObject = document.getElementById(this.element);
-        const tr = tableObject.lastChild;
         const turn = j % 2 === 0;
         const evenRow = Math.floor(j / 2) % 2 === 0;
-        const rowClass = `row_${evenRow ? "even" : "odd"}`;
 
         const moveClassification =
-            this.review[index] != null
+            this.review[index] !== null && this.review[index] !== undefined
                 ? this.review[index].classification
                 : null;
         const moveType = this.getMoveType(moveClassification);
         const moveDescription =
-            moveClassification != null ? moveClassification.description : "";
+            moveClassification !== null && moveClassification !== undefined
+                ? moveClassification.description
+                : "";
         const moveColor = this.getMoveColorForRow(moveType, evenRow);
         const moveSymbol = this.getMoveSymbol(move, turn);
         const moveLink = new Link(null, () => {
@@ -204,17 +206,17 @@ class MovesList {
         const j = index + this.firstMove;
         const moveElement = document.getElementById(`half_move${j}`);
         const moveTypeElement = document.getElementById(`half_move${j}c`);
-        if (moveElement != null) {
+        if (moveElement !== null && moveElement !== undefined) {
             const $moveElement = $(moveElement);
             const backgroundColor =
-                color == null
+                color === null || color === undefined
                     ? null
                     : $moveElement.hasClass("row_odd")
-                      ? color.darkSquare
-                      : color.lightSquare;
+                        ? color.darkSquare
+                        : color.lightSquare;
             moveElement.style.backgroundColor = backgroundColor;
             moveTypeElement.style.backgroundColor = backgroundColor;
-            if (backgroundColor == darkSquareColor) {
+            if (backgroundColor === Colors.darkSquareColor) {
                 moveElement.style.color = "white";
                 moveTypeElement.style.color = "white";
             } else {
@@ -227,12 +229,14 @@ class MovesList {
     highlightNextMove(previousMoveIndex, currentMoveIndex) {
         let move = this.review[previousMoveIndex];
         const moveType =
-            move != null ? this.getMoveType(move.classification) : null;
+            move !== null && move !== undefined
+                ? this.getMoveType(move.classification)
+                : null;
         const moveColor = this.getMoveColor(moveType);
         this.highlightMove(previousMoveIndex, moveColor);
 
         move = this.review[currentMoveIndex];
-        this.highlightMove(currentMoveIndex, highlightColor);
+        this.highlightMove(currentMoveIndex, Colors.highlightColor);
     }
 
     updateReview(index, moveType = "", moveDescription = "") {
@@ -242,7 +246,7 @@ class MovesList {
     }
 
     truncate(index) {
-        this.moves = movesList.moves.slice(0, index);
-        this.review = movesList.review.slice(0, index);
+        this.moves = this.moves.slice(0, index);
+        this.review = this.review.slice(0, index);
     }
 }
