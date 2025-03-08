@@ -38,7 +38,6 @@ let favorites = {};
 const hashes = {};
 const puzzlesHistory = new History();
 
-const path = null;
 let tactic = null;
 let player = null;
 let game = null;
@@ -55,7 +54,7 @@ let progress = null;
 let panelTextCallback = null;
 let statusTextCallback = null;
 let loadPuzzlesCallback = null;
-let filterPuzzlesCallback = null;
+const filterPuzzlesCallback = null;
 
 let beforeLoadCallback = null;
 let afterLoadCallback = null;
@@ -65,12 +64,12 @@ let keepPlaying = true;
 let hardEvaluation = true;
 
 function delay(callback, time) {
-    var time = time == null ? delayTime : time;
+    time = time === null || time === undefined ? delayTime : time;
     wait = true;
     action += 1;
     const currentAction = action;
     setTimeout(() => {
-        if (action == currentAction) {
+        if (action === currentAction) {
             callback();
         }
 
@@ -80,8 +79,8 @@ function delay(callback, time) {
 }
 
 function loadNextPuzzle() {
-    filterPuzzles(puzzles);
-    if (filteredPuzzles == null) {
+    filterPuzzles();
+    if (filteredPuzzles === null) {
         return;
     } else if (!filteredPuzzles.length) {
         return;
@@ -110,14 +109,14 @@ function loadPGN(path, puzzleId, addToHistory) {
             reset();
             afterLoadCallback(puzzleId);
 
-            if (addToHistory != false) {
+            if (addToHistory !== false) {
                 puzzlesHistory.add([path, puzzleId]);
             }
         });
 }
 
 function calculateSuccessRate() {
-    if (puzzles == null || progress.container == null || hashes == null) {
+    if (puzzles === null || progress.container === null || hashes === null) {
         return [0, 0, 0.0];
     }
 
@@ -125,7 +124,7 @@ function calculateSuccessRate() {
     let total = 0;
     for (const [hash, correctMoves] of Object.entries(progress.container)) {
         const puzzle = puzzles[hashes[hash]];
-        if (puzzle != null) {
+        if (puzzle !== null) {
             if (hardEvaluation) {
                 total += 1;
                 if (correctMoves >= puzzle.moves) {
@@ -148,15 +147,15 @@ function makeMove(move, instant) {
     }
 }
 
-function getMoves(game) {
+function getMoves() {
     moves = game.moves({ verbose: true });
     return game.pgn().split(/\d+\./).slice(1).join("");
 }
 
-function getConfig(tactic) {
+function getConfig() {
     return {
         draggable: true,
-        position: tactic.base_fen,
+        position: tactic.baseFEN,
         onDragStart: onDragStart,
         onDrop: onDrop,
         onSnapEnd: onSnapEnd,
@@ -175,7 +174,7 @@ function onDrop(source, target) {
         return "snapback";
     } else {
         const nextMove = tactic.nextMove;
-        if (nextMove != move.san) {
+        if (nextMove !== move.san) {
             panelTextCallback("Incorrect move!");
             save(currentPuzzleId, tactic.moveIndex - 1);
             delay(() => {
@@ -197,12 +196,12 @@ function onDrop(source, target) {
     updateStatus();
 }
 
-function onDragStart(source, piece, position, orientation) {
-    if (tactic == null || game == null) {
+function onDragStart(source, piece) {
+    if (tactic === null || game === null) {
         return false;
     }
 
-    if (wait || tactic.solved || game.game_over() || game.turn() != player) {
+    if (wait || tactic.solved || game.game_over() || game.turn() !== player) {
         return false;
     }
 
@@ -237,10 +236,10 @@ function backward() {
 function reset() {
     player = null;
     tactic = new Tactic(pgn);
-    game = new Chess(tactic.base_fen);
-    board = Chessboard("game_board", getConfig(tactic));
+    game = new Chess(tactic.baseFEN);
+    board = Chessboard("game_board", getConfig());
 
-    if (game.turn() == "w") {
+    if (game.turn() === "w") {
         board.flip();
     }
 
@@ -259,7 +258,7 @@ function reset() {
 }
 
 function checkIfSolved() {
-    if (tactic == null) {
+    if (tactic === null) {
         return;
     }
 
@@ -271,14 +270,14 @@ function checkIfSolved() {
             delay(loadNextPuzzle);
         } else {
             delay(() => {
-                filterPuzzles(puzzles);
+                filterPuzzles();
             }, 500);
         }
     }
 }
 
 function updateStatus() {
-    if (game == null) {
+    if (game === null) {
         return;
     }
 
@@ -312,7 +311,7 @@ function refresh(gather) {
     }
 
     $.ajax({
-        url: gather == true ? "/refresh?gather=true" : "/refresh",
+        url: gather === true ? "/refresh?gather=true" : "/refresh",
         type: "GET",
         success: () => {
             loadPuzzlesCallback();
@@ -364,7 +363,7 @@ $("#reset").on("click", function () {
 
 $("#hint").on("click", function () {
     if (tactic !== null) {
-        if (!tactic.solved && tactic.nextMove != null) {
+        if (!tactic.solved && tactic.nextMove !== null) {
             const move = game.move(tactic.nextMove);
             game.undo();
             setPanel($panel, "Hint: " + getFullPieceName(move.piece));
@@ -377,7 +376,7 @@ $("#hint").on("click", function () {
 
 $("#solution").on("click", function () {
     if (tactic !== null) {
-        if (!tactic.solved && tactic.nextMove != null) {
+        if (!tactic.solved && tactic.nextMove !== null) {
             setPanel($panel, "Hint: " + tactic.nextMove);
             delay(() => {
                 setPanel($panel);
@@ -387,26 +386,26 @@ $("#solution").on("click", function () {
 });
 
 $("#copyFEN").on("click", function () {
-    if (game == null) {
+    if (game === null) {
         return;
     }
 
     const fen = game.fen();
-    if (fen != null && fen != "") {
+    if (fen !== null && fen !== "") {
         navigator.clipboard.writeText(fen);
         setPanel($panel, "FEN copied to clipboard!");
     }
 });
 
 $("#copyPGN").on("click", function () {
-    if (pgn != null && pgn != "") {
+    if (pgn !== null && pgn !== "") {
         navigator.clipboard.writeText(pgn);
         setPanel($panel, "PGN copied to clipboard!");
     }
 });
 
 $("#previous").on("click", function () {
-    if (puzzlesHistory == null) {
+    if (puzzlesHistory === null) {
         return;
     }
 
@@ -415,12 +414,12 @@ $("#previous").on("click", function () {
 });
 
 $("#next").on("click", function () {
-    if (puzzlesHistory == null) {
+    if (puzzlesHistory === null) {
         return;
     }
 
     const historyElement = puzzlesHistory.next();
-    if (historyElement == null) {
+    if (historyElement === null) {
         loadNextPuzzle();
     } else {
         loadHistoryElement(historyElement);
@@ -429,7 +428,7 @@ $("#next").on("click", function () {
 
 $("#favorite").on("click", function () {
     if (currentPuzzleId !== null) {
-        if (favorites[currentPuzzleId] == true) {
+        if (favorites[currentPuzzleId] === true) {
             favorites[currentPuzzleId] = false;
             unmarkButton("favorite");
         } else {
@@ -446,12 +445,12 @@ $(".board_settings").change(function () {
 });
 
 $(".theme").change(function () {
-    filterPuzzles(puzzles);
+    filterPuzzles();
     saveLocalConfiguration();
 });
 
 $(".options").change(function () {
-    filterPuzzles(puzzles);
+    filterPuzzles();
     saveLocalConfiguration();
 });
 
@@ -460,7 +459,7 @@ $("#random").on("click", function () {
     delay(loadNextPuzzle, 50);
 });
 
-$("#progressClear").on("click", function (event) {
+$("#progressClear").on("click", function () {
     if (
         confirm(
             "Are you sure you want to clear the progress? This cannot be undone.",
@@ -482,10 +481,10 @@ $("#progressExport").on("click", function (event) {
     element.click();
 });
 
-$("#progressImport").on("click", function (event) {
+$("#progressImport").on("click", function () {
     const fileElement = document.getElementById("file");
     const file = fileElement.files[0];
-    if (file == null) {
+    if (file === null) {
         alert("No progress file selected.");
         return;
     }
@@ -499,7 +498,7 @@ $("#progressImport").on("click", function (event) {
 });
 
 function loadHistoryElement(historyElement) {
-    if (historyElement != null) {
+    if (historyElement !== null) {
         const previousPath = historyElement[0];
         const previousPuzzleId = historyElement[1];
         loadPGN(previousPath, previousPuzzleId, false);
@@ -511,7 +510,7 @@ function readProgress(file) {
     reader.readAsText(file);
     reader.onload = function (event) {
         const data = JSON.parse(event.target.result);
-        if (data != null) {
+        if (data !== null) {
             try {
                 progress.update(data);
                 updateSolvedStates();
@@ -524,8 +523,8 @@ function readProgress(file) {
     };
 }
 
-function updateNumberOfPuzzles(puzzles) {
-    if (puzzles != null) {
+function updateNumberOfPuzzles() {
+    if (puzzles !== null) {
         const numberOfPuzzles = Object.keys(puzzles).length;
         const numberOfPuzzlesText = `${numberOfPuzzles} puzzles in total.`;
         $("#number_of_puzzles").html(numberOfPuzzlesText);
@@ -533,8 +532,8 @@ function updateNumberOfPuzzles(puzzles) {
 }
 
 function updateSuccessRate() {
-    let [correct, total, rate] = calculateSuccessRate();
-    rate = parseFloat(100 * rate).toFixed(2);
+    const [correct, total, r] = calculateSuccessRate();
+    const rate = parseFloat(100 * r).toFixed(2);
     const successRateText = `Success rate: ${correct}/${total} (${rate}%).`;
     $("#success_rate").html(successRateText);
 }
@@ -543,7 +542,7 @@ function updateSolvedStatus(hash, value, moves) {
     const statusSymbol = getSolvedSymbol(value, moves);
     const puzzleId = `puzzle${hash}`;
     const element = document.getElementById(puzzleId);
-    if (element != null && value != null) {
+    if (element !== null && value !== null) {
         element.innerHTML = statusSymbol;
         element.style.color = value >= moves ? "green" : "red";
         element.style.fontWeight = "bold";
@@ -587,9 +586,9 @@ function saveLocalConfiguration() {
     storage.set("configuration", localConfiguration);
 }
 
-function loadLocalConfiguration(storage) {
+function loadLocalConfiguration() {
     const localStorageConfiguration = storage.get("configuration");
-    if (localStorageConfiguration != null) {
+    if (localStorageConfiguration !== null) {
         localConfiguration = localStorageConfiguration;
         for (const element of $(".board_settings")) {
             element.checked = localConfiguration["board_settings"][element.id];
@@ -626,7 +625,7 @@ function loadPuzzles() {
         .then((response) => response.json())
         .then((json) => {
             puzzles = json;
-            filterPuzzles(puzzles);
+            filterPuzzles();
 
             for (let i = 0; i < puzzles.length; i++) {
                 const puzzle = puzzles[i];
@@ -634,13 +633,13 @@ function loadPuzzles() {
             }
 
             puzzlesLoaded.resolve();
-            createPuzzleTable(puzzles);
-            refreshPuzzleTable(filteredPuzzles);
+            createPuzzleTable();
+            refreshPuzzleTable();
         });
 }
 
 function getSolvedSymbol(value, moves) {
-    if (value == null) {
+    if (value === null || value === undefined) {
         return "";
     }
 
@@ -660,8 +659,8 @@ function gatherPuzzleTypes() {
     return puzzleTypes;
 }
 
-function filterPuzzles(puzzles) {
-    if (puzzles == null) {
+function filterPuzzles() {
+    if (puzzles === null) {
         return undefined;
     }
 
@@ -688,12 +687,12 @@ function filterPuzzles(puzzles) {
         }
     }
 
-    refreshPuzzleTable(filteredPuzzles);
-    updateNumberOfPuzzles(filteredPuzzles);
+    refreshPuzzleTable();
+    updateNumberOfPuzzles();
     updateSolvedStates();
 }
 
-function createPuzzleTable(puzzles) {
+function createPuzzleTable() {
     clearTable("games_list_table");
     const tableObject = document.getElementById("games_list_table");
     for (const puzzle of puzzles) {
@@ -706,7 +705,7 @@ function createPuzzleTable(puzzles) {
         );
         const solved = getSolvedSymbol(progress.get(puzzle.hash), puzzle.moves);
         const puzzleId = `puzzle${puzzle.hash}`;
-        const playSymbol = favorites[puzzle.hash] == true ? "★" : "▶";
+        const playSymbol = favorites[puzzle.hash] === true ? "★" : "▶";
 
         if (favorites[puzzle.hash]) {
             tr.style.backgroundColor = Colors.darkSquareColor;
@@ -728,8 +727,8 @@ function createPuzzleTable(puzzles) {
     sorttable.makeSortable(document.getElementById("games"));
 }
 
-async function refreshPuzzleTable(filteredPuzzles) {
-    if (puzzles == null || progress == null || hashes == null) {
+async function refreshPuzzleTable() {
+    if (puzzles === null || progress === null || hashes === null) {
         return;
     }
 
@@ -741,7 +740,7 @@ async function refreshPuzzleTable(filteredPuzzles) {
 
     for (const puzzle of filteredPuzzles) {
         setTimeout(() => {
-            if (currentActionId == actionId) {
+            if (currentActionId === actionId) {
                 $(`#row${puzzle.hash}`).show();
             }
         }, 1);
@@ -755,7 +754,6 @@ statusTextCallback = (text) => {
     $status.html(text);
 };
 loadPuzzlesCallback = loadPuzzles;
-filterPuzzlesCallback = filterPuzzles;
 
 beforeLoadCallback = () => {
     markButton("random");
@@ -763,7 +761,7 @@ beforeLoadCallback = () => {
 afterLoadCallback = (puzzleId) => {
     unmarkButton("random");
     setLinks(tactic.pgn, tactic.fen);
-    setButton("favorite", favorites[puzzleId] == true);
+    setButton("favorite", favorites[puzzleId] === true);
 };
 
 progress = new Progress(
@@ -779,7 +777,7 @@ progress = new Progress(
 );
 
 configuration = loadConfiguration();
-loadLocalConfiguration(storage);
+loadLocalConfiguration();
 favorites = loadFavorites(storage);
 
 hideFirstMove = document.getElementById("hide_first_move").checked;

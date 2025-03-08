@@ -1,8 +1,8 @@
 export default class Tactic {
     constructor(pgn) {
         this.gameJSON = JSON.parse(parser.pgn2json(pgn));
-        this.base_pgn = pgn;
-        this.base_fen = this.gameJSON["str"]["FEN"];
+        this.basePGN = pgn;
+        this.baseFEN = this.gameJSON["str"]["FEN"];
         this.moves = this.gameJSON["moves"];
         this.turn = "";
         this.fen = this.getFEN();
@@ -41,7 +41,7 @@ export default class Tactic {
     }
 
     getFEN() {
-        const chess = new Chess(this.base_fen);
+        const chess = new Chess(this.baseFEN);
         chess.move(this.moves[0]);
 
         this.turn = chess.turn();
