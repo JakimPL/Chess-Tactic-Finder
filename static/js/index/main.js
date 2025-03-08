@@ -1,3 +1,5 @@
+import { markButton, unmarkButton } from "../common.js";
+
 const board = Chessboard("game_board");
 
 let configuration = null;
