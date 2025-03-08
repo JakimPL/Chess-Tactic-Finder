@@ -3,13 +3,11 @@ import MovesList from "../movesList.js";
 import {
     bindKeys,
     clearSquaresColors,
-    clearTable,
     colorSquare,
     markButton,
     unmarkButton,
 } from "../common.js";
 
-import State from "./state.js";
 import Game from "./game.js";
 
 const $panel = $("#panel");
@@ -23,7 +21,6 @@ const maxMateInValues = {
 };
 
 let board = Chessboard("endgame_board");
-let fen = null;
 let game = null;
 let player = null;
 let movesList = null;
@@ -31,8 +28,6 @@ let hint = null;
 
 let wait = false;
 const delayTime = 500;
-
-let moveIndex = null;
 
 $("#backward").on("click", function () {
     backward();
@@ -47,12 +42,12 @@ $("#flip").on("click", function () {
 });
 
 $("#copyFEN").on("click", function () {
-    if (game == null) {
+    if (game === null) {
         return;
     }
 
     const fen = game.chess.fen();
-    if (fen != null && fen != "") {
+    if (fen !== null && fen !== "") {
         navigator.clipboard.writeText(fen);
         setPanel($panel, "FEN copied to clipboard!");
     }
@@ -104,12 +99,12 @@ function onDrop(source, target) {
 }
 
 function onDragStart(source, piece) {
-    if (game == null) {
+    if (game === null) {
         return false;
     }
 
     const turn = game.getTurn();
-    if (game.isOver() || turn != player) {
+    if (game.isOver() || turn !== player) {
         return false;
     }
 
@@ -145,15 +140,14 @@ function backward() {
     }
 }
 
-function goTo(moveIndex) {
+function goTo() {
     if (!wait && game !== null) {
-        // not implemented
         setPosition();
     }
 }
 
 function updateMoveRating(rating) {
-    if (rating != "") {
+    if (rating !== "") {
         movesList.updateReview(game.currentMove - 1, rating);
         colorSquares();
     }
@@ -161,11 +155,11 @@ function updateMoveRating(rating) {
 
 function prepareMateCounter(dtm) {
     const result = game.getResult();
-    if (result != null) {
+    if (result !== null) {
         return result;
     }
 
-    if (dtm === null || dtm === undefined || dtm == 0) {
+    if (dtm === null || dtm === undefined || dtm === 0) {
         return "-";
     }
 
@@ -215,8 +209,8 @@ function getHint() {
             }
             return response.json();
         })
-        .then((data) => {
-            hint = data.uci;
+        .then((reply) => {
+            hint = reply.uci;
             const source = hint.slice(0, 2);
             colorSquare(source, Colors.bestMoveColor);
         })
@@ -227,7 +221,7 @@ function getHint() {
 
 function sendMove(fen, uci) {
     const difficulty = document.getElementById("difficulty").value;
-    const beta = difficulty == 1.0 ? "inf" : difficulty / (1 - difficulty);
+    const beta = difficulty === 1.0 ? "inf" : difficulty / (1 - difficulty);
 
     clearSquaresColors();
     const data = {
@@ -251,20 +245,20 @@ function sendMove(fen, uci) {
             }
             return response.json();
         })
-        .then((data) => {
-            game.updateDTZ(data.previous_dtm);
-            setMateCounter(data.previous_dtm);
-            updateMoveRating(data.previous_rating);
+        .then((reply) => {
+            game.updateDTZ(reply.previous_dtm);
+            setMateCounter(reply.previous_dtm);
+            updateMoveRating(reply.previous_rating);
 
             wait = true;
             setTimeout(() => {
                 moveIndex = game.currentMove;
-                board.position(data.fen);
-                if (data.uci != null) {
-                    game.move(data.uci, data.current_dtm);
-                    setMateCounter(data.current_dtm);
-                    movesList.addMove(data.uci, data.san, true);
-                    updateMoveRating(data.current_rating);
+                board.position(reply.fen);
+                if (reply.uci !== null) {
+                    game.move(reply.uci, reply.current_dtm);
+                    setMateCounter(reply.current_dtm);
+                    movesList.addMove(reply.uci, reply.san, true);
+                    updateMoveRating(reply.current_rating);
                 }
                 wait = false;
             }, delayTime);
@@ -285,8 +279,8 @@ function requestNewGame() {
     const data = {
         layout: layout,
         dtm: dtm,
-        white: whiteToPlay == "random" ? null : whiteToPlay == "white",
-        bishop_color: bishopColor == "random" ? null : bishopColor == "light",
+        white: whiteToPlay === "random" ? null : whiteToPlay === "white",
+        bishop_color: bishopColor === "random" ? null : bishopColor === "light",
     };
 
     markButton("new_study");
@@ -304,15 +298,15 @@ function requestNewGame() {
             }
             return response.json();
         })
-        .then((data) => {
-            fen = data.fen;
+        .then((reply) => {
+            const fen = reply.fen;
             console.log("New game started:", fen);
             setTimeout(() => {
                 startNewGame(fen, dtm);
                 movesList = new MovesList(
                     [],
                     [],
-                    game.getTurn() == "b",
+                    game.getTurn() === "b",
                     () => {},
                 );
             }, 50);
@@ -333,7 +327,7 @@ function startNewGame(fen, dtm) {
     setMateCounter(dtm);
     unmarkButton("new_study");
 
-    if (player == "b") {
+    if (player === "b") {
         board.flip();
     }
 }
@@ -341,7 +335,7 @@ function startNewGame(fen, dtm) {
 function colorSquares() {
     clearSquaresColors();
     const move = movesList.review[game.currentMove - 1];
-    if (move != null) {
+    if (move !== null) {
         const color = movesList.getMoveColor(
             movesList.getMoveType(move.classification),
         );
