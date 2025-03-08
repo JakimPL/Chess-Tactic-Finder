@@ -40,7 +40,9 @@ curl "https://code.jquery.com/jquery-3.4.1.min.js" > static\js\import\jquery-3.4
 curl "https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js" > static\js\import\chessboard-1.0.0.min.js
 curl "https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.2/chess.js" > static\js\import\chess.js
 curl "https://unpkg.com/chess-pgn-parser@1.3.9/dist/parser.js" > static\js\import\parser.js
-curl "https://www.kryogenix.org/code/browser/sorttable/sorttable.js" > static\js\import\sorttable.js
+curl -o static\js\import\sorttable.zip "https://www.kryogenix.org/code/browser/sorttable/sorttable.zip"
+"C:\Program Files\7-Zip\7z.exe" x static\js\import\sorttable.zip -ostatic\js\import\ -aos
+del static\js\import\sorttable.zip
 
 :: install syzygy tablebases
 echo Downloading Syzygy tablebases.
