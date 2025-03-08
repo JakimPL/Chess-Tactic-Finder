@@ -28,7 +28,7 @@ export default class History {
 
     current() {
         if (
-            this.history.length == 0 ||
+            this.history.length === 0 ||
             this.currentItem >= this.history.length
         ) {
             return null;
