@@ -76,6 +76,27 @@ button:active {
     width: 100px;
 }
 
+.log-container {
+    background-color: var(--light-square);
+    color: var(--dark-square);
+
+    font-size: 8pt;
+    font-family: monospace;
+
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+    max-height: 300px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    display: none;
+}
+
+.error-log {
+    color: #ff6b6b;
+}
+
 #paths {
     display: block;
 }

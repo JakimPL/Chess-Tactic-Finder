@@ -28,6 +28,53 @@ $("#review").on("click", function () {
     run("review");
 });
 
+function initializeLogContainer() {
+    const logContainer = document.getElementById("installation-log");
+    logContainer.style.display = "block";
+    logContainer.textContent = "";
+    return logContainer;
+}
+
+function handleEndMessage(eventSource) {
+    eventSource.close();
+    unmarkButton("reinstall");
+    installation = false;
+    return {
+        text: "Installation complete.\n",
+        isError: false,
+    };
+}
+
+function parseEventData(event, eventSource) {
+    if (event.data === "[END]   ") {
+        return handleEndMessage(eventSource);
+    }
+    return {
+        text: event.data.substring(9) + "\n",
+        isError: event.data.startsWith("[STDERR]"),
+    };
+}
+
+function appendToLog(logContainer, text, isError) {
+    if (isError) {
+        const errorSpan = document.createElement("span");
+        errorSpan.className = "error-log";
+        errorSpan.textContent = text;
+        logContainer.appendChild(errorSpan);
+    } else {
+        logContainer.appendChild(document.createTextNode(text));
+    }
+    logContainer.scrollTop = logContainer.scrollHeight;
+}
+
+function handleInstallationError(eventSource) {
+    return function() {
+        eventSource.close();
+        unmarkButton("reinstall");
+        installation = false;
+    };
+}
+
 $("#reinstall").on("click", function () {
     if (installation) {
         return;
@@ -35,20 +82,16 @@ $("#reinstall").on("click", function () {
 
     installation = true;
     markButton("reinstall");
-    $.ajax({
-        url: "/reinstall",
-        type: "GET",
-        success: () => {
-            alert("Tactic Finder reinstalled.");
-            unmarkButton("reinstall");
-            installation = false;
-        },
-        error: () => {
-            alert("Failed to reinstall a Tactic Finder.");
-            unmarkButton("reinstall");
-            installation = false;
-        },
-    });
+
+    const logContainer = initializeLogContainer();
+    const eventSource = new EventSource("/reinstall");
+
+    eventSource.onmessage = function(event) {
+        const { text, isError } = parseEventData(event, eventSource);
+        appendToLog(logContainer, text, isError);
+    };
+
+    eventSource.onerror = handleInstallationError(eventSource);
 });
 
 function saveConfiguration() {

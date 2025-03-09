@@ -2,15 +2,20 @@ import logging
 import os
 import platform
 import sqlite3
-import subprocess
 import threading
 import urllib.parse
 import webbrowser
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
+from fastapi.responses import (
+    FileResponse,
+    JSONResponse,
+    PlainTextResponse,
+    StreamingResponse,
+)
 from fastapi.staticfiles import StaticFiles
 
+from modules.application.stream import create_process, get_install_path, stream_output
 from modules.configuration import load_configuration, save_configuration
 from modules.json import json_load
 from modules.requests.configuration import Configuration
@@ -91,20 +96,14 @@ async def analysis_state():
 
 @app.get("/reinstall")
 async def reinstall():
-    logger.info("Reinstalling...")
-    if platform.system() == "Windows":
-        result = subprocess.run(
-            [os.path.join("shell", "bat", "install.bat")],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-    elif platform.system() == "Linux":
-        path = os.path.join("shell", "sh", "install.sh")
-        result = subprocess.run([path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    else:
-        raise HTTPException(status_code=501, detail=f"Platform {platform.system()} is not supported")
+    async def generate_output():
+        logger.info("Reinstalling...")
+        path = get_install_path()
+        process = create_process(path)
+        async for line in stream_output(process):
+            yield line
 
-    return PlainTextResponse(result.stdout.decode())
+    return StreamingResponse(generate_output(), media_type="text/event-stream")
 
 
 @app.post("/analyze")
