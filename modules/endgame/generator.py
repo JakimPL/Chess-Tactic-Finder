@@ -30,6 +30,7 @@ class EndgameGenerator:
         self.tablebase_path = Path(tablebase_path)
         self.database_path = Path(database_path)
         self.database_path.parent.mkdir(exist_ok=True)
+        self.layouts = self.get_available_layouts()
 
     def create_table(self, layout: str):
         connection = self.get_connection()
@@ -200,8 +201,8 @@ class EndgameGenerator:
                                 bishop_color,
                             )
                         )
-                    except Exception as e:
-                        print(e)
+                    except Exception as error:
+                        print(error)
 
         syzygy.close()
         gaviota.close()
@@ -237,6 +238,7 @@ class EndgameGenerator:
             self.save_batch_to_database(layout, batch)
 
         print(f"Database {layout} updated.")
+        self.get_available_layouts()
 
     def find_positions(
         self,
@@ -246,6 +248,8 @@ class EndgameGenerator:
         white: Optional[bool] = None,
         white_to_move: Optional[bool] = None,
         result: Optional[str] = None,
+        white_pieces: Optional[str] = None,
+        black_pieces: Optional[str] = None,
         bishop_color: Optional[bool] = None,
     ):
         connection = self.get_connection()
@@ -268,6 +272,12 @@ class EndgameGenerator:
         if result is not None:
             query += " AND result = ?"
             params.append(result)
+        if white_pieces is not None:
+            query += " AND white_pieces = ?"
+            params.append(white_pieces)
+        if black_pieces is not None:
+            query += " AND black_pieces = ?"
+            params.append(black_pieces)
         if bishop_color is not None:
             query += " AND bishop_color = ?"
             params.append(bishop_color)
@@ -276,6 +286,23 @@ class EndgameGenerator:
         result = [row[0] for row in cursor.fetchall()]
         connection.close()
         return result
+
+    def get_available_layouts(self) -> List[str]:
+        connection = self.get_connection()
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        tables = cursor.fetchall()
+
+        non_empty_tables = []
+        for (table_name,) in tables:
+            cursor.execute(f"SELECT 1 FROM {table_name} LIMIT 1")
+            if cursor.fetchone() is not None:
+                non_empty_tables.append(table_name)
+
+        connection.close()
+        self.layouts = non_empty_tables
+        return non_empty_tables
 
     def get_record_by_fen(self, layout: str, fen: str) -> Optional[Record]:
         fen = " ".join(fen.split(" ")[:4])

@@ -155,7 +155,7 @@ async def endgame_start(data: dict):
 
 
 @app.post("/endgame/hint")
-async def hint(data: MoveData):
+async def hint(data: MoveData) -> JSONResponse:
     endgame_singleton = EndgameStudySingleton().get_instance()
     endgame_study = endgame_singleton.endgame_study
     reply = endgame_study.get_best_move(data.fen)
@@ -163,11 +163,19 @@ async def hint(data: MoveData):
 
 
 @app.post("/endgame/move")
-async def endgame_move(data: MoveData):
+async def endgame_move(data: MoveData) -> JSONResponse:
     endgame_singleton = EndgameStudySingleton().get_instance()
     endgame_study = endgame_singleton.endgame_study
     reply = endgame_study.move(data.fen, data.move, data.beta)
     return JSONResponse(reply.__dict__)
+
+
+@app.get("/endgame/layouts")
+async def endgame_layouts() -> JSONResponse:
+    endgame_singleton = EndgameStudySingleton().get_instance()
+    endgame_study = endgame_singleton.endgame_study
+    layouts = endgame_study.get_layouts()
+    return JSONResponse(layouts)
 
 
 async def analyze_mode(request: Request, mode: str):

@@ -347,7 +347,6 @@ function colorSquares() {
     }
 }
 
-requestNewGame();
 bindKeys(backward, forward);
 bindKey(72, getHint);
 
@@ -373,3 +372,26 @@ document.getElementById("study_layout").addEventListener("change", function () {
 });
 
 document.getElementById("study_layout").dispatchEvent(new Event("change"));
+document.addEventListener("DOMContentLoaded", function() {
+    fetch("/endgame/layouts")
+        .then(response => response.json())
+        .then(availableLayouts => {
+            const studyLayoutSelect = document.getElementById("study_layout");
+            const options = studyLayoutSelect.options;
+            let hasAvailableOptions = false;
+            for (let i = 0; i < options.length; i++) {
+                const option = options[i];
+                if (!availableLayouts.includes(option.value)) {
+                    option.disabled = true;
+                    option.style.color = "grey";
+                } else {
+                    hasAvailableOptions = true;
+                }
+            }
+
+            if (!hasAvailableOptions) {
+                alert("No endgame layouts are available. Please generate them beforehand.");
+            }
+        })
+        .catch(error => console.error("Error fetching layouts:", error));
+});

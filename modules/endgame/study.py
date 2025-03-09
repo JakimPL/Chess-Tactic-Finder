@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 import chess
 import chess.gaviota
@@ -29,6 +29,7 @@ class EndgameStudy:
         white: bool = True,
         bishop_color: Optional[bool] = None,
     ):
+        winning_pieces, losing_pieces = layout.split("v")
         choices = self.generator.find_positions(
             layout=layout,
             dtm=dtm,
@@ -36,6 +37,8 @@ class EndgameStudy:
             white_to_move=white,
             result="win",
             bishop_color=bishop_color if layout == "KBNvK" else None,
+            # white_pieces=winning_pieces if white else losing_pieces,
+            # black_pieces=losing_pieces if white else winning_pieces,
         )
 
         return np.random.choice(choices)
@@ -159,3 +162,6 @@ class EndgameStudy:
             previous_rating=previous_rating,
             current_rating=current_rating,
         )
+
+    def get_layouts(self) -> List[str]:
+        return self.generator.layouts
