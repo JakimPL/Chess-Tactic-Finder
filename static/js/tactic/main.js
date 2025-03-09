@@ -24,6 +24,7 @@ import Tactic from "./tactic.js";
 let board = Chessboard("game_board");
 
 window.loadPGN = loadPGN;
+window.refresh = refresh;
 
 const $status = $("#status");
 const $panel = $("#panel");
@@ -490,7 +491,7 @@ $("#progressImport").on("click", function () {
 });
 
 function getHint() {
-    if (tactic == null) {
+    if (tactic === null) {
         return;
     }
 
@@ -509,7 +510,7 @@ function getHint() {
 }
 
 function getSolution() {
-    if (tactic == null) {
+    if (tactic === null) {
         return;
     }
 

@@ -22,6 +22,7 @@ import Game from "./game.js";
 const $panel = $("#panel");
 
 window.loadReview = loadReview;
+window.refresh = refresh;
 
 const emptyImage =
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
@@ -39,7 +40,6 @@ let game = null;
 
 let reviewsPath = null;
 const storage = new Storage();
-const localConfiguration = {};
 let reviews = {};
 const hashes = {};
 let favorites = {};
@@ -59,19 +59,18 @@ $("#flip").on("click", function () {
 });
 
 $("#copyFEN").on("click", function () {
-    if (chess == null) {
+    if (chess === null) {
         return;
     }
 
-    const fen = chess.fen();
-    if (fen != null && fen != "") {
-        navigator.clipboard.writeText(fen);
+    if (fen !== null && fen !== "") {
+        navigator.clipboard.writeText(chess.fen);
         setPanel($panel, "FEN copied to clipboard!");
     }
 });
 
 $("#copyPGN").on("click", function () {
-    if (pgn != null && pgn != "") {
+    if (pgn !== null && pgn !== "") {
         navigator.clipboard.writeText(pgn);
         setPanel($panel, "PGN copied to clipboard!");
     }
@@ -79,7 +78,7 @@ $("#copyPGN").on("click", function () {
 
 $("#favorite").on("click", function () {
     if (currentReviewId !== null) {
-        if (favorites[currentReviewId] == true) {
+        if (favorites[currentReviewId] === true) {
             favorites[currentReviewId] = false;
             unmarkButton("favorite");
         } else {
@@ -91,8 +90,8 @@ $("#favorite").on("click", function () {
     }
 });
 
-function updateNumberOfReviews(reviews) {
-    if (reviews != null) {
+function updateNumberOfReviews() {
+    if (reviews !== null && reviews !== undefined) {
         const numberOfReviews = Object.keys(reviews).length;
         const numberOfReviewsText = `${numberOfReviews} reviews in total.`;
         $("#number_of_reviews").html(numberOfReviewsText);
@@ -124,14 +123,14 @@ function loadReview(path, reviewId) {
             review = JSON.parse(text);
             pgn = reviews[hashes[reviewId]].pgn;
 
-            startGame(pgn);
+            startGame();
             setLinks(pgn, fen);
-            setButton("favorite", favorites[reviewId] == true);
+            setButton("favorite", favorites[reviewId] === true);
 
             movesList = new MovesList(
                 game.moves,
                 review.moves,
-                game.turn == "b",
+                game.turn === "b",
                 goTo,
             );
 
@@ -163,13 +162,13 @@ function loadReviews() {
             reviews = json;
 
             for (let i = 0; i < reviews.length; i++) {
-                const review = reviews[i];
-                hashes[review.hash] = i;
-                accuracies[review.hash] = calculateAccuracy(review);
+                const rev = reviews[i];
+                hashes[rev.hash] = i;
+                accuracies[rev.hash] = calculateAccuracy(rev);
             }
 
-            createReviewsTable(reviews);
-            updateNumberOfReviews(reviews);
+            createReviewsTable();
+            updateNumberOfReviews();
         });
 }
 
@@ -189,12 +188,12 @@ function loadChart(path) {
     });
 }
 
-function calculateAccuracy(review) {
+function calculateAccuracy(rev) {
     let whiteMoves = 0;
     let blackMoves = 0;
     let whiteAccuracy = 0.0;
     let blackAccuracy = 0.0;
-    for (const move of review.moves) {
+    for (const move of rev.moves) {
         const accuracy = parseFloat(move.classification.accuracy);
         if (move.turn) {
             whiteMoves++;
@@ -208,22 +207,22 @@ function calculateAccuracy(review) {
     return [whiteAccuracy / whiteMoves, blackAccuracy / blackMoves];
 }
 
-function getGameInfo(review) {
-    const mainHeaders = review.headers._tag_roster;
-    const secondaryHeaders = review.headers._others;
-    const whitePlayer = mainHeaders.White != null ? mainHeaders.White : "???";
-    const blackPlayer = mainHeaders.Black != null ? mainHeaders.Black : "???";
+function getGameInfo(rev) {
+    const mainHeaders = rev.headers._tag_roster;
+    const secondaryHeaders = rev.headers._others;
+    const whitePlayer = mainHeaders.White !== null ? mainHeaders.White : "???";
+    const blackPlayer = mainHeaders.Black !== null ? mainHeaders.Black : "???";
     const whiteElo =
-        secondaryHeaders.WhiteElo != null ? secondaryHeaders.WhiteElo : "?";
+        secondaryHeaders.WhiteElo !== null ? secondaryHeaders.WhiteElo : "?";
     const blackElo =
-        secondaryHeaders.BlackElo != null ? secondaryHeaders.BlackElo : "?";
+        secondaryHeaders.BlackElo !== null ? secondaryHeaders.BlackElo : "?";
     const white = `<b>${whitePlayer}</b> (${whiteElo})`;
     const black = `<b>${blackPlayer}</b> (${blackElo})`;
     const gameInfo = `${white} vs ${black}, ${mainHeaders.Date} (${mainHeaders.Result})`;
     return gameInfo;
 }
 
-function startGame(pgn) {
+function startGame() {
     game = new Game(pgn);
     fen = game.fen;
     chess = new Chess(game.fen);
@@ -244,10 +243,10 @@ function evaluationToString(evaluation) {
 }
 
 function setEvaluationBar(value, scale) {
-    const orientation = board.orientation() == "black";
+    const orientation = board.orientation() === "black";
     scale = orientation ? -scale : scale;
     const height =
-        scale == null ? 50 : Math.max(0, Math.min(100, 50 - scale * 50));
+        scale === null ? 50 : Math.max(0, Math.min(100, 50 - scale * 50));
     $("#evaluation_bar")
         .css("height", height + "%")
         .attr("aria-valuenow", height);
@@ -269,7 +268,7 @@ function setEvaluationBar(value, scale) {
 function setEngineLines() {
     const index = game.moveIndex + 1;
     const move = review.moves[index];
-    if (move == null) {
+    if (move === null || move === undefined) {
         return;
     }
 
@@ -278,9 +277,9 @@ function setEngineLines() {
     const tableObject = document.getElementById("engine_lines_table");
     let bestChoice = false;
     for (const bestMove of bestMoves) {
-        var tr = document.createElement("tr");
+        const tr = document.createElement("tr");
         createTableRowEntry(tr, bestMove[0]);
-        if (bestMove[0] == game.moves[index]) {
+        if (bestMove[0] === game.moves[index]) {
             tr.style.backgroundColor = Colors.darkSquareColor;
             bestChoice = true;
         }
@@ -291,8 +290,8 @@ function setEngineLines() {
     }
 
     const reviewMove = review.moves[index];
-    if (!bestChoice && reviewMove.move != null) {
-        var tr = document.createElement("tr");
+    if (!bestChoice && reviewMove.move !== null && reviewMove.move !== undefined) {
+        const tr = document.createElement("tr");
         createTableRowEntry(tr, game.moves[index]);
         createTableRowEntry(tr, evaluationToString(reviewMove.evaluation));
         tr.style.backgroundColor = Colors.darkSquareColor;
@@ -301,7 +300,7 @@ function setEngineLines() {
 
     const remainingRows = 5 - bestMoves.length + bestChoice;
     for (let i = 0; i < remainingRows; i++) {
-        var tr = document.createElement("tr");
+        const tr = document.createElement("tr");
         const td = document.createElement("td");
         td.rowspan = remainingRows;
         td.innerHTML = "&nbsp";
@@ -312,14 +311,14 @@ function setEngineLines() {
 
 function setEvaluation() {
     const reviewedMove = review.moves[game.moveIndex];
-    if (reviewedMove != null) {
+    if (reviewedMove !== null && reviewedMove !== undefined) {
         const evaluation = reviewedMove.evaluation;
 
         let scale = 0;
         let value = 0;
         if (!evaluation.includes(".")) {
             const integer = parseInt(evaluation);
-            if (integer == 0) {
+            if (integer === 0) {
                 const turn = reviewedMove.turn;
                 scale = turn ? 1 : -1;
             } else {
@@ -337,8 +336,7 @@ function setEvaluation() {
 }
 
 function setFEN(previousMoveIndex) {
-    const fen = game.getFEN();
-
+    fen = game.getFEN();
     movesList.highlightNextMove(previousMoveIndex, game.moveIndex);
 
     chess.load(fen);
@@ -349,7 +347,7 @@ function setFEN(previousMoveIndex) {
     const moveColor = movesList.getMoveColor(
         movesList.getMoveType(move.classification),
     );
-    if (move != null) {
+    if (move !== null && move !== undefined) {
         colorSquare(move.move.slice(0, 2), moveColor);
         colorSquare(move.move.slice(2, 4), moveColor);
     }
@@ -363,7 +361,7 @@ function forward() {
     if (game !== null) {
         const previousMoveIndex = game.moveIndex;
         const nextMove = game.forward();
-        if (nextMove != null) {
+        if (nextMove !== null && nextMove !== undefined) {
             setFEN(previousMoveIndex);
         }
     }
@@ -381,42 +379,42 @@ function goTo(moveIndex) {
     if (game !== null) {
         const previousMoveIndex = game.moveIndex;
         const nextMove = game.goTo(moveIndex);
-        if (nextMove != null) {
+        if (nextMove !== null && nextMove !== undefined) {
             setFEN(previousMoveIndex);
         }
     }
 }
 
-function createReviewsTable(reviews) {
+function createReviewsTable() {
     clearTable("reviews_list_table");
     const tableObject = document.getElementById("reviews_list_table");
-    for (const review of reviews) {
+    for (const rev of reviews) {
         const tr = document.createElement("tr");
-        tr.id = `row${review.hash}`;
+        tr.id = `row${rev.hash}`;
 
-        const path = getPath(review.path);
+        const path = getPath(rev.path);
         const link = new Link(
-            `javascript:loadReview('${path}', '${review.hash}')`,
+            `javascript:loadReview('${path}', '${rev.hash}')`,
         );
 
-        const reviewId = `review${review.hash}`;
-        const playSymbol = favorites[review.hash] == true ? "★" : "▶";
+        const reviewId = `review${rev.hash}`;
+        const playSymbol = favorites[rev.hash] === true ? "★" : "▶";
 
-        if (favorites[review.hash]) {
+        if (favorites[rev.hash]) {
             tr.style.backgroundColor = Colors.darkSquareColor;
         }
 
-        const whiteAccuracy = (100 * accuracies[review.hash][0]).toFixed(2);
-        const blackAccuracy = (100 * accuracies[review.hash][1]).toFixed(2);
+        const whiteAccuracy = (100 * accuracies[rev.hash][0]).toFixed(2);
+        const blackAccuracy = (100 * accuracies[rev.hash][1]).toFixed(2);
 
         createTableRowEntry(tr, playSymbol, link, reviewId);
-        createTableRowEntry(tr, review.white);
-        createTableRowEntry(tr, review.black);
-        createTableRowEntry(tr, review.date);
-        createTableRowEntry(tr, review.actualResult);
+        createTableRowEntry(tr, rev.white);
+        createTableRowEntry(tr, rev.black);
+        createTableRowEntry(tr, rev.date);
+        createTableRowEntry(tr, rev.actualResult);
         createTableRowEntry(
             tr,
-            Math.ceil((!review.moves[0].turn + review.moves.length) / 2),
+            Math.ceil((!rev.moves[0].turn + rev.moves.length) / 2),
         );
         createTableRowEntry(tr, `${whiteAccuracy}%`);
         createTableRowEntry(tr, `${blackAccuracy}%`);
@@ -432,7 +430,7 @@ function refresh(gather) {
     }
 
     $.ajax({
-        url: gather == true ? "/refresh?gather=true" : "/refresh",
+        url: gather === true ? "/refresh?gather=true" : "/refresh",
         type: "GET",
         success: () => {
             loadReviews();
