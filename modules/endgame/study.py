@@ -1,10 +1,13 @@
-from typing import Dict, List, Optional
+import os
+from pathlib import Path
+from typing import Dict, List, Optional, Union
 
 import chess
 import chess.gaviota
 import numpy as np
 
-from modules.endgame.generator import EndgameGenerator
+from modules.endgame import DATABASE_PATH, TABLEBASE_PATH
+from modules.endgame.database import EndgameDatabase
 from modules.endgame.hint import Hint
 from modules.structures.move_reply import MoveReply
 
@@ -12,9 +15,13 @@ SEED = 137
 
 
 class EndgameStudy:
-    def __init__(self, endgame_generator: EndgameGenerator):
-        self.generator = endgame_generator
-        self.tablebase = chess.gaviota.open_tablebase(self.generator.tablebase_path / "gaviota")
+    def __init__(
+        self,
+        tablebase_path: Union[str, os.PathLike] = TABLEBASE_PATH,
+        database_path: Union[str, os.PathLike] = DATABASE_PATH,
+    ):
+        self.database = EndgameDatabase(database_path)
+        self.tablebase = chess.gaviota.open_tablebase(str(Path(tablebase_path) / "gaviota"))
 
         self.board = chess.Board()
         self.starting_position: Optional[str] = None
@@ -30,15 +37,15 @@ class EndgameStudy:
         bishop_color: Optional[bool] = None,
     ):
         winning_pieces, losing_pieces = layout.split("v")
-        choices = self.generator.find_positions(
+        choices = self.database.find_positions(
             layout=layout,
             dtm=dtm,
             white=white,
             white_to_move=white,
             result="win",
             bishop_color=bishop_color if layout == "KBNvK" else None,
-            # white_pieces=winning_pieces if white else losing_pieces,
-            # black_pieces=losing_pieces if white else winning_pieces,
+            white_pieces=winning_pieces if white else losing_pieces,
+            black_pieces=losing_pieces if white else winning_pieces,
         )
 
         return np.random.choice(choices)
@@ -164,4 +171,4 @@ class EndgameStudy:
         )
 
     def get_layouts(self) -> List[str]:
-        return self.generator.layouts
+        return self.database.get_available_layouts()
