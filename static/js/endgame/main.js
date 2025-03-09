@@ -223,6 +223,14 @@ function getHint() {
 }
 
 function sendMove(fen, uci) {
+    const playerWon = game.getResult() === "1-0" && game.startingSide === "w";
+    if (playerWon) {
+        const keepPlaying = document.getElementById("keep_playing").checked;
+        if (keepPlaying) {
+            setTimeout(requestNewGame, delayTime);
+        }
+    }
+
     const difficulty = document.getElementById("difficulty").value;
     const beta = parseFloat(difficulty) === 1.0 ? "inf" : difficulty / (1 - difficulty);
 
@@ -395,3 +403,7 @@ document.addEventListener("DOMContentLoaded", function() {
         })
         .catch(error => console.error("Error fetching layouts:", error));
 });
+
+if (document.getElementById("keep_playing").checked) {
+    requestNewGame();
+}
