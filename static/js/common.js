@@ -146,16 +146,3 @@ export function colorSquare(square, color) {
 export function clearSquaresColors() {
     $(".square-55d63").css("background", "");
 }
-
-export function bindKeys(backward, forward) {
-    document.onkeydown = function checkKey(event) {
-        event = event || window.event;
-
-        const key = parseInt(event.keyCode);
-        if (key === 37) {
-            backward();
-        } else if (key === 39) {
-            forward();
-        }
-    };
-}

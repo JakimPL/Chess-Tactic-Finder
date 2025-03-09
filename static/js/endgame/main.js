@@ -1,7 +1,7 @@
+import { bindKey, bindKeys } from "../bindings.js";
 import Colors from "../colors.js";
 import MovesList from "../movesList.js";
 import {
-    bindKeys,
     clearSquaresColors,
     colorSquare,
     markButton,
@@ -185,8 +185,8 @@ function getHint() {
     if (hint !== null) {
         const source = hint.slice(0, 2);
         const target = hint.slice(2, 4);
-        colorSquare(source, Colors.bestMoveColor);
-        colorSquare(target, Colors.bestMoveColor);
+        colorSquare(source, Colors.hintColor);
+        colorSquare(target, Colors.hintColor);
         return;
     }
 
@@ -215,7 +215,7 @@ function getHint() {
         .then((reply) => {
             hint = reply.uci;
             const source = hint.slice(0, 2);
-            colorSquare(source, Colors.bestMoveColor);
+            colorSquare(source, Colors.hintColor);
         })
         .catch((error) => {
             console.error("Error during retrieving a hint:", error);
@@ -349,6 +349,8 @@ function colorSquares() {
 
 requestNewGame();
 bindKeys(backward, forward);
+bindKey(72, getHint);
+
 document.getElementById("new_study").addEventListener("click", requestNewGame);
 document.getElementById("study_layout").addEventListener("change", function () {
     const layout = this.value;

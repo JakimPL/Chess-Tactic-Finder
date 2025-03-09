@@ -17,6 +17,8 @@ const mistakeColor = new SquareColor("#e87a25", "#EB9A55", "#D77F3A");
 const missColor = new SquareColor("#ee6b55", "#EF9075", "#DB755A");
 const blunderColor = new SquareColor("#ca3431", "#D76B5D", "#C35042");
 const forcedColor = new SquareColor("#D0D0D0", "#F0F0F0", "#B5B5B5");
+const hintColor = new SquareColor("#FADD1C", "#F5E57E", "#DBCB60");
+
 
 const highlightColor = new SquareColor(
     darkSquareColor,
@@ -36,6 +38,7 @@ const Colors = {
     blunderColor,
     forcedColor,
     highlightColor,
+    hintColor,
 };
 
 export default Colors;

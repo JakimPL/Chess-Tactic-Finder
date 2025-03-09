@@ -1,3 +1,4 @@
+import { bindKey } from "../bindings.js";
 import Colors from "../colors.js";
 import Link from "../link.js";
 import Storage from "../storage.js";
@@ -369,36 +370,11 @@ $("#reset").on("click", function () {
 });
 
 $("#hint").on("click", function () {
-    if (tactic !== null) {
-        if (!tactic.solved && tactic.nextMove !== null) {
-            const san = sanToUci(tactic.nextMove);
-            const source = san.slice(0, 2);
-            colorSquare(source, Colors.bestMoveColor);
-
-            const move = game.move(tactic.nextMove);
-            game.undo();
-            setPanel($panel, "Hint: " + getFullPieceName(move.piece));
-            delay(() => {
-                setPanel($panel);
-            });
-        }
-    }
+    getHint();
 });
 
 $("#solution").on("click", function () {
-    if (tactic !== null) {
-        if (!tactic.solved && tactic.nextMove !== null) {
-            const san = sanToUci(tactic.nextMove);
-            const source = san.slice(0, 2);
-            const target = san.slice(2, 4);
-            colorSquare(source, Colors.bestMoveColor);
-            colorSquare(target, Colors.bestMoveColor);
-            setPanel($panel, "Hint: " + tactic.nextMove);
-            delay(() => {
-                setPanel($panel);
-            });
-        }
-    }
+    getSolution();
 });
 
 $("#copyFEN").on("click", function () {
@@ -512,6 +488,43 @@ $("#progressImport").on("click", function () {
         readProgress(file);
     }
 });
+
+function getHint() {
+    if (tactic == null) {
+        return;
+    }
+
+    if (!tactic.solved && tactic.nextMove !== null) {
+        const san = sanToUci(tactic.nextMove);
+        const source = san.slice(0, 2);
+        colorSquare(source, Colors.hintColor);
+
+        const move = game.move(tactic.nextMove);
+        game.undo();
+        setPanel($panel, "Hint: " + getFullPieceName(move.piece));
+        delay(() => {
+            setPanel($panel);
+        });
+    }
+}
+
+function getSolution() {
+    if (tactic == null) {
+        return;
+    }
+
+    if (!tactic.solved && tactic.nextMove !== null) {
+        const san = sanToUci(tactic.nextMove);
+        const source = san.slice(0, 2);
+        const target = san.slice(2, 4);
+        colorSquare(source, Colors.hintColor);
+        colorSquare(target, Colors.hintColor);
+        setPanel($panel, "Hint: " + tactic.nextMove);
+        delay(() => {
+            setPanel($panel);
+        });
+    }
+}
 
 function sanToUci(san) {
     const tempGame = new Chess(game.fen());
@@ -805,3 +818,6 @@ favorites = loadFavorites(storage);
 hideFirstMove = document.getElementById("hide_first_move").checked;
 keepPlaying = document.getElementById("keep_playing").checked;
 markButton("random");
+
+bindKey(72, getHint);
+bindKey(83, getSolution);

@@ -1,9 +1,9 @@
+import { bindKeys } from "../bindings.js";
 import Colors from "../colors.js";
 import Link from "../link.js";
 import MovesList from "../movesList.js";
 import Storage from "../storage.js";
 import {
-    bindKeys,
     clearSquaresColors,
     clearTable,
     colorSquare,
@@ -38,12 +38,12 @@ let chess = null;
 let game = null;
 
 let reviewsPath = null;
-let storage = new Storage();
-let localConfiguration = {};
+const storage = new Storage();
+const localConfiguration = {};
 let reviews = {};
-let hashes = {};
+const hashes = {};
 let favorites = {};
-let accuracies = {};
+const accuracies = {};
 
 $("#backward").on("click", function () {
     backward();
