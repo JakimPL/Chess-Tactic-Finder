@@ -13,7 +13,10 @@ from fastapi.responses import (
     StreamingResponse,
 )
 from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.responses import HTMLResponse, RedirectResponse
 
+from modules.application import DEFAULT_ERROR_MESSAGE
 from modules.application.run import run_script
 from modules.application.stream import create_process, get_install_path, stream_output
 from modules.configuration import load_configuration, save_configuration
@@ -34,31 +37,34 @@ OPEN_BROWSER = configuration["server"]["open_browser"]
 logging.basicConfig(filename=LOG_FILE, level=logging.DEBUG)
 logger = logging.getLogger("handler")
 
-DEFAULT_ERROR_MESSAGE = """
-<!DOCTYPE HTML>
-<html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <title>Error response</title>
-        <link href="/css/style.css" rel="stylesheet">
-    </head>
-    <body>
-        <h1>Error response</h1>
-        <p>Error code: {code}</p>
-        <p>Message: {message}.</p>
-        <p>Error code explanation: {code} - {explain}.</p>
-        <footer>
-        </footer>
-    </body>
-</html>
-"""
-
 app = FastAPI()
 status_server = StatusServer()
 app.mount("/chess", StaticFiles(directory="static", html=True), name="html")
 app.mount("/json", StaticFiles(directory="json", html=False), name="json")
 app.mount("/reviews", StaticFiles(directory="reviews", html=False), name="reviews")
 app.mount("/tactics", StaticFiles(directory="tactics", html=False), name="tactics")
+
+
+@app.exception_handler(StarletteHTTPException)
+async def custom_404_handler(request: Request, exc: StarletteHTTPException):
+    if exc.status_code == 404:
+        return HTMLResponse(
+            content=DEFAULT_ERROR_MESSAGE.format(
+                code=404, message="Not Found", explain="The requested resource could not be found."
+            ),
+            status_code=404,
+        )
+    return await request.app.default_exception_handler(request, exc)
+
+
+@app.get("/")
+async def root():
+    return RedirectResponse(url="/chess/")
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return FileResponse("static/img/chesspieces/wikipedia/wB.png")
 
 
 @app.on_event("startup")
