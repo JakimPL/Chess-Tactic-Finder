@@ -9,6 +9,8 @@ ENDGAME_LAYOUTS = {
     "King + Queen vs King": "KQvK",
     "King + Rook vs King": "KRvK",
     "King + Pawn vs King": "KPvK",
+    "King + Queen vs King + Pawn": "KQvKP",
+    "King + Rook vs King + Pawn": "KRvKP",
     "King + Pawn vs King + Pawn": "KPvKP",
     "King + Queen vs King + Bishop": "KQvKB",
     "King + Queen vs King + Knight": "KQvKN",

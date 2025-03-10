@@ -35,7 +35,7 @@ rm static/js/import/sorttable.zip
 
 # install syzygy tablebases
 echo "Downloading Syzygy tablebases."
-layouts=("KNvK" "KBvK" "KRvK" "KQvK" "KPvK" "KPvKP" "KRRvK" "KBBvK" "KBNvK" "KQvKR" "KQvKN" "KQvKB")
+layouts=("KBBvK" "KBNvK" "KBvK" "KBvKB" "KBvKN" "KBvKP" "KNvK" "KNvKN" "KNvKP" "KPvK" "KPvKB" "KPvKP" "KQvK" "KQvKB" "KQvKN" "KQvKP" "KQvKQ" "KQvKR" "KRRvK" "KRvK" "KRvKB" "KRvKN" "KRvKP" "KRvKR")
 rm tables/syzygy -rf
 mkdir tables/syzygy
 for layout in "${layouts[@]}"; do
