@@ -56,11 +56,15 @@ export function setPanel(element, text) {
     }
 }
 
+export function removeChildren(element) {
+    while (element.firstChild) {
+        element.removeChild(element.lastChild);
+    }
+}
+
 export function clearTable(table, loading) {
     const node = document.getElementById(table);
-    while (node.firstChild) {
-        node.removeChild(node.lastChild);
-    }
+    removeChildren(node);
 
     if (loading !== undefined) {
         const tr = document.createElement("tr");
@@ -148,16 +152,21 @@ export function clearSquaresColors() {
 }
 
 export function fetchLayoutsDefinitions() {
-    fetch("/endgame/layouts_definitions")
+    return fetch("/endgame/layouts_definitions")
         .then(response => response.json())
-        .then(layouts => {
+        .then(definitions => {
+            const layouts = definitions.layouts;
+            const ranges = definitions.ranges;
             const layoutSelect = document.getElementById("study_layout");
+            removeChildren(layoutSelect);
             for (const [description, value] of Object.entries(layouts)) {
                 const option = document.createElement("option");
                 option.value = value;
                 option.text = description;
                 layoutSelect.appendChild(option);
             }
+
+            return [layouts, ranges];
         })
         .catch(error => console.error("Error fetching layouts definitions:", error));
 }

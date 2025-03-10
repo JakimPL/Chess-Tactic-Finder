@@ -20,7 +20,7 @@ from modules.application import DEFAULT_ERROR_MESSAGE
 from modules.application.run import run_script
 from modules.application.stream import create_process, get_install_path, stream_output
 from modules.configuration import load_configuration, save_configuration
-from modules.endgame import ENDGAME_LAYOUTS
+from modules.endgame import ENDGAME_LAYOUTS, WINNING_SIDES_RANGES
 from modules.json import json_load
 from modules.requests.configuration import Configuration
 from modules.requests.move import MoveData
@@ -147,9 +147,10 @@ async def endgame_start(data: dict):
     dtm = data.get("dtm")
     white = data.get("white")
     bishop_color = data.get("bishop_color")
+    side_pieces = data.get("side_pieces")
     if layout is not None and dtm is not None:
         try:
-            fen = endgame_study.start_game(layout, dtm, white, bishop_color)
+            fen = endgame_study.start_game(layout, dtm, white, bishop_color, side_pieces)
             return JSONResponse({"fen": fen})
         except ValueError:
             raise HTTPException(status_code=400, detail="No position matching the criteria")
@@ -185,7 +186,12 @@ async def endgame_layouts() -> JSONResponse:
 
 @app.get("/endgame/layouts_definitions")
 async def endgame_layouts_definitions() -> JSONResponse:
-    return JSONResponse(ENDGAME_LAYOUTS)
+    return JSONResponse(
+        {
+            "layouts": ENDGAME_LAYOUTS,
+            "ranges": WINNING_SIDES_RANGES,
+        }
+    )
 
 
 @app.post("/endgame/generate")

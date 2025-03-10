@@ -6,23 +6,13 @@ import {
     colorSquare,
     fetchLayoutsDefinitions,
     markButton,
+    removeChildren,
     unmarkButton,
 } from "../common.js";
 
 import Game from "./game.js";
 
 const $panel = $("#panel");
-const maxMateInValues = {
-    KRvK: 16,
-    KQvK: 10,
-    KPvK: 28,
-    KQvKB: 17,
-    KQvKN: 21,
-    KQvKR: 35,
-    KRRvK: 7,
-    KBBvK: 19,
-    KBNvK: 33,
-};
 
 let board = Chessboard("endgame_board");
 let game = null;
@@ -30,6 +20,9 @@ let player = null;
 let moveIndex = null;
 let movesList = null;
 let hint = null;
+
+let layouts = null;
+let layoutRanges = null;
 
 let wait = false;
 const delayTime = 500;
@@ -287,12 +280,14 @@ function requestNewGame() {
     const whiteToPlay = document.getElementById("side").value;
     const bishopColor = document.getElementById("bishop_color").value;
     const layout = document.getElementById("study_layout").value;
+    const side = document.getElementById("pieces").value;
 
     const data = {
         layout: layout,
         dtm: dtm,
         white: whiteToPlay === "random" ? null : whiteToPlay === "white",
         bishop_color: bishopColor === "random" ? null : bishopColor === "light",
+        side_pieces: side,
     };
 
     markButton("new_study");
@@ -357,7 +352,7 @@ function colorSquares() {
 }
 
 function fetchLayouts() {
-    fetch("/endgame/layouts")
+    return fetch("/endgame/layouts")
         .then(response => response.json())
         .then(availableLayouts => {
             const studyLayoutSelect = document.getElementById("study_layout");
@@ -386,25 +381,39 @@ function fetchLayouts() {
                     requestNewGame();
                 }
             }
+
+            return firstAvailable;
         })
         .catch(error => console.error("Error fetching layouts:", error));
 }
 
-bindKeys(backward, forward);
-bindKey(72, getHint);
-
-document.getElementById("new_study").addEventListener("click", requestNewGame);
-document.getElementById("study_layout").addEventListener("change", function () {
-    const layout = this.value;
-    const maxMateIn = maxMateInValues[layout];
-    const mateInInput = document.getElementById("mate_in");
-
-    mateInInput.max = maxMateIn;
-
-    if (parseInt(mateInInput.value) > maxMateIn) {
-        mateInInput.value = maxMateIn;
+function updateStudyLayout(value) {
+    if (value === null || layoutRanges === null) {
+        return;
     }
 
+    const layout = value;
+    const ranges = layoutRanges[layout];
+    const piecesSelect = document.getElementById("pieces");
+    removeChildren(piecesSelect);
+    let firstAvailable = null;
+    for (const [pieces, range] of Object.entries(ranges)) {
+        const option = document.createElement("option");
+        option.value = pieces;
+        option.text = pieces;
+        piecesSelect.appendChild(option);
+
+        if (!firstAvailable) {
+            firstAvailable = pieces;
+        }
+    }
+
+    updateMateIn(firstAvailable);
+    updateBishopColor(layout);
+
+}
+
+function updateBishopColor(layout) {
     const bishopColorRow =
         document.getElementById("bishop_color").parentElement.parentElement;
     if (layout === "KBNvK") {
@@ -412,10 +421,49 @@ document.getElementById("study_layout").addEventListener("change", function () {
     } else {
         bishopColorRow.style.display = "none";
     }
+}
+
+function updateMateIn(value) {
+    if (value === null || layoutRanges === null) {
+        return;
+    }
+
+    const pieces = value;
+    const layout = document.getElementById("study_layout").value;
+    const side = document.getElementById("pieces").value;
+    const ranges = layoutRanges[layout][pieces];
+
+    const minMateIn = ranges["min"];
+    const maxMateIn = ranges["max"];
+
+    const mateInInput = document.getElementById("mate_in");
+    mateInInput.min = minMateIn;
+    mateInInput.max = maxMateIn;
+    if (minMateIn > maxMateIn) {
+        mateInInput.value = minMateIn;
+    } else if (minMateIn < maxMateIn) {
+        mateInInput.value = maxMateIn;
+    }
+}
+
+bindKeys(backward, forward);
+bindKey(72, getHint);
+
+document.getElementById("new_study").addEventListener("click", requestNewGame);
+document.getElementById("study_layout").addEventListener("change", function () {
+    updateStudyLayout(this.value);
+});
+document.getElementById("pieces").addEventListener("change", function () {
+    updateMateIn(this.value);
 });
 
 document.getElementById("study_layout").dispatchEvent(new Event("change"));
 document.addEventListener("DOMContentLoaded", function() {
-    fetchLayoutsDefinitions();
-    fetchLayouts();
+    fetchLayoutsDefinitions().then(([layoutsData, rangesData]) => {
+        layouts = layoutsData;
+        layoutRanges = rangesData;
+    });
+    fetchLayouts().then(firstAvailable => {
+        updateStudyLayout(firstAvailable);
+    });
 });

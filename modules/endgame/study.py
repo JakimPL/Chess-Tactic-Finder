@@ -36,19 +36,22 @@ class EndgameStudy:
         dtm: int,
         white: bool = True,
         bishop_color: Optional[bool] = None,
+        side_pieces: Optional[str] = None,
     ):
-        winning_pieces, losing_pieces = layout.split("v")
+        if white is None:
+            white = np.random.choice([True, False])
+
         choices = self.database.find_positions(
             layout=layout,
             dtm=dtm,
-            white=white,
             white_to_move=white,
             result="win",
             bishop_color=bishop_color if layout == "KBNvK" else None,
-            white_pieces=winning_pieces if white else losing_pieces,
-            black_pieces=losing_pieces if white else winning_pieces,
+            white_pieces=side_pieces if white else None,
+            black_pieces=side_pieces if not white else None,
         )
 
+        print(len(choices))
         return np.random.choice(choices)
 
     def start_game(
@@ -57,8 +60,9 @@ class EndgameStudy:
         dtm: int,
         white: bool = True,
         bishop_color: Optional[bool] = None,
+        side_pieces: Optional[str] = None,
     ) -> str:
-        self.starting_position = self.draw_position(layout, dtm, white, bishop_color)
+        self.starting_position = self.draw_position(layout, dtm, white, bishop_color, side_pieces)
         self.board = chess.Board(self.starting_position)
         return self.starting_position
 
