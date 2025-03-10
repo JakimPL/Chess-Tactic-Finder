@@ -35,7 +35,7 @@ PORT = configuration["server"]["port"]
 OPEN_BROWSER = configuration["server"]["open_browser"]
 
 logging.basicConfig(filename=LOG_FILE, level=logging.DEBUG)
-logger = logging.getLogger("handler")
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 status_server = StatusServer()

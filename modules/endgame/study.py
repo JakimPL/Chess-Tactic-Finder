@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import chess
 import chess.gaviota
@@ -9,6 +9,7 @@ import numpy as np
 from modules.endgame import DATABASE_PATH, TABLEBASE_PATH
 from modules.endgame.database import EndgameDatabase
 from modules.endgame.hint import Hint
+from modules.endgame.result import Result
 from modules.structures.move_reply import MoveReply
 
 SEED = 137
@@ -65,13 +66,15 @@ class EndgameStudy:
         self.board.push(move)
 
     @staticmethod
-    def choose_move(moves: Dict[chess.Move, int], beta: float, seed: Optional[int] = None) -> chess.Move:
+    def choose_move(
+        moves: Dict[chess.Move, Tuple[int, Tuple[Result, int]]], beta: float, seed: Optional[int] = None
+    ) -> chess.Move:
         if seed is not None:
             np.random.seed(seed)
 
-        signs = np.sign(list(moves.values()))
-        min_sign = min(signs)
-        moves = {move: dtm for move, dtm in moves.items() if np.sign(dtm) == min_sign}
+        min_sign = min(np.sign(dtm) for dtm, _ in moves.values())
+        best_class = max(outcome for _, outcome in moves.values())
+        moves = {move: dtm for move, (dtm, outcome) in moves.items() if outcome == best_class}
         if beta == float("inf") or min_sign == 0:
             max_dtm = max(moves.values())
             best_moves = [move for move, dtm in moves.items() if dtm == max_dtm]
@@ -81,15 +84,17 @@ class EndgameStudy:
             probabilities = weights / weights.sum()
             return np.random.choice(list(moves.keys()), p=probabilities)
 
-    def prepare_replies(self) -> Dict[chess.Move, int]:
+    def prepare_replies(self) -> Dict[chess.Move, Tuple[int, Tuple[Result, int]]]:
         legal_moves = list(self.board.legal_moves)
         replies = {}
 
         for move in legal_moves:
+            turn = self.board.turn
             self.board.push(move)
             dtm = self.tablebase.get_dtm(self.board)
+            result = Result.from_string(self.board.result(), turn)
             if dtm is not None:
-                replies[move] = dtm
+                replies[move] = dtm, (result, -np.sign(dtm))
             self.board.pop()
 
         return replies
