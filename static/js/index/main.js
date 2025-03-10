@@ -139,6 +139,11 @@ function setProgressBar(message, analyzed, total) {
         .attr("aria-valuenow", progress);
 }
 
+function clearGameDescription() {
+    $("#game_description").html("&nbsp;");
+    $("#move").html("&nbsp;");
+}
+
 function getState() {
     $.ajax({
         url: "/analysis_state",
@@ -156,11 +161,11 @@ function getState() {
                 setProgressVisibility(true);
                 setProgressBar(data["text"], data["analyzed"], data["total"]);
 
-                if (data["fen"] !== null) {
+                if (data["fen"] !== null && data["fen"] !== undefined) {
                     board.position(data["fen"]);
                 }
 
-                if (data["last_move"] !== null && data["evaluation"] !== null) {
+                if (data["last_move"] !== null && data["last_move"] !== undefined && data["evaluation"] !== null) {
                     $("#move").html(
                         `${data["last_move"]}${data["evaluation"]}`,
                     );
@@ -207,6 +212,27 @@ function run(argument) {
         });
     };
 }
+
+const generateButton = document.getElementById("generate_endgames");
+const layoutSelect = document.getElementById("study_layout");
+
+generateButton.addEventListener("click", async () => {
+    clearGameDescription();
+    const layout = layoutSelect.value;
+    const response = await fetch("/endgame/generate", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ layout: layout }),
+    });
+
+    if (response.ok) {
+        analysis = true;
+    } else {
+        console.error("Endgame generation failed:", await response.text());
+    }
+});
 
 loadConfiguration();
 getState();

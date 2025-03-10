@@ -2,6 +2,7 @@ import os
 import pickle
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from itertools import permutations
+from multiprocessing.connection import Client
 from pathlib import Path
 from typing import Generator, List, Optional, Tuple, Union
 
@@ -13,14 +14,18 @@ from tqdm import tqdm
 from modules.endgame import DATABASE_PATH, TABLEBASE_PATH
 from modules.endgame.database import EndgameDatabase
 from modules.endgame.layout import PiecesLayout
+from modules.server.client import DummyClient
+from modules.structures.message import Message
 
 
 class EndgameGenerator:
     def __init__(
         self,
+        client: Union[Client, DummyClient],
         tablebase_path: Union[str, os.PathLike] = TABLEBASE_PATH,
         database_path: Union[str, os.PathLike] = DATABASE_PATH,
     ):
+        self.client = client
         self.tablebase_path = Path(tablebase_path)
         self.database = EndgameDatabase(database_path)
 
@@ -112,14 +117,16 @@ class EndgameGenerator:
                     batch_indices.append(i)
                     futures.append(executor.submit(self.process_batch, batch, layout, self.tablebase_path))
 
+            total = len(batch_indices)
             for i, future in tqdm(
                 zip(batch_indices, as_completed(futures)),
                 desc="Processing positions",
-                total=len(futures),
+                total=total,
             ):
                 partial_result = future.result()
                 partial_results_file = partial_results_path / f"{i:04d}.pkl"
                 self.save_partial_results(partial_results_file, partial_result)
+                self.send_message(i + 1, total, partial_result[0][0])
 
     @staticmethod
     def process_batch(
@@ -187,3 +194,10 @@ class EndgameGenerator:
             self.database.save_batch(layout, batch)
 
         print(f"Database {layout} updated.")
+
+    def send_message(self, analyzed: int, total: int, fen: str) -> None:
+        percent = analyzed / total * 100
+        text = f"Generated {analyzed} endgames of {total} games ({percent:.2f}%)..."
+        message = Message(text=text, analyzed=analyzed, total=total, fen=fen)
+
+        self.client.send(message.encode())

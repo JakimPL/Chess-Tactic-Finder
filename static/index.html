@@ -38,7 +38,7 @@
         <div class="row">
             <div class="column">
                 <div><h3>Installation</h3></div>
-                <div>
+                <div class="row">
                     <p>Download:</p>
                     <ul>
                         <li>
@@ -60,7 +60,7 @@
                         </li>
                     </ul>
                 </div>
-                <div>
+                <div class="row">
                     <p>Set paths:</p>
                     <div id="paths">
                         <table>
@@ -81,8 +81,8 @@
                         </table>
                     </div>
                 </div>
-                <div>
-                    <p>Chess Tactic Finder:</p>
+                <div class="row">
+                    <h3>Chess Tactic Finder:</h3>
                     <div class="buttons">
                         <button id="reinstall" type="button">
                             &#9654; Reinstall Tactic Finder
@@ -105,6 +105,57 @@
                         </button>
                     </div>
                 </div>
+                <h4>Endgame Layouts Generator:</h4>
+                <div class="row">
+                    <div class="buttons">
+                        <table id="endgame_layouts_generator">
+                            <tr>
+                                <td>
+                                    <label for="study_layout"
+                                        >Study Layout:</label
+                                    >
+                                </td>
+                                <td>
+                                    <select id="study_layout" class="options">
+                                        <option value="KRRvK">
+                                            King + 2 Rooks vs King
+                                        </option>
+                                        <option value="KQvK">
+                                            King + Queen vs King
+                                        </option>
+                                        <option value="KRvK">
+                                            King + Rook vs King
+                                        </option>
+                                        <option value="KPvK">
+                                            King + Pawn vs King
+                                        </option>
+                                        <option value="KQvKB">
+                                            King + Queen vs King + Bishop
+                                        </option>
+                                        <option value="KQvKN">
+                                            King + Queen vs King + Knight
+                                        </option>
+                                        <option value="KQvKR">
+                                            King + Queen vs King + Rook
+                                        </option>
+                                        <option value="KBBvK">
+                                            King + 2 Bishops vs King
+                                        </option>
+                                        <option value="KBNvK">
+                                            King + Bishop + Knight vs King
+                                        </option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </table>
+                        <div class="buttons">
+                            <button id="generate_endgames">
+                                &#9654; Generate endgame positions
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <h4>Console Log</h4>
                 <div id="installation-log" class="log-container"></div>
             </div>
             <div class="column">

@@ -97,6 +97,11 @@ button:active {
     color: #ff6b6b;
 }
 
+#endgame_layouts_generator {
+    display: table;
+    margin: 0px auto;
+}
+
 #paths {
     display: block;
 }
@@ -140,7 +145,6 @@ button:active {
 }
 
 table {
-    cellspacing: 0px;
     border-collapse: collapse;
 }
 
