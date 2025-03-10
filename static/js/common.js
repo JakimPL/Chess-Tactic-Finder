@@ -146,3 +146,18 @@ export function colorSquare(square, color) {
 export function clearSquaresColors() {
     $(".square-55d63").css("background", "");
 }
+
+export function fetchLayoutsDefinitions() {
+    fetch("/endgame/layouts_definitions")
+        .then(response => response.json())
+        .then(layouts => {
+            const layoutSelect = document.getElementById("study_layout");
+            for (const [description, value] of Object.entries(layouts)) {
+                const option = document.createElement("option");
+                option.value = value;
+                option.text = description;
+                layoutSelect.appendChild(option);
+            }
+        })
+        .catch(error => console.error("Error fetching layouts definitions:", error));
+}

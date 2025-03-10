@@ -46,7 +46,7 @@ del static\js\import\sorttable.zip
 
 :: install syzygy tablebases
 echo Downloading Syzygy tablebases.
-set layouts=KNvK KBvK KRvK KQvK KPvK KRRvK KBBvK KBNvK KQvKR KQvKN KQvKB
+set layouts=KNvK KBvK KRvK KQvK KPvK KPvKP KRRvK KBBvK KBNvK KQvKR KQvKN KQvKB
 rmdir /s /q tables\syzygy
 mkdir tables\syzygy
 for %%l in (%layouts%) do (

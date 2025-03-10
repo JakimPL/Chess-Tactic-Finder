@@ -17,6 +17,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.responses import HTMLResponse, RedirectResponse
 
 from modules.application import DEFAULT_ERROR_MESSAGE
+from modules.application.layouts import ENDGAME_LAYOUTS
 from modules.application.run import run_script
 from modules.application.stream import create_process, get_install_path, stream_output
 from modules.configuration import load_configuration, save_configuration
@@ -180,6 +181,11 @@ async def endgame_layouts() -> JSONResponse:
     endgame_study = endgame_singleton.endgame_study
     layouts = endgame_study.get_layouts()
     return JSONResponse(layouts)
+
+
+@app.get("/endgame/layouts_definitions")
+async def endgame_layouts_definitions() -> JSONResponse:
+    return JSONResponse(ENDGAME_LAYOUTS)
 
 
 @app.post("/endgame/generate")

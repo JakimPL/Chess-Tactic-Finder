@@ -4,6 +4,7 @@ import MovesList from "../movesList.js";
 import {
     clearSquaresColors,
     colorSquare,
+    fetchLayoutsDefinitions,
     markButton,
     unmarkButton,
 } from "../common.js";
@@ -355,6 +356,40 @@ function colorSquares() {
     }
 }
 
+function fetchLayouts() {
+    fetch("/endgame/layouts")
+        .then(response => response.json())
+        .then(availableLayouts => {
+            const studyLayoutSelect = document.getElementById("study_layout");
+            const options = studyLayoutSelect.options;
+            let firstAvailable = null;
+            let hasAvailableOptions = false;
+            for (let i = 0; i < options.length; i++) {
+                const option = options[i];
+                if (!availableLayouts.includes(option.value)) {
+                    option.disabled = true;
+                    option.style.color = "grey";
+                } else {
+                    hasAvailableOptions = true;
+                    if (firstAvailable === null) {
+                        firstAvailable = option.value;
+                    }
+                }
+            }
+
+            if (!hasAvailableOptions) {
+                alert("No endgame layouts are available. Please generate them beforehand.");
+            } else if (firstAvailable) {
+                studyLayoutSelect.value = firstAvailable;
+                studyLayoutSelect.dispatchEvent(new Event("change"));
+                if (document.getElementById("keep_playing").checked) {
+                    requestNewGame();
+                }
+            }
+        })
+        .catch(error => console.error("Error fetching layouts:", error));
+}
+
 bindKeys(backward, forward);
 bindKey(72, getHint);
 
@@ -381,29 +416,6 @@ document.getElementById("study_layout").addEventListener("change", function () {
 
 document.getElementById("study_layout").dispatchEvent(new Event("change"));
 document.addEventListener("DOMContentLoaded", function() {
-    fetch("/endgame/layouts")
-        .then(response => response.json())
-        .then(availableLayouts => {
-            const studyLayoutSelect = document.getElementById("study_layout");
-            const options = studyLayoutSelect.options;
-            let hasAvailableOptions = false;
-            for (let i = 0; i < options.length; i++) {
-                const option = options[i];
-                if (!availableLayouts.includes(option.value)) {
-                    option.disabled = true;
-                    option.style.color = "grey";
-                } else {
-                    hasAvailableOptions = true;
-                }
-            }
-
-            if (!hasAvailableOptions) {
-                alert("No endgame layouts are available. Please generate them beforehand.");
-            }
-        })
-        .catch(error => console.error("Error fetching layouts:", error));
+    fetchLayoutsDefinitions();
+    fetchLayouts();
 });
-
-if (document.getElementById("keep_playing").checked) {
-    requestNewGame();
-}

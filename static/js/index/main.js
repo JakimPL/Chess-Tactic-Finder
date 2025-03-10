@@ -1,4 +1,4 @@
-import { markButton, unmarkButton } from "../common.js";
+import { fetchLayoutsDefinitions, markButton, unmarkButton } from "../common.js";
 
 const board = Chessboard("game_board");
 
@@ -182,6 +182,8 @@ function getState() {
 }
 
 function fetchLayouts() {
+    fetchLayoutsDefinitions();
+
     fetch("/endgame/layouts")
         .then(response => response.json())
         .then(availableLayouts => {
