@@ -96,7 +96,7 @@ class EndgameGenerator:
         return processed_batches
 
     @staticmethod
-    def batch(iterable, n=1):
+    def batch(iterable, n: int = 1):
         length = len(iterable)
         for ndx in range(0, length, n):
             yield iterable[ndx : min(ndx + n, length)]
@@ -118,15 +118,15 @@ class EndgameGenerator:
                     futures.append(executor.submit(self.process_batch, batch, layout, self.tablebase_path))
 
             total = len(batch_indices)
-            for i, future in tqdm(
-                zip(batch_indices, as_completed(futures)),
+            for j, (i, future) in tqdm(
+                enumerate(zip(batch_indices, as_completed(futures))),
                 desc="Processing positions",
                 total=total,
             ):
                 partial_result = future.result()
                 partial_results_file = partial_results_path / f"{i:04d}.pkl"
                 self.save_partial_results(partial_results_file, partial_result)
-                self.send_message(i + 1, total, partial_result[0][0])
+                self.send_message(j + 1, total, partial_result[0][0] if partial_result else None)
 
     @staticmethod
     def process_batch(
@@ -195,7 +195,7 @@ class EndgameGenerator:
 
         print(f"Database {layout} updated.")
 
-    def send_message(self, analyzed: int, total: int, fen: str) -> None:
+    def send_message(self, analyzed: int, total: int, fen: Optional[str] = None) -> None:
         percent = analyzed / total * 100
         text = f"Generated {analyzed} endgames of {total} games ({percent:.2f}%)..."
         message = Message(text=text, analyzed=analyzed, total=total, fen=fen)

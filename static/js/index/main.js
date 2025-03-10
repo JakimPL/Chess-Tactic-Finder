@@ -181,6 +181,47 @@ function getState() {
     });
 }
 
+function fetchLayouts() {
+    fetch("/endgame/layouts")
+        .then(response => response.json())
+        .then(availableLayouts => {
+            const studyLayoutSelect = document.getElementById("study_layout");
+            const options = studyLayoutSelect.options;
+            let firstAvailable = null;
+            let allLayoutsGenerated = true;
+
+            for (let i = 0; i < options.length; i++) {
+                const option = options[i];
+                if (availableLayouts.includes(option.value)) {
+                    option.disabled = true;
+                    option.style.color = "grey";
+                    option.visible = false;
+                } else {
+                    option.disabled = false;
+                    option.style.color = "black";
+                    option.visible = true;
+                    if (firstAvailable === null) {
+                        firstAvailable = option.value;
+                        allLayoutsGenerated = false;
+                    }
+                }
+            }
+
+            if (firstAvailable) {
+                studyLayoutSelect.value = firstAvailable;
+                studyLayoutSelect.dispatchEvent(new Event("change"));
+            }
+
+            $("#generate_endgames").prop("disabled", allLayoutsGenerated);
+            if (allLayoutsGenerated) {
+                studyLayoutSelect.value = "";
+                $("#generate_endgames").html("All layouts generated!");
+            }
+        })
+
+        .catch(error => console.error("Error fetching layouts:", error));
+}
+
 function run(argument) {
     if (analysis) {
         return;
@@ -219,6 +260,10 @@ const layoutSelect = document.getElementById("study_layout");
 generateButton.addEventListener("click", async () => {
     clearGameDescription();
     const layout = layoutSelect.value;
+    if (layout === "" || layout === null) {
+        return;
+    }
+
     const response = await fetch("/endgame/generate", {
         method: "POST",
         headers: {
@@ -232,6 +277,10 @@ generateButton.addEventListener("click", async () => {
     } else {
         console.error("Endgame generation failed:", await response.text());
     }
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+    fetchLayouts();
 });
 
 loadConfiguration();
