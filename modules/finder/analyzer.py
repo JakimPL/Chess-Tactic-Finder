@@ -149,10 +149,7 @@ class Analyzer(Processor):
         except KeyboardInterrupt:
             raise KeyboardInterrupt("interrupted")
 
-        if tactic_list:
-            self.save_variations(variations_list, tactic_list, directory)
-            print(f"Saved {len(tactic_list)} tactics.")
-        else:
-            print("No tactics found.")
+        self.save_variations(variations_list, tactic_list, directory)
+        print(f"Saved {len(tactic_list)} tactics." if tactic_list else "No tactics found.")
 
         os.remove(in_progress_file)

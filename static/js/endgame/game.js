@@ -6,6 +6,7 @@ export default class Game {
         this.chess = new Chess(fen);
         this.states = [new State(fen, dtm, null)];
         this.currentMove = 0;
+        this.startingSide = this.chess.turn();
     }
 
     move(uci, dtm) {

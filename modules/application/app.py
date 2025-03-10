@@ -1,23 +1,27 @@
 import logging
 import os
-import platform
 import sqlite3
-import subprocess
 import threading
 import urllib.parse
 import webbrowser
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
+from fastapi.responses import (
+    FileResponse,
+    JSONResponse,
+    PlainTextResponse,
+    StreamingResponse,
+)
 from fastapi.staticfiles import StaticFiles
 
+from modules.application.run import run_script
+from modules.application.stream import create_process, get_install_path, stream_output
 from modules.configuration import load_configuration, save_configuration
 from modules.json import json_load
 from modules.requests.configuration import Configuration
 from modules.requests.move import MoveData
 from modules.server.auxiliary import refresh
 from modules.server.endgame import EndgameStudySingleton
-from modules.server.run import run_linux, run_windows
 from modules.server.status_server import StatusServer
 from modules.structures.review import Review
 
@@ -91,20 +95,14 @@ async def analysis_state():
 
 @app.get("/reinstall")
 async def reinstall():
-    logger.info("Reinstalling...")
-    if platform.system() == "Windows":
-        result = subprocess.run(
-            [os.path.join("shell", "bat", "install.bat")],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-    elif platform.system() == "Linux":
-        path = os.path.join("shell", "sh", "install.sh")
-        result = subprocess.run([path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    else:
-        raise HTTPException(status_code=501, detail=f"Platform {platform.system()} is not supported")
+    async def generate_output():
+        logger.info("Reinstalling...")
+        path = get_install_path()
+        process = create_process(path)
+        async for line in stream_output(process):
+            yield line
 
-    return PlainTextResponse(result.stdout.decode())
+    return StreamingResponse(generate_output(), media_type="text/event-stream")
 
 
 @app.post("/analyze")
@@ -178,21 +176,25 @@ async def endgame_layouts() -> JSONResponse:
     return JSONResponse(layouts)
 
 
+@app.post("/endgame/generate")
+async def endgame_generate(request: Request):
+    logger.info("Generating endgame positions...")
+    data = await request.json()
+    layout = data.get("layout")
+    if layout is None:
+        raise HTTPException(status_code=400, detail="No layout provided")
+
+    run_script("endgame", layout)
+    return PlainTextResponse("Generation started.")
+
+
 async def analyze_mode(request: Request, mode: str):
     logger.info("Analyzing...")
     pgn = await request.body()
+
+    input_pgn_file = os.path.normpath(INPUT_PGN_FILE)
     with open(INPUT_PGN_FILE, "w") as file:
         file.write(pgn.decode("utf-8"))
 
-    if platform.system() == "Windows":
-        path = os.path.join("shell", "bat", "analyze.bat")
-        command = f"{path} {mode}.py {INPUT_PGN_FILE}"
-        run_windows(command)
-    elif platform.system() == "Linux":
-        path = os.path.join("shell", "sh", "analyze.sh")
-        command = f"{path} {mode}.py {INPUT_PGN_FILE}"
-        run_linux(command)
-    else:
-        raise HTTPException(status_code=501, detail=f"Platform {platform.system()} is not supported")
-
+    run_script(mode, input_pgn_file)
     return PlainTextResponse("Analysis started.")

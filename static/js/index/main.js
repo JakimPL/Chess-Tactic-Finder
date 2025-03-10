@@ -28,6 +28,53 @@ $("#review").on("click", function () {
     run("review");
 });
 
+function initializeLogContainer() {
+    const logContainer = document.getElementById("installation-log");
+    logContainer.style.display = "block";
+    logContainer.textContent = "";
+    return logContainer;
+}
+
+function handleEndMessage(eventSource) {
+    eventSource.close();
+    unmarkButton("reinstall");
+    installation = false;
+    return {
+        text: "Installation complete.\n",
+        isError: false,
+    };
+}
+
+function parseEventData(event, eventSource) {
+    if (event.data === "[END]   ") {
+        return handleEndMessage(eventSource);
+    }
+    return {
+        text: event.data.substring(9) + "\n",
+        isError: event.data.startsWith("[STDERR]"),
+    };
+}
+
+function appendToLog(logContainer, text, isError) {
+    if (isError) {
+        const errorSpan = document.createElement("span");
+        errorSpan.className = "error-log";
+        errorSpan.textContent = text;
+        logContainer.appendChild(errorSpan);
+    } else {
+        logContainer.appendChild(document.createTextNode(text));
+    }
+    logContainer.scrollTop = logContainer.scrollHeight;
+}
+
+function handleInstallationError(eventSource) {
+    return function() {
+        eventSource.close();
+        unmarkButton("reinstall");
+        installation = false;
+    };
+}
+
 $("#reinstall").on("click", function () {
     if (installation) {
         return;
@@ -35,20 +82,16 @@ $("#reinstall").on("click", function () {
 
     installation = true;
     markButton("reinstall");
-    $.ajax({
-        url: "/reinstall",
-        type: "GET",
-        success: () => {
-            alert("Tactic Finder reinstalled.");
-            unmarkButton("reinstall");
-            installation = false;
-        },
-        error: () => {
-            alert("Failed to reinstall a Tactic Finder.");
-            unmarkButton("reinstall");
-            installation = false;
-        },
-    });
+
+    const logContainer = initializeLogContainer();
+    const eventSource = new EventSource("/reinstall");
+
+    eventSource.onmessage = function(event) {
+        const { text, isError } = parseEventData(event, eventSource);
+        appendToLog(logContainer, text, isError);
+    };
+
+    eventSource.onerror = handleInstallationError(eventSource);
 });
 
 function saveConfiguration() {
@@ -96,6 +139,11 @@ function setProgressBar(message, analyzed, total) {
         .attr("aria-valuenow", progress);
 }
 
+function clearGameDescription() {
+    $("#game_description").html("&nbsp;");
+    $("#move").html("&nbsp;");
+}
+
 function getState() {
     $.ajax({
         url: "/analysis_state",
@@ -113,11 +161,11 @@ function getState() {
                 setProgressVisibility(true);
                 setProgressBar(data["text"], data["analyzed"], data["total"]);
 
-                if (data["fen"] !== null) {
+                if (data["fen"] !== null && data["fen"] !== undefined) {
                     board.position(data["fen"]);
                 }
 
-                if (data["last_move"] !== null && data["evaluation"] !== null) {
+                if (data["last_move"] !== null && data["last_move"] !== undefined && data["evaluation"] !== null) {
                     $("#move").html(
                         `${data["last_move"]}${data["evaluation"]}`,
                     );
@@ -131,6 +179,47 @@ function getState() {
             board.clear();
         },
     });
+}
+
+function fetchLayouts() {
+    fetch("/endgame/layouts")
+        .then(response => response.json())
+        .then(availableLayouts => {
+            const studyLayoutSelect = document.getElementById("study_layout");
+            const options = studyLayoutSelect.options;
+            let firstAvailable = null;
+            let allLayoutsGenerated = true;
+
+            for (let i = 0; i < options.length; i++) {
+                const option = options[i];
+                if (availableLayouts.includes(option.value)) {
+                    option.disabled = true;
+                    option.style.color = "grey";
+                    option.visible = false;
+                } else {
+                    option.disabled = false;
+                    option.style.color = "black";
+                    option.visible = true;
+                    if (firstAvailable === null) {
+                        firstAvailable = option.value;
+                        allLayoutsGenerated = false;
+                    }
+                }
+            }
+
+            if (firstAvailable) {
+                studyLayoutSelect.value = firstAvailable;
+                studyLayoutSelect.dispatchEvent(new Event("change"));
+            }
+
+            $("#generate_endgames").prop("disabled", allLayoutsGenerated);
+            if (allLayoutsGenerated) {
+                studyLayoutSelect.value = "";
+                $("#generate_endgames").html("All layouts generated!");
+            }
+        })
+
+        .catch(error => console.error("Error fetching layouts:", error));
 }
 
 function run(argument) {
@@ -164,6 +253,35 @@ function run(argument) {
         });
     };
 }
+
+const generateButton = document.getElementById("generate_endgames");
+const layoutSelect = document.getElementById("study_layout");
+
+generateButton.addEventListener("click", async () => {
+    clearGameDescription();
+    const layout = layoutSelect.value;
+    if (layout === "" || layout === null) {
+        return;
+    }
+
+    const response = await fetch("/endgame/generate", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ layout: layout }),
+    });
+
+    if (response.ok) {
+        analysis = true;
+    } else {
+        console.error("Endgame generation failed:", await response.text());
+    }
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+    fetchLayouts();
+});
 
 loadConfiguration();
 getState();
