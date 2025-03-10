@@ -17,10 +17,10 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.responses import HTMLResponse, RedirectResponse
 
 from modules.application import DEFAULT_ERROR_MESSAGE
-from modules.application.layouts import ENDGAME_LAYOUTS
 from modules.application.run import run_script
 from modules.application.stream import create_process, get_install_path, stream_output
 from modules.configuration import load_configuration, save_configuration
+from modules.endgame import ENDGAME_LAYOUTS
 from modules.json import json_load
 from modules.requests.configuration import Configuration
 from modules.requests.move import MoveData

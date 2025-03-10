@@ -3,6 +3,8 @@ from typing import Dict, List
 
 import chess
 
+from modules.endgame import ENDGAME_LAYOUTS
+
 PIECES = {
     "P": chess.PAWN,
     "N": chess.KNIGHT,
@@ -11,8 +13,6 @@ PIECES = {
     "Q": chess.QUEEN,
     "K": chess.KING,
 }
-
-LAYOUTS = ["KRvK", "KQvK", "KPvK", "KRRvK", "KBBvK", "KBNvK", "KQvKR", "KQvKN", "KQvKB"]
 
 
 @dataclass(frozen=True)
@@ -28,7 +28,7 @@ class PiecesLayout:
 
     @staticmethod
     def from_string(name: str) -> "PiecesLayout":
-        assert name in LAYOUTS, f"Layout {name} is not supported"
+        assert name in ENDGAME_LAYOUTS.values(), f"Layout {name} is not supported"
         pieces_layout = PiecesLayout.get_pieces_layout_from_string(name)
         pieces = sum(pieces_layout, [])
         colors = PiecesLayout.generate_colors(pieces_layout)
