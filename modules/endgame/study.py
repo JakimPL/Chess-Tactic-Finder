@@ -72,15 +72,15 @@ class EndgameStudy:
         if seed is not None:
             np.random.seed(seed)
 
-        min_sign = min(np.sign(dtm) for dtm, _ in moves.values())
         best_class = max(outcome for _, outcome in moves.values())
         moves = {move: dtm for move, (dtm, outcome) in moves.items() if outcome == best_class}
-        if beta == float("inf") or min_sign == 0:
+        if beta == float("inf") or best_class[1] == 0:
             max_dtm = max(moves.values())
             best_moves = [move for move, dtm in moves.items() if dtm == max_dtm]
             return np.random.choice(best_moves)
         else:
-            weights = np.array([abs(dtm) ** beta for dtm in moves.values()])
+            dtms = np.abs(np.array(list(moves.values())))
+            weights = (1 / dtms) ** beta if best_class[1] > 0 else dtms**beta
             probabilities = weights / weights.sum()
             return np.random.choice(list(moves.keys()), p=probabilities)
 
