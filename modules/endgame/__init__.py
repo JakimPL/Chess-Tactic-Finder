@@ -21,8 +21,8 @@ ENDGAME_LAYOUTS = {
 
 WINNING_SIDES_RANGES = {
     "KQvKR": {
-        "KR": {"min_dtm": 1, "max_dtm": 37, "min_dtz": 1, "max_dtz": 4},
         "KQ": {"min_dtm": 1, "max_dtm": 69, "min_dtz": 1, "max_dtz": 61},
+        "KR": {"min_dtm": 1, "max_dtm": 37, "min_dtz": 1, "max_dtz": 4},
     },
     "KQvKN": {"KQ": {"min_dtm": 1, "max_dtm": 41, "min_dtz": 1, "max_dtz": 37}},
     "KQvKB": {"KQ": {"min_dtm": 1, "max_dtm": 33, "min_dtz": 1, "max_dtz": 23}},

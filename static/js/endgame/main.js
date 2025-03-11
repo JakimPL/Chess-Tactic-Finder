@@ -8,6 +8,8 @@ import {
     getPiecesSymbol,
     markButton,
     removeChildren,
+    setLinks,
+    setPanel,
     unmarkButton,
 } from "../common.js";
 
@@ -46,7 +48,7 @@ $("#copyFEN").on("click", function () {
         return;
     }
 
-    const fen = game.chess.fen();
+    const fen = game.getFEN();
     if (fen !== null && fen !== "") {
         navigator.clipboard.writeText(fen);
         setPanel($panel, "FEN copied to clipboard!");
@@ -54,7 +56,11 @@ $("#copyFEN").on("click", function () {
 });
 
 $("#copyPGN").on("click", function () {
-    // not implemented yet
+    const pgn = game.getPGN();
+    if (pgn !== null && pgn !== "") {
+        navigator.clipboard.writeText(pgn);
+        setPanel($panel, "PGN copied to clipboard!");
+    }
 });
 
 $("#hint").on("click", function () {
@@ -76,6 +82,10 @@ function setPosition() {
     setMateCounter(game.getDTZ());
     colorSquares();
     hint = null;
+
+    const fen = game.getFEN();
+    const pgn = game.getPGN();
+    setLinks(pgn, fen);
 }
 
 function onDrop(source, target) {

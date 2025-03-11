@@ -76,6 +76,10 @@ export default class Game {
         return this.chess.fen();
     }
 
+    getPGN() {
+        return this.chess.pgn();
+    }
+
     isLastMove() {
         return this.currentMove === this.states.length - 1;
     }
