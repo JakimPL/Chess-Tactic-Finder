@@ -1,23 +1,44 @@
 from enum import Enum
 
 
-class Result(Enum):
+class Outcome(Enum):
     LOSS = "loss"
     DRAW = "draw"
-    UNKNOWN = "*"
+    IN_PROGRESS = "in_progress"
     WIN = "win"
 
     @staticmethod
-    def from_string(string: str, turn: bool) -> "Result":
+    def from_string(string: str, turn: bool) -> "Outcome":
         if string == "1-0":
-            return Result.WIN if turn else Result.LOSS
+            return Outcome.WIN if turn else Outcome.LOSS
         elif string == "0-1":
-            return Result.LOSS if turn else Result.WIN
+            return Outcome.LOSS if turn else Outcome.WIN
         elif string == "1/2-1/2":
-            return Result.DRAW
+            return Outcome.DRAW
 
-        return Result.UNKNOWN
+        return Outcome.IN_PROGRESS
 
-    def __lt__(self, other):
-        order = ["loss", "draw", "*", "win"]
-        return order.index(self.value) < order.index(other.value)
+
+class Result:
+    def __init__(self, outcome: Outcome):
+        self.outcome = outcome
+
+    def __eq__(self, other):
+        return self.outcome == other.outcome
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.outcome})"
+
+
+class WinningOrDrawingSideResult(Result):
+    preference = ["loss", "draw", "in_progress", "win"]
+
+    def __lt__(self, other: "WinningOrDrawingSideResult"):
+        return self.preference.index(self.outcome.value) < self.preference.index(other.outcome.value)
+
+
+class LosingSideResult(Result):
+    preference = ["loss", "in_progress", "draw", "win"]
+
+    def __lt__(self, other: "LosingSideResult"):
+        return self.preference.index(self.outcome.value) < self.preference.index(other.outcome.value)

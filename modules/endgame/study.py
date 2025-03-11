@@ -10,7 +10,12 @@ from modules.endgame import DATABASE_PATH, TABLEBASE_PATH
 from modules.endgame.database import EndgameDatabase
 from modules.endgame.game_info import GameInfo
 from modules.endgame.hint import Hint
-from modules.endgame.result import Result
+from modules.endgame.result import (
+    LosingSideResult,
+    Outcome,
+    Result,
+    WinningOrDrawingSideResult,
+)
 from modules.structures.move_reply import MoveReply
 
 SEED = 137
@@ -95,7 +100,7 @@ class EndgameStudy:
             probabilities = weights / weights.sum()
             return np.random.choice(list(moves.keys()), p=probabilities)
 
-    def prepare_replies(self) -> Dict[chess.Move, Tuple[int, Tuple[Result, int]]]:
+    def prepare_replies(self, previous_dtm: int) -> Dict[chess.Move, Tuple[int, Tuple[Result, int]]]:
         legal_moves = list(self.board.legal_moves)
         replies = {}
 
@@ -103,15 +108,16 @@ class EndgameStudy:
             turn = self.board.turn
             self.board.push(move)
             dtm = self.tablebase.get_dtm(self.board)
-            result = Result.from_string(self.board.result(), turn)
+            klass = WinningOrDrawingSideResult if previous_dtm >= 0 else LosingSideResult
+            result = klass(Outcome.from_string(self.board.result(), turn))
             if dtm is not None:
                 replies[move] = dtm, (result, -np.sign(dtm))
             self.board.pop()
 
         return replies
 
-    def reply(self, beta: float, seed: Optional[int] = None) -> chess.Move:
-        replies = self.prepare_replies()
+    def reply(self, previous_dtm: int, beta: float, seed: Optional[int] = None) -> chess.Move:
+        replies = self.prepare_replies(previous_dtm)
 
         if not replies:
             raise ValueError("No legal moves with DTZ found")
@@ -141,7 +147,8 @@ class EndgameStudy:
 
     def get_best_move(self, fen: str) -> Hint:
         self.board = chess.Board(fen)
-        replies = self.prepare_replies()
+        previous_dtm = self.tablebase.probe_dtm(self.board)
+        replies = self.prepare_replies(previous_dtm)
         move = self.choose_move(replies, float("inf"), SEED)
         uci = move.uci()
         return Hint(
@@ -169,7 +176,7 @@ class EndgameStudy:
                 previous_rating=previous_rating,
             )
 
-        reply = self.reply(beta)
+        reply = self.reply(previous_dtm, beta)
         san = self.board.san(reply)
         legal_moves = len(list(self.board.legal_moves))
         self.play_move(reply)
