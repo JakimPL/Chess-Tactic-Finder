@@ -171,7 +171,6 @@ async def hint(data: MoveData) -> JSONResponse:
 
 @app.post("/endgame/move")
 async def endgame_move(data: MoveData) -> JSONResponse:
-    print(data)
     endgame_singleton = EndgameStudySingleton().get_instance()
     endgame_study = endgame_singleton.endgame_study
     reply = endgame_study.move(data.fen, data.move, data.beta)

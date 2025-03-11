@@ -79,11 +79,15 @@ function setPosition() {
 
 function onDrop(source, target) {
     document.getElementsByTagName("body")[0].style.overflow = "scroll";
-    const uci = source + target;
+    let uci = source + target;
     const fen = game.getFEN();
     const isLastMove = game.isLastMove();
     const move = game.move(uci);
+    if (move !== null && move.promotion !== undefined) {
+        uci += move.promotion;
+    }
 
+    console.log(uci);
     if (move === null) {
         return "snapback";
     } else {

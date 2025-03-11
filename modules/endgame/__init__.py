@@ -5,7 +5,6 @@ TABLEBASE_PATH = configuration["paths"]["tablebase"]
 DATABASE_PATH = configuration["paths"]["database"]
 
 ENDGAME_LAYOUTS = {
-    "King + 2 Rooks vs King": "KRRvK",
     "King + Queen vs King": "KQvK",
     "King + Rook vs King": "KRvK",
     "King + Pawn vs King": "KPvK",
@@ -15,6 +14,7 @@ ENDGAME_LAYOUTS = {
     "King + Queen vs King + Bishop": "KQvKB",
     "King + Queen vs King + Knight": "KQvKN",
     "King + Queen vs King + Rook": "KQvKR",
+    "King + 2 Rooks vs King": "KRRvK",
     "King + 2 Bishops vs King": "KBBvK",
     "King + Bishop + Knight vs King": "KBNvK",
 }
