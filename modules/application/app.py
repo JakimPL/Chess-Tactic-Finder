@@ -34,6 +34,7 @@ INPUT_PGN_FILE = configuration["paths"]["input_pgn"]
 LOG_FILE = configuration["paths"]["log"]
 PORT = configuration["server"]["port"]
 OPEN_BROWSER = configuration["server"]["open_browser"]
+LOG_LEVEL = configuration["server"]["log_level"]
 
 logger = logging.getLogger("uvicorn.error")
 

@@ -432,7 +432,6 @@ function updateStudyLayout(value) {
     const firstAvailable = updatePiecesSelect(ranges);
     updateCounter(firstAvailable);
     updateBishopColor(layout);
-
 }
 
 function updateBishopColor(layout) {
@@ -466,8 +465,8 @@ function updateCounter(value) {
         maxValue = ranges["max_dtz"];
     }
 
-    minValue = Math.floor((minValue + 1) / 2);
-    maxValue = Math.floor((maxValue + 1) / 2);
+    minValue = Math.floor(minValue / 2) + 1;
+    maxValue = Math.floor(maxValue / 2) + 1;
 
     const counter = document.getElementById("mate_in");
     counter.min = minValue;

@@ -61,7 +61,8 @@
     "server": {
         "port": 8000,
         "listener_port": 6000,
-        "open_browser": true
+        "open_browser": true,
+        "log_level": "debug"
     },
     "tactic_player": {
         "hard_progress": true,

@@ -34,7 +34,7 @@ WINNING_SIDES_RANGES = {
     "KBNvK": {"KBN": {"min_dtm": 1, "max_dtm": 65, "min_dtz": 1, "max_dtz": 64}},
     "KPvKP": {"KP": {"min_dtm": 1, "max_dtm": 65, "min_dtz": 1, "max_dtz": 21}},
     "KRvKP": {
-        "KP": {"min_dtm": 1, "max_dtm": 85, "min_dtz": 1, "max_dtz": 18},
         "KR": {"min_dtm": 1, "max_dtm": 51, "min_dtz": 1, "max_dtz": 25},
+        "KP": {"min_dtm": 1, "max_dtm": 85, "min_dtz": 1, "max_dtz": 18},
     },
 }

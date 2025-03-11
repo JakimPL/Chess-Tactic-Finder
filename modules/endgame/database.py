@@ -16,7 +16,9 @@ class EndgameDatabase:
         self.layouts = self.get_available_layouts()
 
     def get_connection(self) -> sqlite3.Connection:
-        return sqlite3.connect(str(self.database_path), timeout=10.0)
+        connection = sqlite3.connect(str(self.database_path), timeout=10.0)
+        connection.set_trace_callback(logger.debug)
+        return connection
 
     def create_table(self, layout: str):
         connection = self.get_connection()
@@ -116,8 +118,6 @@ class EndgameDatabase:
         if bishop_color is not None:
             query += " AND bishop_color = ?"
             params.append(bishop_color)
-
-        logger.debug(f"Executing query: {query} with parameters: {params}")
 
         cursor.execute(query, params)
         result = [row[0] for row in cursor.fetchall()]
