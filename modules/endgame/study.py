@@ -11,10 +11,10 @@ from modules.endgame.database import EndgameDatabase
 from modules.endgame.game_info import GameInfo
 from modules.endgame.hint import Hint
 from modules.endgame.result import (
-    LosingSideResult,
+    LosingOrDrawingSideResult,
     Outcome,
     Result,
-    WinningOrDrawingSideResult,
+    WinningSideResult,
 )
 from modules.structures.move_reply import MoveReply
 
@@ -108,7 +108,7 @@ class EndgameStudy:
             turn = self.board.turn
             self.board.push(move)
             dtm = self.tablebase.get_dtm(self.board)
-            klass = WinningOrDrawingSideResult if previous_dtm >= 0 else LosingSideResult
+            klass = WinningSideResult if previous_dtm > 0 else LosingOrDrawingSideResult
             result = klass(Outcome.from_string(self.board.result(), turn))
             if dtm is not None:
                 replies[move] = dtm, (result, -np.sign(dtm))

@@ -30,15 +30,15 @@ class Result:
         return f"{self.__class__.__name__}({self.outcome})"
 
 
-class WinningOrDrawingSideResult(Result):
-    preference = ["loss", "draw", "in_progress", "win"]
+class LosingOrDrawingSideResult(Result):
+    preference = ["loss", "in_progress", "draw", "win"]
 
-    def __lt__(self, other: "WinningOrDrawingSideResult"):
+    def __lt__(self, other: "LosingOrDrawingSideResult"):
         return self.preference.index(self.outcome.value) < self.preference.index(other.outcome.value)
 
 
-class LosingSideResult(Result):
-    preference = ["loss", "in_progress", "draw", "win"]
+class WinningSideResult(Result):
+    preference = ["loss", "draw", "in_progress", "win"]
 
-    def __lt__(self, other: "LosingSideResult"):
+    def __lt__(self, other: "WinningSideResult"):
         return self.preference.index(self.outcome.value) < self.preference.index(other.outcome.value)
