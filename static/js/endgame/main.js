@@ -415,17 +415,28 @@ function fetchLayouts() {
         .catch(error => console.error("Error fetching layouts:", error));
 }
 
-function updatePiecesSelect(ranges) {
+function updatePiecesSelect(ranges, replace = false) {
     const piecesSelect = document.getElementById("pieces");
-    removeChildren(piecesSelect);
+    if (!replace) {
+        removeChildren(piecesSelect);
+    }
+
     let firstAvailable = null;
     const white = document.getElementById("side").value !== "black";
-    for (const [pieces, range] of Object.entries(ranges)) {
-        const option = document.createElement("option");
+    const entries = Object.entries(ranges);
+    for (let i = 0; i < entries.length; i++) {
+        const [pieces, range] = entries[i];
         const description = getPiecesSymbol(pieces, white);
-        option.value = pieces;
-        option.text = description;
-        piecesSelect.appendChild(option);
+
+        if (replace && i < piecesSelect.options.length) {
+            piecesSelect.options[i].value = pieces;
+            piecesSelect.options[i].text = description;
+        } else {
+            const option = document.createElement("option");
+            option.value = pieces;
+            option.text = description;
+            piecesSelect.appendChild(option);
+        }
 
         if (!firstAvailable) {
             firstAvailable = pieces;
@@ -514,7 +525,7 @@ document.getElementById("distance_to_mate_or_zeroing").addEventListener("change"
 document.getElementById("side").addEventListener("change", function() {
     const layout = document.getElementById("study_layout").value;
     const ranges = layoutRanges[layout];
-    updatePiecesSelect(ranges);
+    updatePiecesSelect(ranges, true);
 });
 
 

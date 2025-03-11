@@ -344,10 +344,10 @@ function setFEN(previousMoveIndex) {
 
     clearSquaresColors();
     const move = review.moves[game.moveIndex];
-    const moveColor = movesList.getMoveColor(
-        movesList.getMoveType(move.classification),
-    );
     if (move !== null && move !== undefined) {
+        const moveColor = movesList.getMoveColor(
+            movesList.getMoveType(move.classification),
+        );
         colorSquare(move.move.slice(0, 2), moveColor);
         colorSquare(move.move.slice(2, 4), moveColor);
     }

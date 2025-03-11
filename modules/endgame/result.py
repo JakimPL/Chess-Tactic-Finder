@@ -3,8 +3,8 @@ from enum import Enum
 
 class Result(Enum):
     LOSS = "loss"
-    UNKNOWN = "*"
     DRAW = "draw"
+    UNKNOWN = "*"
     WIN = "win"
 
     @staticmethod
@@ -19,5 +19,5 @@ class Result(Enum):
         return Result.UNKNOWN
 
     def __lt__(self, other):
-        order = ["loss", "*", "draw", "win"]
+        order = ["loss", "draw", "*", "win"]
         return order.index(self.value) < order.index(other.value)
