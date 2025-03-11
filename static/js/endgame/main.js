@@ -5,6 +5,7 @@ import {
     clearSquaresColors,
     colorSquare,
     fetchLayoutsDefinitions,
+    getPiecesSymbol,
     markButton,
     removeChildren,
     unmarkButton,
@@ -87,7 +88,6 @@ function onDrop(source, target) {
         uci += move.promotion;
     }
 
-    console.log(uci);
     if (move === null) {
         return "snapback";
     } else {
@@ -402,20 +402,16 @@ function fetchLayouts() {
         .catch(error => console.error("Error fetching layouts:", error));
 }
 
-function updateStudyLayout(value) {
-    if (value === null || layoutRanges === null) {
-        return;
-    }
-
-    const layout = value;
-    const ranges = layoutRanges[layout];
+function updatePiecesSelect(ranges) {
     const piecesSelect = document.getElementById("pieces");
     removeChildren(piecesSelect);
     let firstAvailable = null;
+    const white = document.getElementById("side").value !== "black";
     for (const [pieces, range] of Object.entries(ranges)) {
         const option = document.createElement("option");
+        const description = getPiecesSymbol(pieces, white);
         option.value = pieces;
-        option.text = pieces;
+        option.text = description;
         piecesSelect.appendChild(option);
 
         if (!firstAvailable) {
@@ -423,6 +419,17 @@ function updateStudyLayout(value) {
         }
     }
 
+    return firstAvailable;
+}
+
+function updateStudyLayout(value) {
+    if (value === null || layoutRanges === null) {
+        return;
+    }
+
+    const layout = value;
+    const ranges = layoutRanges[layout];
+    const firstAvailable = updatePiecesSelect(ranges);
     updateCounter(firstAvailable);
     updateBishopColor(layout);
 
@@ -445,7 +452,6 @@ function updateCounter(value) {
 
     const pieces = value;
     const layout = document.getElementById("study_layout").value;
-    const side = document.getElementById("pieces").value;
     const ranges = layoutRanges[layout][pieces];
 
     const distanceToMate = document.getElementById("distance_to_mate_or_zeroing").checked;
@@ -492,6 +498,11 @@ document.getElementById("pieces").addEventListener("change", function () {
 });
 document.getElementById("distance_to_mate_or_zeroing").addEventListener("change", function() {
     updateDistanceToMateOrZeroing(this.checked);
+});
+document.getElementById("side").addEventListener("change", function() {
+    const layout = document.getElementById("study_layout").value;
+    const ranges = layoutRanges[layout];
+    updatePiecesSelect(ranges);
 });
 
 

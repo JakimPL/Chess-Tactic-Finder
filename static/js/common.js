@@ -170,3 +170,26 @@ export function fetchLayoutsDefinitions() {
         })
         .catch(error => console.error("Error fetching layouts definitions:", error));
 }
+
+export function getPieceSymbol(symbol, white = true) {
+    switch (symbol) {
+    case "K":
+        return white ? "♔" : "♚";
+    case "Q":
+        return white ? "♕" : "♛";
+    case "R":
+        return white ? "♖" : "♜";
+    case "B":
+        return white ? "♗" : "♝";
+    case "N":
+        return white ? "♘" : "♞";
+    case "P":
+        return white ? "♙" : "♟";
+    default:
+        return " ";
+    }
+}
+
+export function getPiecesSymbol(pieces, white) {
+    return pieces.split("").map(piece => getPieceSymbol(piece, white)).join("");
+}
