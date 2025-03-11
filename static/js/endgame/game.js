@@ -50,6 +50,23 @@ export default class Game {
         return false;
     }
 
+    goTo(index) {
+        if (index >= 0 && index < this.states.length) {
+            if (index < this.currentMove) {
+                while (this.currentMove > index) {
+                    this.backward();
+                }
+            } else if (index > this.currentMove) {
+                while (this.currentMove < index) {
+                    this.forward();
+                }
+            }
+            return true;
+        }
+
+        return false;
+    }
+
     truncate() {
         this.states = this.states.slice(0, this.currentMove + 1);
     }
@@ -78,6 +95,10 @@ export default class Game {
 
     getPGN() {
         return this.chess.pgn();
+    }
+
+    getSize() {
+        return this.states.length;
     }
 
     isLastMove() {

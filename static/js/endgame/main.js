@@ -153,8 +153,11 @@ function backward() {
     }
 }
 
-function goTo() {
-    if (!wait && game !== null) {
+function goTo(index) {
+    const previousMoveIndex = moveIndex;
+    if (!wait && game !== null && game.goTo(index + 1)) {
+        moveIndex = game.currentMove - 1;
+        movesList.highlightNextMove(previousMoveIndex, moveIndex);
         setPosition();
     }
 }
@@ -337,7 +340,7 @@ function requestNewGame() {
                     [],
                     [],
                     game.getTurn() === "b",
-                    () => {},
+                    goTo,
                 );
             }, 50);
         })
