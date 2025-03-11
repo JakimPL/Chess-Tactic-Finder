@@ -8,6 +8,7 @@ import numpy as np
 
 from modules.endgame import DATABASE_PATH, TABLEBASE_PATH
 from modules.endgame.database import EndgameDatabase
+from modules.endgame.game_info import GameInfo
 from modules.endgame.hint import Hint
 from modules.endgame.result import Result
 from modules.structures.move_reply import MoveReply
@@ -33,17 +34,19 @@ class EndgameStudy:
     def draw_position(
         self,
         layout: str,
-        dtm: int,
+        dtm: Optional[int] = None,
+        dtz: Optional[int] = None,
         white: bool = True,
         bishop_color: Optional[bool] = None,
         side_pieces: Optional[str] = None,
     ):
         if white is None:
-            white = np.random.choice([True, False])
+            white = bool(np.random.choice([True, False]))
 
         choices = self.database.find_positions(
             layout=layout,
             dtm=dtm,
+            dtz=dtz,
             white_to_move=white,
             result="win",
             bishop_color=bishop_color if layout == "KBNvK" else None,
@@ -51,20 +54,24 @@ class EndgameStudy:
             black_pieces=side_pieces if not white else None,
         )
 
-        print(len(choices))
+        if not choices:
+            raise ValueError("No position matching the criteria")
+
         return np.random.choice(choices)
 
     def start_game(
         self,
         layout: str,
-        dtm: int,
+        dtm: Optional[int] = None,
+        dtz: Optional[int] = None,
         white: bool = True,
         bishop_color: Optional[bool] = None,
         side_pieces: Optional[str] = None,
-    ) -> str:
-        self.starting_position = self.draw_position(layout, dtm, white, bishop_color, side_pieces)
+    ) -> GameInfo:
+        self.starting_position = self.draw_position(layout, dtm, dtz, white, bishop_color, side_pieces)
         self.board = chess.Board(self.starting_position)
-        return self.starting_position
+        dtm = self.tablebase.probe_dtm(self.board)
+        return GameInfo(fen=self.starting_position, dtm=dtm)
 
     def play_move(self, move: chess.Move):
         self.board.push(move)

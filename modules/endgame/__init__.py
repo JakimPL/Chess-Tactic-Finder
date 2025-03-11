@@ -20,43 +20,21 @@ ENDGAME_LAYOUTS = {
 }
 
 WINNING_SIDES_RANGES = {
-    "KRRvK": {
-        "KRR": {"min": 1, "max": 7},
-    },
-    "KQvK": {
-        "KQ": {"min": 1, "max": 16},
-    },
-    "KRvK": {
-        "KR": {"min": 1, "max": 16},
-    },
-    "KPvK": {
-        "KP": {"min": 1, "max": 28},
-    },
-    "KQvKP": {
-        "KQ": {"min": 1, "max": 16},
-        "KP": {"min": 1, "max": 28},
-    },
-    "KRvKP": {
-        "KR": {"min": 1, "max": 16},
-        "KP": {"min": 1, "max": 28},
-    },
-    "KPvKP": {
-        "KP": {"min": 1, "max": 32},
-    },
-    "KQvKB": {
-        "KQ": {"min": 1, "max": 16},
-    },
-    "KQvKN": {
-        "KQ": {"min": 1, "max": 16},
-    },
     "KQvKR": {
-        "KQ": {"min": 1, "max": 35},
-        "KR": {"min": 1, "max": 18},
+        "KR": {"min_dtm": 1, "max_dtm": 37, "min_dtz": 1, "max_dtz": 4},
+        "KQ": {"min_dtm": 1, "max_dtm": 69, "min_dtz": 1, "max_dtz": 61},
     },
-    "KBBvK": {
-        "KBB": {"min": 1, "max": 19},
-    },
-    "KBNvK": {
-        "KBN": {"min": 1, "max": 33},
+    "KQvKN": {"KQ": {"min_dtm": 1, "max_dtm": 41, "min_dtz": 1, "max_dtz": 37}},
+    "KQvKB": {"KQ": {"min_dtm": 1, "max_dtm": 33, "min_dtz": 1, "max_dtz": 23}},
+    "KQvK": {"KQ": {"min_dtm": 1, "max_dtm": 19, "min_dtz": 1, "max_dtz": 19}},
+    "KRvK": {"KR": {"min_dtm": 1, "max_dtm": 31, "min_dtz": 1, "max_dtz": 31}},
+    "KPvK": {"KP": {"min_dtm": 1, "max_dtm": 55, "min_dtz": 1, "max_dtz": 19}},
+    "KRRvK": {"KRR": {"min_dtm": 1, "max_dtm": 13, "min_dtz": 1, "max_dtz": 9}},
+    "KBBvK": {"KBB": {"min_dtm": 1, "max_dtm": 37, "min_dtz": 1, "max_dtz": 36}},
+    "KBNvK": {"KBN": {"min_dtm": 1, "max_dtm": 65, "min_dtz": 1, "max_dtz": 64}},
+    "KPvKP": {"KP": {"min_dtm": 1, "max_dtm": 65, "min_dtz": 1, "max_dtz": 21}},
+    "KRvKP": {
+        "KP": {"min_dtm": 1, "max_dtm": 85, "min_dtz": 1, "max_dtz": 18},
+        "KR": {"min_dtm": 1, "max_dtm": 51, "min_dtz": 1, "max_dtz": 25},
     },
 }

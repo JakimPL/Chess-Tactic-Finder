@@ -24,6 +24,7 @@ let hint = null;
 let layouts = null;
 let layoutRanges = null;
 
+let requestWait = false;
 let wait = false;
 const delayTime = 500;
 
@@ -275,8 +276,13 @@ function sendMove(fen, uci) {
 }
 
 function requestNewGame() {
+    if (wait || requestWait) {
+        return;
+    }
+
+    const distanceToMate = document.getElementById("distance_to_mate_or_zeroing").checked;
     const mateIn = document.getElementById("mate_in").value;
-    const dtm = mateIn * 2 - 1;
+    const counter = 2 * mateIn - 1;
     const whiteToPlay = document.getElementById("side").value;
     const bishopColor = document.getElementById("bishop_color").value;
     const layout = document.getElementById("study_layout").value;
@@ -284,12 +290,14 @@ function requestNewGame() {
 
     const data = {
         layout: layout,
-        dtm: dtm,
+        dtm: distanceToMate ? counter : null,
+        dtz: distanceToMate ? null : counter,
         white: whiteToPlay === "random" ? null : whiteToPlay === "white",
         bishop_color: bishopColor === "random" ? null : bishopColor === "light",
         side_pieces: side,
     };
 
+    requestWait = true;
     markButton("new_study");
     fetch("/endgame/start", {
         method: "POST",
@@ -301,6 +309,7 @@ function requestNewGame() {
         .then((response) => {
             if (!response.ok) {
                 unmarkButton("new_study");
+                requestWait = false;
                 throw new Error(response.statusText);
             }
             return response.json();
@@ -309,7 +318,7 @@ function requestNewGame() {
             const fen = reply.fen;
             console.log("New game started:", fen);
             setTimeout(() => {
-                startNewGame(fen, dtm);
+                startNewGame(fen, reply.dtm);
                 movesList = new MovesList(
                     [],
                     [],
@@ -321,9 +330,10 @@ function requestNewGame() {
         .catch((error) => {
             console.error("Error starting new game:", error);
             alert(
-                `Endgame positions for ${layout} are not generated yet. Please generate them first.`,
+                "Endgame positions for selected criteria have been not found. Please change the settings.",
             );
-            markButton("new_study");
+            unmarkButton("new_study");
+            requestWait = false;
         });
 }
 
@@ -333,6 +343,7 @@ function startNewGame(fen, dtm) {
     player = game.getTurn();
     setMateCounter(dtm);
     unmarkButton("new_study");
+    requestWait = false;
 
     if (player === "b") {
         board.flip();
@@ -408,7 +419,7 @@ function updateStudyLayout(value) {
         }
     }
 
-    updateMateIn(firstAvailable);
+    updateCounter(firstAvailable);
     updateBishopColor(layout);
 
 }
@@ -423,7 +434,7 @@ function updateBishopColor(layout) {
     }
 }
 
-function updateMateIn(value) {
+function updateCounter(value) {
     if (value === null || layoutRanges === null) {
         return;
     }
@@ -433,17 +444,36 @@ function updateMateIn(value) {
     const side = document.getElementById("pieces").value;
     const ranges = layoutRanges[layout][pieces];
 
-    const minMateIn = ranges["min"];
-    const maxMateIn = ranges["max"];
+    const distanceToMate = document.getElementById("distance_to_mate_or_zeroing").checked;
 
-    const mateInInput = document.getElementById("mate_in");
-    mateInInput.min = minMateIn;
-    mateInInput.max = maxMateIn;
-    if (minMateIn > maxMateIn) {
-        mateInInput.value = minMateIn;
-    } else if (minMateIn < maxMateIn) {
-        mateInInput.value = maxMateIn;
+    let minValue = null;
+    let maxValue = null;
+    if (distanceToMate) {
+        minValue = ranges["min_dtm"];
+        maxValue = ranges["max_dtm"];
+    } else {
+        minValue = ranges["min_dtz"];
+        maxValue = ranges["max_dtz"];
     }
+
+    minValue = Math.floor((minValue + 1) / 2);
+    maxValue = Math.floor((maxValue + 1) / 2);
+
+    const counter = document.getElementById("mate_in");
+    counter.min = minValue;
+    counter.max = maxValue;
+    if (counter.value > maxValue) {
+        counter.value = maxValue;
+    } else if (counter.value < minValue) {
+        counter.value = minValue;
+    }
+}
+
+function updateDistanceToMateOrZeroing(checked) {
+    const mateInLabel = document.getElementById("mate_in_label");
+    const pieces = document.getElementById("pieces").value;
+    mateInLabel.textContent = checked ? "Mate in:" : "Zero in:";
+    updateCounter(pieces);
 }
 
 bindKeys(backward, forward);
@@ -454,8 +484,12 @@ document.getElementById("study_layout").addEventListener("change", function () {
     updateStudyLayout(this.value);
 });
 document.getElementById("pieces").addEventListener("change", function () {
-    updateMateIn(this.value);
+    updateCounter(this.value);
 });
+document.getElementById("distance_to_mate_or_zeroing").addEventListener("change", function() {
+    updateDistanceToMateOrZeroing(this.checked);
+});
+
 
 document.getElementById("study_layout").dispatchEvent(new Event("change"));
 document.addEventListener("DOMContentLoaded", function() {
@@ -466,4 +500,6 @@ document.addEventListener("DOMContentLoaded", function() {
     fetchLayouts().then(firstAvailable => {
         updateStudyLayout(firstAvailable);
     });
+    const distanceToMateOrZeroing = document.getElementById("distance_to_mate_or_zeroing");
+    updateDistanceToMateOrZeroing(distanceToMateOrZeroing.checked);
 });

@@ -145,13 +145,14 @@ async def endgame_start(data: dict):
     endgame_study = endgame_singleton.endgame_study
     layout = data.get("layout")
     dtm = data.get("dtm")
+    dtz = data.get("dtz")
     white = data.get("white")
     bishop_color = data.get("bishop_color")
     side_pieces = data.get("side_pieces")
-    if layout is not None and dtm is not None:
+    if layout is not None and (dtm is not None or dtz is not None):
         try:
-            fen = endgame_study.start_game(layout, dtm, white, bishop_color, side_pieces)
-            return JSONResponse({"fen": fen})
+            game_info = endgame_study.start_game(layout, dtm, dtz, white, bishop_color, side_pieces)
+            return JSONResponse(game_info.__dict__)
         except ValueError:
             raise HTTPException(status_code=400, detail="No position matching the criteria")
         except sqlite3.OperationalError:
@@ -170,6 +171,7 @@ async def hint(data: MoveData) -> JSONResponse:
 
 @app.post("/endgame/move")
 async def endgame_move(data: MoveData) -> JSONResponse:
+    print(data)
     endgame_singleton = EndgameStudySingleton().get_instance()
     endgame_study = endgame_singleton.endgame_study
     reply = endgame_study.move(data.fen, data.move, data.beta)
