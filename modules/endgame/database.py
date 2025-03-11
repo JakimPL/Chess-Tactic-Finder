@@ -1,9 +1,12 @@
+import logging
 import os
 import sqlite3
 from pathlib import Path
 from typing import List, Optional, Tuple, Union
 
 from modules.endgame.record import Record
+
+logger = logging.getLogger("uvicorn.error")
 
 
 class EndgameDatabase:
@@ -89,8 +92,9 @@ class EndgameDatabase:
         params = []
 
         if dtz is not None:
-            query += " AND dtz = ?"
-            params.append(dtz)
+            dtz_values = [2 * (dtz // 2), 2 * (dtz // 2) + 1]
+            query += " AND dtz IN (?, ?)"
+            params.extend(dtz_values)
         if dtm is not None:
             query += " AND dtm = ?"
             params.append(dtm)
@@ -112,6 +116,8 @@ class EndgameDatabase:
         if bishop_color is not None:
             query += " AND bishop_color = ?"
             params.append(bishop_color)
+
+        logger.debug(f"Executing query: {query} with parameters: {params}")
 
         cursor.execute(query, params)
         result = [row[0] for row in cursor.fetchall()]

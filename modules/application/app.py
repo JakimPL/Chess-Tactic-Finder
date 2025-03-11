@@ -35,8 +35,8 @@ LOG_FILE = configuration["paths"]["log"]
 PORT = configuration["server"]["port"]
 OPEN_BROWSER = configuration["server"]["open_browser"]
 
-logging.basicConfig(filename=LOG_FILE, level=logging.DEBUG)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("uvicorn.error")
+
 
 app = FastAPI()
 status_server = StatusServer()
@@ -73,6 +73,7 @@ async def startup_event():
     listener_thread = threading.Thread(target=status_server.communicate, daemon=True)
     listener_thread.start()
 
+    await refresh_endpoint(True)
     if OPEN_BROWSER:
         webbrowser.open(f"http://localhost:{PORT}/chess/index.html")
 

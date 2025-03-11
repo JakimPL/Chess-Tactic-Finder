@@ -518,3 +518,9 @@ document.addEventListener("DOMContentLoaded", function() {
     const distanceToMateOrZeroing = document.getElementById("distance_to_mate_or_zeroing");
     updateDistanceToMateOrZeroing(distanceToMateOrZeroing.checked);
 });
+
+document.getElementById("study_layout").addEventListener("keydown", function(e) {
+    if (e.which === 37 || e.which === 39) {
+        e.preventDefault();
+    }
+});
