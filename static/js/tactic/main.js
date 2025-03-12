@@ -128,7 +128,7 @@ function calculateSuccessRate() {
     let total = 0;
     for (const [hash, correctMoves] of Object.entries(progress.container)) {
         const puzzle = puzzles[hashes[hash]];
-        if (puzzle !== null) {
+        if (puzzle !== null && puzzle !== undefined) {
             if (hardEvaluation) {
                 total += 1;
                 if (correctMoves >= puzzle.moves) {
@@ -145,7 +145,7 @@ function calculateSuccessRate() {
 }
 
 function makeMove(move, instant) {
-    if (move !== null) {
+    if (move !== null && move !== undefined) {
         move = game.move(move);
         board.position(game.fen(), !instant);
         clearSquaresColors();
@@ -190,7 +190,7 @@ function onDrop(source, target) {
             });
         } else {
             move = tactic.forward();
-            if (move !== null) {
+            if (move !== null && move !== undefined) {
                 delay(() => {
                     makeMove(move);
                     tactic.forward();
