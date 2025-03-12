@@ -87,8 +87,11 @@ async def refresh_endpoint(gather: bool = False):
 
 @app.get("/analysis_state")
 async def analysis_state():
-    message = status_server.message
-    dictionary = dict(urllib.parse.parse_qsl(message))
+    try:
+        message = status_server.message
+        dictionary = dict(urllib.parse.parse_qsl(message))
+    except AttributeError:
+        dictionary = {"error": "Can't retrieve the analysis state."}
     return JSONResponse(dictionary)
 
 
