@@ -3,12 +3,13 @@ import Link from "./link.js";
 import { createTableRowEntry, setTableRowEntry, clearTable } from "./common.js";
 
 export default class MovesList {
-    constructor(moves, review, firstMove, callback) {
+    constructor(moves, review, firstMove, callback, reviewDisabled = false) {
         this.element = "moves_list_table";
         this.moves = moves;
         this.review = review;
         this.firstMove = firstMove ? 1 : 0;
         this.callback = callback;
+        this.reviewDisabled = reviewDisabled;
         this.render();
     }
 
@@ -161,16 +162,23 @@ export default class MovesList {
         const turn = j % 2 === 0;
         const evenRow = Math.floor(j / 2) % 2 === 0;
 
-        const moveClassification =
-            this.review[index] !== null && this.review[index] !== undefined
-                ? this.review[index].classification
-                : null;
-        const moveType = this.getMoveType(moveClassification);
-        const moveDescription =
+        let moveClassification = null;
+        let moveColor = null;
+        let moveType = "";
+        let moveDescription = "";
+        if (!this.reviewDisabled) {
+            moveClassification = (
+                this.review[index] !== null && this.review[index] !== undefined
+                    ? this.review[index].classification
+                    : null);
+            moveType = this.getMoveType(moveClassification);
+            moveDescription =
             moveClassification !== null && moveClassification !== undefined
                 ? moveClassification.description
                 : "";
-        const moveColor = this.getMoveColorForRow(moveType, evenRow);
+            moveColor = this.getMoveColorForRow(moveType, evenRow);
+        }
+
         const moveSymbol = this.getMoveSymbol(move, turn);
         const moveLink = new Link(null, () => {
             this.callback(index);
@@ -227,7 +235,7 @@ export default class MovesList {
     }
 
     highlightNextMove(previousMoveIndex, currentMoveIndex) {
-        let move = this.review[previousMoveIndex];
+        let move = !this.reviewDisabled ? this.review[previousMoveIndex] : null;
         const moveType =
             move !== null && move !== undefined
                 ? this.getMoveType(move.classification)
@@ -248,5 +256,10 @@ export default class MovesList {
     truncate(index) {
         this.moves = this.moves.slice(0, index);
         this.review = this.review.slice(0, index);
+    }
+
+    hideReview(disable) {
+        this.reviewDisabled = disable;
+        this.render();
     }
 }

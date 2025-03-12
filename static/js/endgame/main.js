@@ -174,13 +174,13 @@ function updateMoveRating(rating) {
 }
 
 function prepareMateCounter(dtm) {
+    if (game === null || dtm === null || dtm === undefined || dtm === 0) {
+        return ["-", true];
+    }
+
     const result = game.getResult();
     if (result !== null && result !== undefined) {
         return [result, true];
-    }
-
-    if (dtm === null || dtm === undefined || dtm === 0) {
-        return ["-", true];
     }
 
     const sign = dtm < 0 ? "-" : "";
@@ -195,7 +195,7 @@ function setMateCounter(dtm) {
     let gameOver;
     [counterValue, gameOver] = prepareMateCounter(dtm);
     if (hideCounter && !gameOver) {
-        mateCounter.innerText = "?";
+        mateCounter.innerText = "*";
     } else {
         mateCounter.innerText = counterValue;
     }
@@ -353,6 +353,7 @@ function requestNewGame() {
         })
         .then((reply) => {
             const fen = reply.fen;
+            const disableReview = document.getElementById("hide_review").checked;
             setTimeout(() => {
                 startNewGame(fen, reply.dtm);
                 movesList = new MovesList(
@@ -360,6 +361,7 @@ function requestNewGame() {
                     [],
                     game.getTurn() === "b",
                     goTo,
+                    disableReview,
                 );
             }, 50);
         })
@@ -388,6 +390,10 @@ function startNewGame(fen, dtm) {
 
 function colorSquares() {
     clearSquaresColors();
+    if (document.getElementById("hide_review").checked) {
+        return;
+    }
+
     const move = movesList.review[game.currentMove - 1];
     if (move !== null && move !== undefined) {
         const color = movesList.getMoveColor(
@@ -549,6 +555,9 @@ document.getElementById("side").addEventListener("change", function() {
 document.getElementById("hide_counter").addEventListener("change", function() {
     setMateCounter(game.getDTZ());
 });
+document.getElementById("hide_review").addEventListener("change", function() {
+    movesList.hideReview(this.checked);
+});
 
 document.getElementById("study_layout").dispatchEvent(new Event("change"));
 document.addEventListener("DOMContentLoaded", function() {
@@ -561,6 +570,7 @@ document.addEventListener("DOMContentLoaded", function() {
     });
     const distanceToMateOrZeroing = document.getElementById("distance_to_mate_or_zeroing");
     updateDistanceToMateOrZeroing(distanceToMateOrZeroing.checked);
+    setMateCounter();
 });
 
 document.getElementById("study_layout").addEventListener("keydown", function(e) {
