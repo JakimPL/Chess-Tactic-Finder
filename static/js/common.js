@@ -193,3 +193,9 @@ export function getPieceSymbol(symbol, white = true) {
 export function getPiecesSymbol(pieces, white) {
     return pieces.split("").map(piece => getPieceSymbol(piece, white)).join("");
 }
+
+export function blockScroll(boardId) {
+    jQuery(`#${boardId}`).on("scroll touchmove touchend touchstart contextmenu", function(e){
+        e.preventDefault();
+    });
+}

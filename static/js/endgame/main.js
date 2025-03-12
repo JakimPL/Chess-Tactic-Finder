@@ -2,6 +2,7 @@ import { bindKey, bindKeys } from "../bindings.js";
 import Colors from "../colors.js";
 import MovesList from "../movesList.js";
 import {
+    blockScroll,
     clearSquaresColors,
     colorSquare,
     fetchLayoutsDefinitions,
@@ -578,3 +579,5 @@ document.getElementById("study_layout").addEventListener("keydown", function(e) 
         e.preventDefault();
     }
 });
+
+blockScroll("endgame_board");

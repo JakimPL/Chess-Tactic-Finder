@@ -4,6 +4,7 @@ import Link from "../link.js";
 import MovesList from "../movesList.js";
 import Storage from "../storage.js";
 import {
+    blockScroll,
     clearSquaresColors,
     clearTable,
     colorSquare,
@@ -24,11 +25,12 @@ const $panel = $("#panel");
 window.loadReview = loadReview;
 window.refresh = refresh;
 
+let board = Chessboard("game_board", "start");
+
 const emptyImage =
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 let image = emptyImage;
 
-let board = Chessboard("game_board", "start");
 let pgn = null;
 let fen = null;
 let review = null;
@@ -447,3 +449,4 @@ function refresh(gather) {
 loadConfiguration();
 favorites = loadFavorites(storage);
 bindKeys(backward, forward);
+blockScroll("game_board");

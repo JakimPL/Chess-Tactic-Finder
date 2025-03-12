@@ -3,6 +3,7 @@ import Colors from "../colors.js";
 import Link from "../link.js";
 import Storage from "../storage.js";
 import {
+    blockScroll,
     clearSquaresColors,
     clearTable,
     colorSquare,
@@ -822,3 +823,4 @@ markButton("random");
 
 bindKey(72, getHint);
 bindKey(83, getSolution);
+blockScroll("game_board");
