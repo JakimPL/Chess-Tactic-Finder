@@ -14,7 +14,7 @@ from fastapi.responses import (
 )
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from starlette.responses import HTMLResponse, RedirectResponse
+from starlette.responses import HTMLResponse
 
 from modules.application import DEFAULT_ERROR_MESSAGE
 from modules.application.run import run_script
@@ -38,13 +38,8 @@ LOG_LEVEL = configuration["server"]["log_level"]
 
 logger = logging.getLogger("uvicorn.error")
 
-
 app = FastAPI()
 status_server = StatusServer()
-app.mount("/chess", StaticFiles(directory="static", html=True), name="html")
-app.mount("/json", StaticFiles(directory="json", html=False), name="json")
-app.mount("/reviews", StaticFiles(directory="reviews", html=False), name="reviews")
-app.mount("/tactics", StaticFiles(directory="tactics", html=False), name="tactics")
 
 
 @app.exception_handler(StarletteHTTPException)
@@ -59,11 +54,6 @@ async def custom_404_handler(request: Request, exc: StarletteHTTPException):
     return await request.app.default_exception_handler(request, exc)
 
 
-@app.get("/")
-async def root():
-    return RedirectResponse(url="/chess/")
-
-
 @app.get("/favicon.ico", include_in_schema=False)
 async def favicon():
     return FileResponse("static/img/chesspieces/wikipedia/wB.png")
@@ -76,7 +66,7 @@ async def startup_event():
 
     await refresh_endpoint(True)
     if OPEN_BROWSER:
-        webbrowser.open(f"http://localhost:{PORT}/chess/index.html")
+        webbrowser.open(f"http://localhost:{PORT}/index.html")
 
 
 @app.on_event("shutdown")
@@ -219,3 +209,9 @@ async def analyze_mode(request: Request, mode: str):
 
     run_script(mode, input_pgn_file)
     return PlainTextResponse("Analysis started.")
+
+
+app.mount("/json", StaticFiles(directory="json", html=False), name="json")
+app.mount("/reviews", StaticFiles(directory="reviews", html=False), name="reviews")
+app.mount("/tactics", StaticFiles(directory="tactics", html=False), name="tactics")
+app.mount("/", StaticFiles(directory="static", html=True), name="html")
