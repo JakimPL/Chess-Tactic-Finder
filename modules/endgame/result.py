@@ -1,44 +1,38 @@
-from enum import Enum
+from enum import IntEnum
+from typing import Union
 
 
-class Outcome(Enum):
-    LOSS = "loss"
-    DRAW = "draw"
-    IN_PROGRESS = "in_progress"
-    WIN = "win"
+class WinningSideResult(IntEnum):
+    LOSS = 0
+    DRAW = 1
+    IN_PROGRESS = 2
+    WIN = 3
 
     @staticmethod
-    def from_string(string: str, turn: bool) -> "Outcome":
+    def from_string(string: str, turn: bool) -> "WinningSideResult":
         if string == "1-0":
-            return Outcome.WIN if turn else Outcome.LOSS
+            return WinningSideResult.WIN if turn else WinningSideResult.LOSS
         elif string == "0-1":
-            return Outcome.LOSS if turn else Outcome.WIN
+            return WinningSideResult.LOSS if turn else WinningSideResult.WIN
         elif string == "1/2-1/2":
-            return Outcome.DRAW
+            return WinningSideResult.DRAW
 
-        return Outcome.IN_PROGRESS
-
-
-class Result:
-    def __init__(self, outcome: Outcome):
-        self.outcome = outcome
-
-    def __eq__(self, other):
-        return self.outcome == other.outcome
-
-    def __repr__(self):
-        return f"{self.__class__.__name__}({self.outcome})"
+        return WinningSideResult.IN_PROGRESS
 
 
-class LosingOrDrawingSideResult(Result):
-    preference = ["loss", "in_progress", "draw", "win"]
+class LosingOrDrawingSideResult(IntEnum):
+    LOSS = 0
+    DRAW_OR_IN_PROGRESS = 1
+    WIN = 3
 
-    def __lt__(self, other: "LosingOrDrawingSideResult"):
-        return self.preference.index(self.outcome.value) < self.preference.index(other.outcome.value)
+    @staticmethod
+    def from_string(string: str, turn: bool) -> "LosingOrDrawingSideResult":
+        if string == "1-0":
+            return LosingOrDrawingSideResult.WIN if turn else LosingOrDrawingSideResult.LOSS
+        elif string == "0-1":
+            return LosingOrDrawingSideResult.LOSS if turn else LosingOrDrawingSideResult.WIN
+
+        return LosingOrDrawingSideResult.DRAW_OR_IN_PROGRESS
 
 
-class WinningSideResult(Result):
-    preference = ["loss", "draw", "in_progress", "win"]
-
-    def __lt__(self, other: "WinningSideResult"):
-        return self.preference.index(self.outcome.value) < self.preference.index(other.outcome.value)
+Result = Union[LosingOrDrawingSideResult, WinningSideResult]

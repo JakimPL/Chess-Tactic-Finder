@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
@@ -10,15 +11,12 @@ from modules.endgame import DATABASE_PATH, TABLEBASE_PATH
 from modules.endgame.database import EndgameDatabase
 from modules.endgame.game_info import GameInfo
 from modules.endgame.hint import Hint
-from modules.endgame.result import (
-    LosingOrDrawingSideResult,
-    Outcome,
-    Result,
-    WinningSideResult,
-)
+from modules.endgame.result import LosingOrDrawingSideResult, Result, WinningSideResult
 from modules.structures.move_reply import MoveReply
 
 SEED = 137
+
+logger = logging.getLogger("uvicorn.error")
 
 
 class EndgameStudy:
@@ -88,6 +86,10 @@ class EndgameStudy:
         if seed is not None:
             np.random.seed(seed)
 
+        logger.debug(f"Moves: {moves}")
+        for move, (dtm, (result, _)) in moves.items():
+            print(f"{move}: {result} [{dtm}]")
+
         best_class = max(outcome for _, outcome in moves.values())
         moves = {move: dtm for move, (dtm, outcome) in moves.items() if outcome == best_class}
         if beta == float("inf") or best_class[1] == 0:
@@ -108,8 +110,8 @@ class EndgameStudy:
             turn = self.board.turn
             self.board.push(move)
             dtm = self.tablebase.get_dtm(self.board)
-            klass = WinningSideResult if previous_dtm > 0 else LosingOrDrawingSideResult
-            result = klass(Outcome.from_string(self.board.result(), turn))
+            klass = WinningSideResult if previous_dtm < 0 else LosingOrDrawingSideResult
+            result = klass.from_string(self.board.result(), turn)
             if dtm is not None:
                 replies[move] = dtm, (result, -np.sign(dtm))
             self.board.pop()
