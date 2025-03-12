@@ -78,13 +78,15 @@ function getConfig(fen) {
 }
 
 function setPosition() {
-    board.position(game.getFEN());
-    setMateCounter(game.getDTZ());
+    const dtz = game.getDTZ();
+    const fen = game.getFEN();
+    const pgn = game.getPGN();
+
+    board.position(fen);
+    setMateCounter(dtz);
     colorSquares();
     hint = null;
 
-    const fen = game.getFEN();
-    const pgn = game.getPGN();
     setLinks(pgn, fen);
 }
 
@@ -333,7 +335,6 @@ function requestNewGame() {
         })
         .then((reply) => {
             const fen = reply.fen;
-            console.log("New game started:", fen);
             setTimeout(() => {
                 startNewGame(fen, reply.dtm);
                 movesList = new MovesList(

@@ -86,10 +86,6 @@ class EndgameStudy:
         if seed is not None:
             np.random.seed(seed)
 
-        logger.debug(f"Moves: {moves}")
-        for move, (dtm, (result, _)) in moves.items():
-            print(f"{move}: {result} [{dtm}]")
-
         best_class = max(outcome for _, outcome in moves.values())
         moves = {move: dtm for move, (dtm, outcome) in moves.items() if outcome == best_class}
         if beta == float("inf") or best_class[1] == 0:
@@ -184,6 +180,8 @@ class EndgameStudy:
         self.play_move(reply)
         new_dtm = self.tablebase.probe_dtm(self.board)
         current_rating = self.rate_move(legal_moves, current_dtm, new_dtm)
+
+        logger.debug(reply.uci())
 
         return MoveReply(
             uci=reply.uci(),

@@ -11,11 +11,12 @@ export default class Game {
 
     move(uci, dtm) {
         const source = uci.substr(0, 2);
-        const target = uci.substr(2, 4);
+        const target = uci.substr(2, 2);
+        const promotion = uci.length === 5 ? uci[4] : "q";
         const move = this.chess.move({
             from: source,
             to: target,
-            promotion: "q",
+            promotion: promotion,
         });
 
         if (move !== null && move !== undefined) {
