@@ -23,6 +23,7 @@ let player = null;
 let moveIndex = null;
 let movesList = null;
 let hint = null;
+let counterValue = "-";
 
 let layouts = null;
 let layoutRanges = null;
@@ -30,6 +31,7 @@ let layoutRanges = null;
 let requestWait = false;
 let wait = false;
 const delayTime = 500;
+const newGameDelayTime = 1000;
 
 $("#backward").on("click", function () {
     backward();
@@ -174,21 +176,29 @@ function updateMoveRating(rating) {
 function prepareMateCounter(dtm) {
     const result = game.getResult();
     if (result !== null && result !== undefined) {
-        return result;
+        return [result, true];
     }
 
     if (dtm === null || dtm === undefined || dtm === 0) {
-        return "-";
+        return ["-", true];
     }
 
     const sign = dtm < 0 ? "-" : "";
     const movesToMate = Math.ceil((Math.abs(dtm) + 1) / 2);
-    return `${sign}M${movesToMate}`;
+    return [`${sign}M${movesToMate}`, false];
 }
 
 function setMateCounter(dtm) {
-    const mateCounter = prepareMateCounter(dtm);
-    document.getElementById("mate_counter").innerText = mateCounter;
+    const hideCounter = document.getElementById("hide_counter").checked;
+    const mateCounter = document.getElementById("mate_counter");
+
+    let gameOver;
+    [counterValue, gameOver] = prepareMateCounter(dtm);
+    if (hideCounter && !gameOver) {
+        mateCounter.innerText = "?";
+    } else {
+        mateCounter.innerText = counterValue;
+    }
 }
 
 function getHint() {
@@ -237,11 +247,19 @@ function getHint() {
 }
 
 function sendMove(fen, uci) {
-    const playerWon = game.getResult() === "1-0" && game.startingSide === "w";
+    const playerWon = (
+        (game.getResult() === "1-0" && game.startingSide === "w")
+        || (game.getResult() === "0-1" && game.startingSide === "b")
+    );
+
     if (playerWon) {
         const keepPlaying = document.getElementById("keep_playing").checked;
         if (keepPlaying) {
-            setTimeout(requestNewGame, delayTime);
+            setTimeout(() => {
+                wait = false;
+                requestWait = false;
+                requestNewGame();
+            }, newGameDelayTime);
         }
     }
 
@@ -528,7 +546,9 @@ document.getElementById("side").addEventListener("change", function() {
     const ranges = layoutRanges[layout];
     updatePiecesSelect(ranges, true);
 });
-
+document.getElementById("hide_counter").addEventListener("change", function() {
+    setMateCounter(game.getDTZ());
+});
 
 document.getElementById("study_layout").dispatchEvent(new Event("change"));
 document.addEventListener("DOMContentLoaded", function() {
