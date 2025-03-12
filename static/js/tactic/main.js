@@ -628,16 +628,16 @@ function loadLocalConfiguration() {
     if (localStorageConfiguration !== null) {
         localConfiguration = localStorageConfiguration;
         for (const element of $(".board_settings")) {
-            element.checked = localConfiguration["board_settings"][element.id];
+            element.checked = localConfiguration?.board_settings?.[element.id] ?? element.checked;
         }
 
         for (const element of $(".theme")) {
-            element.checked = localConfiguration["theme"][element.id];
+            element.checked = localConfiguration?.theme?.[element.id] ?? element.checked;
         }
 
         for (const element of $(".options")) {
-            element.checked = localConfiguration["options"][element.id];
-            element.value = localConfiguration["options"][element.id];
+            element.checked = localConfiguration?.options?.[element.id] ?? element.checked;
+            element.value = localConfiguration?.options?.[element.id] ?? element.value;
         }
     }
 }
