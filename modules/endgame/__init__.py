@@ -1,8 +1,8 @@
 from modules.configuration import load_configuration
 
 configuration = load_configuration()
+TEMP_PATH = configuration["paths"]["temp_endgame"]
 TABLEBASE_PATH = configuration["paths"]["tablebase"]
-DATABASE_PATH = configuration["paths"]["database"]
 
 ENDGAME_LAYOUTS = {
     "King + Queen vs King": "KQvK",

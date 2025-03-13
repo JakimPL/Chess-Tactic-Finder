@@ -46,6 +46,3 @@ class StatusServer(Singleton):
         self._running.clear()
         self.listener.close()
         self._executor.shutdown(wait=False)
-
-    def __del__(self):
-        self.stop()

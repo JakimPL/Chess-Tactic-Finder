@@ -11,7 +11,7 @@ import chess.gaviota
 import chess.syzygy
 from tqdm import tqdm
 
-from modules.endgame import DATABASE_PATH, TABLEBASE_PATH
+from modules.endgame import TABLEBASE_PATH, TEMP_PATH
 from modules.endgame.database import EndgameDatabase
 from modules.endgame.layout import PiecesLayout
 from modules.server.client import DummyClient
@@ -23,11 +23,10 @@ class EndgameGenerator:
         self,
         client: Union[Client, DummyClient],
         tablebase_path: Union[str, os.PathLike] = TABLEBASE_PATH,
-        database_path: Union[str, os.PathLike] = DATABASE_PATH,
     ):
         self.client = client
         self.tablebase_path = Path(tablebase_path)
-        self.database = EndgameDatabase(database_path)
+        self.database = EndgameDatabase()
 
     @staticmethod
     def get_side_pieces(pieces_layout: PiecesLayout, white: bool) -> str:
@@ -77,8 +76,8 @@ class EndgameGenerator:
         deduplicated_perms = self.deduplicate_permutations(perms, pieces_layout)
         batches = self.batch(deduplicated_perms, batch_size)
 
-        partial_results_path = Path(self.database.database_path).parent / layout
-        partial_results_path.mkdir(exist_ok=True)
+        partial_results_path = Path(TEMP_PATH) / layout
+        partial_results_path.mkdir(exist_ok=True, parents=True)
 
         processed_batches = self.get_processed_batches(partial_results_path)
         self.execute_batches(batches, pieces_layout, processed_batches, partial_results_path, max_workers)

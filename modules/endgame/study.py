@@ -7,7 +7,7 @@ import chess
 import chess.gaviota
 import numpy as np
 
-from modules.endgame import DATABASE_PATH, TABLEBASE_PATH
+from modules.endgame import TABLEBASE_PATH
 from modules.endgame.database import EndgameDatabase
 from modules.endgame.game_info import GameInfo
 from modules.endgame.hint import Hint
@@ -23,9 +23,8 @@ class EndgameStudy:
     def __init__(
         self,
         tablebase_path: Union[str, os.PathLike] = TABLEBASE_PATH,
-        database_path: Union[str, os.PathLike] = DATABASE_PATH,
     ):
-        self.database = EndgameDatabase(database_path)
+        self.database = EndgameDatabase()
         self.tablebase = chess.gaviota.open_tablebase(str(Path(tablebase_path) / "gaviota"))
 
         self.board = chess.Board()

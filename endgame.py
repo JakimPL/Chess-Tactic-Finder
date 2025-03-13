@@ -7,7 +7,6 @@ from modules.structures.message import Message
 
 configuration = load_configuration()
 DEFAULT_TABLEBASE_PATH = configuration["paths"]["tablebase"]
-DEFAULT_DATABASE_PATH = configuration["paths"]["database"]
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate endgame positions with the specified layout.")
@@ -18,22 +17,15 @@ if __name__ == "__main__":
         default=DEFAULT_TABLEBASE_PATH,
         help="Path to the tablebase.",
     )
-    parser.add_argument(
-        "--database",
-        type=str,
-        default=DEFAULT_DATABASE_PATH,
-        help="Path to the database.",
-    )
     args = parser.parse_args()
 
     layout = args.layout
     tablebase_path = args.tablebase
-    database_path = args.database
 
     client = get_client()
     client.send(Message(f"Generation of {layout} positions started.", 0, 1).encode())
 
-    endgame_generator = EndgameGenerator(client, tablebase_path=tablebase_path, database_path=database_path)
+    endgame_generator = EndgameGenerator(client, tablebase_path=tablebase_path)
 
     try:
         endgame_generator.generate_positions(layout)
