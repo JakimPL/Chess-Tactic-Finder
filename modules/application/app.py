@@ -1,7 +1,6 @@
 import logging
 import os
 import sqlite3
-import threading
 import urllib.parse
 import webbrowser
 
@@ -61,9 +60,7 @@ async def favicon():
 
 @app.on_event("startup")
 async def startup_event():
-    listener_thread = threading.Thread(target=status_server.communicate, daemon=True)
-    listener_thread.start()
-
+    status_server.start()
     await refresh_endpoint(True)
     if OPEN_BROWSER:
         webbrowser.open(f"http://localhost:{PORT}/index.html")
@@ -71,7 +68,7 @@ async def startup_event():
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    status_server.close()
+    status_server.stop()
 
 
 @app.get("/configuration.json")
