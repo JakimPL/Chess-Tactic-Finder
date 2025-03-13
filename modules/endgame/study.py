@@ -180,13 +180,11 @@ class EndgameStudy:
         new_dtm = self.tablebase.probe_dtm(self.board)
         current_rating = self.rate_move(legal_moves, current_dtm, new_dtm)
 
-        logger.debug(reply.uci())
-
         return MoveReply(
             uci=reply.uci(),
             san=san,
             fen=self.board.fen(),
-            previous_dtm=previous_dtm,
+            previous_dtm=-current_dtm,
             current_dtm=new_dtm,
             previous_rating=previous_rating,
             current_rating=current_rating,
