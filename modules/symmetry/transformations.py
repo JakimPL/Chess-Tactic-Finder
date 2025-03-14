@@ -37,3 +37,9 @@ class TransformationGroup(Enum):
     E = (e,)
     Z2 = (e, s1)
     D4 = (e, s1, s2, o1, o2, o3)
+    BP = (e, o2)
+    BN = (s1, s2, o1, o3)
+
+    @staticmethod
+    def preserving_bishop_color(preserving: bool = True) -> "TransformationGroup":
+        return TransformationGroup.BP if preserving else TransformationGroup.BN

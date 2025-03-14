@@ -35,6 +35,10 @@ class EndgameStudy:
     def __del__(self):
         self.tablebase.close()
 
+    @staticmethod
+    def get_bishop_color(square: int) -> bool:
+        return bool((square + (square >> 3)) & 1)
+
     def draw_position(
         self,
         layout: str,
@@ -56,13 +60,26 @@ class EndgameStudy:
         choice = np.random.choice(choices)
         return tuple(map(int, choice.split(",")))
 
-    def set_board_from_arrangement(self, arrangement: Tuple[int, ...], layout: str, white: Optional[bool] = None):
+    def set_board_from_arrangement(
+        self,
+        arrangement: Tuple[int, ...],
+        layout: str,
+        white: Optional[bool] = None,
+        bishop_color: Optional[bool] = None,
+    ):
+        piece_layout = PiecesLayout.from_string(layout)
+        transformations = piece_layout.transformation_group
+
         if white is None:
             white = bool(np.random.choice([True, False]))
+        if layout in ("KBNvK", "KQvKB") and bishop_color is not None:
+            bishop_square = arrangement[1] if layout == "KBNvK" else arrangement[3]
+            preserving = bishop_color == self.get_bishop_color(bishop_square)
+            transformations = transformations.preserving_bishop_color(preserving)
 
-        piece_layout = PiecesLayout.from_string(layout)
-        transformation = np.random.choice(piece_layout.transformation_group.value)
+        transformation = np.random.choice(transformations.value)
         new_arrangement = tuple(map(transformation, arrangement))
+
         if not white:
             new_arrangement = tuple(map(o2, new_arrangement))
 
@@ -79,9 +96,10 @@ class EndgameStudy:
         side_pieces: Optional[str] = None,
         dtm: Optional[int] = None,
         dtz: Optional[int] = None,
+        bishop_color: Optional[bool] = None,
     ) -> GameInfo:
         arrangement = self.draw_position(layout, side_pieces, dtm, dtz)
-        self.set_board_from_arrangement(arrangement, layout, white)
+        self.set_board_from_arrangement(arrangement, layout, white, bishop_color)
         dtm = self.tablebase.probe_dtm(self.board)
         return GameInfo(fen=self.starting_position, dtm=dtm)
 
