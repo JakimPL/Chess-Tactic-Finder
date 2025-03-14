@@ -58,27 +58,39 @@ class EndgameGenerator:
         perms = permutations(chess.SQUARES, pieces_layout.count)
         symmetric = pieces_layout.symmetric
 
-        arrangements = set()
+        hashes = set()
         unique_combinations = []
         for perm in tqdm(perms, total=total, desc="Preparing permutations"):
             arrangement = pieces_layout.arrange(perm)
-            if arrangement in arrangements:
+            if hash(arrangement) in hashes:
                 continue
 
             combination = Combination(arrangement, pieces_layout.transformation_group)
-            arrangements.update(combination.generate_all_arrangements())
+            hashes.update(map(hash, combination.generate_all_arrangements()))
             if symmetric:
                 mirror_arrangement = arrangement[2 : pieces_layout.count // 2] + arrangement[: pieces_layout.count // 2]
                 mirror_combination = Combination(mirror_arrangement, pieces_layout.transformation_group)
-                arrangements.update(mirror_combination.generate_all_arrangements())
+                hashes.update(map(hash, mirror_combination.generate_all_arrangements()))
 
             unique_combinations.append(combination.flatten())
 
         return unique_combinations
 
+    @staticmethod
+    def load_unique_combinations(pieces_layout: PiecesLayout) -> List[Tuple[int, ...]]:
+        path = Path(TEMP_PATH) / f"{pieces_layout.name}.pkl"
+        if path.exists():
+            with open(path, "rb") as file:
+                return pickle.load(file)
+        else:
+            unique_combinations = EndgameGenerator.calculate_combinations(pieces_layout)
+            with open(path, "wb") as file:
+                pickle.dump(unique_combinations, file)
+            return unique_combinations
+
     def generate_positions(self, layout: str, batch_size: int = 4096, max_workers: int = 8) -> None:
         pieces_layout = PiecesLayout.from_string(layout)
-        unique_combinations = self.calculate_combinations(pieces_layout)
+        unique_combinations = self.load_unique_combinations(pieces_layout)
         batches = self.batch(unique_combinations, batch_size)
 
         partial_results_path = Path(TEMP_PATH) / layout
@@ -127,17 +139,29 @@ class EndgameGenerator:
                 desc="Processing positions",
                 total=total,
             ):
-                partial_result = future.result()
+                partial_result, fen = future.result()
                 partial_results_file = partial_results_path / f"{i:04d}.pkl"
                 self.save_partial_results(partial_results_file, partial_result)
-                self.send_message(j + 1, total, partial_result[0][0] if partial_result else None)
+                self.send_message(j + 1, total, fen)
+
+    @staticmethod
+    def get_fen_from_arrangement(arrangement: Tuple[int, ...], layout: PiecesLayout) -> Optional[str]:
+        if not arrangement:
+            return
+
+        board = chess.Board(None)
+        board.clear()
+        for square, piece, color in zip(arrangement, layout.pieces, layout.colors):
+            board.set_piece_at(square, chess.Piece(piece, color))
+
+        return board.fen()
 
     @staticmethod
     def process_batch(
         batch,
         pieces_layout: PiecesLayout,
         tablebase_path: Union[str, os.PathLike] = TABLEBASE_PATH,
-    ):
+    ) -> Tuple[List[Tuple], Optional[str]]:
         results = []
         tablebase_path = Path(tablebase_path)
         syzygy = chess.syzygy.open_tablebase(str(tablebase_path / "syzygy"))
@@ -170,7 +194,12 @@ class EndgameGenerator:
 
         syzygy.close()
         gaviota.close()
-        return results
+
+        arrangement = results[-1][0] if results else None
+        arrangement = tuple(map(int, arrangement.split(","))) if arrangement else None
+        fen = EndgameGenerator.get_fen_from_arrangement(arrangement, pieces_layout)
+
+        return results, fen
 
     @staticmethod
     def save_partial_results(path: Union[str, os.PathLike], items: List[Tuple]) -> None:

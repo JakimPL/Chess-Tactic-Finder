@@ -1,13 +1,15 @@
+from typing import Dict, List, Union
+
 from modules.json import json_load, json_save
 
 CONFIGURATION_PATH = "configuration.json"
 
 
-def load_configuration(path: str = CONFIGURATION_PATH) -> dict | list:
+def load_configuration(path: str = CONFIGURATION_PATH) -> Union[Dict, List]:
     return json_load(path)
 
 
-def save_configuration(configuration: dict | list, path: str = CONFIGURATION_PATH):
+def save_configuration(configuration: Union[Dict, List], path: str = CONFIGURATION_PATH):
     json_save(configuration, path)
 
 
