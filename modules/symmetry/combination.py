@@ -18,8 +18,8 @@ class Combination:
 
         for function in self.transformations.value:
             if all(
-                    frozenset(map(function, self_squares)) == other_squares
-                    for self_squares, other_squares in zip(self.arrangement, other.arrangement)
+                frozenset(map(function, self_squares)) == other_squares
+                for self_squares, other_squares in zip(self.arrangement, other.arrangement)
             ):
                 return True
 
@@ -29,7 +29,9 @@ class Combination:
         return hash((self.arrangement, self.transformations))
 
     @staticmethod
-    def transform(arrangement: Tuple[FrozenSet[int], ...], transformation: Callable[[int], int]) -> Tuple[FrozenSet[int]]:
+    def transform(
+        arrangement: Tuple[FrozenSet[int], ...], transformation: Callable[[int], int]
+    ) -> Tuple[FrozenSet[int]]:
         return tuple(frozenset(map(transformation, squares)) for squares in arrangement)
 
     def generate_all_combinations(self) -> Tuple["Combination", ...]:

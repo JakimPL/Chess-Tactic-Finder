@@ -11,8 +11,10 @@ from modules.endgame import TABLEBASE_PATH
 from modules.endgame.database import EndgameDatabase
 from modules.endgame.game_info import GameInfo
 from modules.endgame.hint import Hint
+from modules.endgame.layout import PiecesLayout
 from modules.endgame.result import LosingOrDrawingSideResult, Result, WinningSideResult
 from modules.structures.move_reply import MoveReply
+from modules.symmetry.transformations import o2
 
 SEED = 137
 
@@ -38,28 +40,35 @@ class EndgameStudy:
         layout: str,
         dtm: Optional[int] = None,
         dtz: Optional[int] = None,
-        white: bool = True,
-        bishop_color: Optional[bool] = None,
         side_pieces: Optional[str] = None,
+        bishop_color: Optional[bool] = None,
     ):
-        if white is None:
-            white = bool(np.random.choice([True, False]))
-
+        side = side_pieces == layout.split("v")[0]
         choices = self.database.find_positions(
             layout=layout,
             dtm=dtm,
             dtz=dtz,
-            white_to_move=white,
-            result="win",
-            bishop_color=bishop_color if layout == "KBNvK" else None,
-            white_pieces=side_pieces if white else None,
-            black_pieces=side_pieces if not white else None,
+            side=side,
+            bishop_color=bishop_color,
         )
 
         if not choices:
             raise ValueError("No position matching the criteria")
 
         return np.random.choice(choices)
+
+    def set_board_from_arrangement(self, arrangement: Tuple[int, ...], layout: str, white: bool):
+        piece_layout = PiecesLayout.from_string(layout)
+        transformation = np.random.choice(piece_layout.transformation_group.value)
+        new_arrangement = tuple(map(transformation, arrangement))
+        if not white:
+            new_arrangement = tuple(map(o2, new_arrangement))
+
+        self.board.clear()
+        for square, piece, color in zip(new_arrangement, piece_layout.pieces, piece_layout.colors):
+            self.board.set_piece_at(square, chess.Piece(piece, white ^ color))
+
+        self.starting_position = self.board.fen()
 
     def start_game(
         self,
@@ -70,8 +79,11 @@ class EndgameStudy:
         bishop_color: Optional[bool] = None,
         side_pieces: Optional[str] = None,
     ) -> GameInfo:
-        self.starting_position = self.draw_position(layout, dtm, dtz, white, bishop_color, side_pieces)
-        self.board = chess.Board(self.starting_position)
+        if white is None:
+            white = bool(np.random.choice([True, False]))
+
+        arrangement = self.draw_position(layout, dtm, dtz, side_pieces, bishop_color)
+        self.set_board_from_arrangement(arrangement, layout, white)
         dtm = self.tablebase.probe_dtm(self.board)
         return GameInfo(fen=self.starting_position, dtm=dtm)
 

@@ -1,3 +1,4 @@
+import math
 import os
 import pickle
 from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -16,6 +17,7 @@ from modules.endgame.database import EndgameDatabase
 from modules.endgame.layout import PiecesLayout
 from modules.server.client import DummyClient
 from modules.structures.message import Message
+from modules.symmetry.combination import Combination
 
 
 class EndgameGenerator:
@@ -39,42 +41,45 @@ class EndgameGenerator:
     @staticmethod
     def set_board(
         board: chess.Board,
-        pieces: List[chess.Piece],
-        squares: Tuple[int],
-        colors: List[bool],
+        squares: Tuple[int, ...],
+        pieces_layout: PiecesLayout,
     ) -> Optional[bool]:
-        bishop_color = None
-        for square, piece, color in zip(squares, pieces, colors):
+        bishop_color = False
+        for square, piece, color in zip(squares, pieces_layout.pieces, pieces_layout.colors):
             board.set_piece_at(square, chess.Piece(piece, color))
             if piece == chess.BISHOP:
                 bishop_color = EndgameGenerator.get_bishop_color(square)
 
-        if sum(piece == chess.BISHOP for piece in pieces) == 1:
-            return bishop_color
+        return bishop_color and sum(piece == chess.BISHOP for piece in pieces_layout.pieces) == 1
 
     @staticmethod
-    def deduplicate_permutations(perms: permutations, pieces_layout: PiecesLayout) -> List[Tuple[int, ...]]:
-        indices = set()
-        signature = zip(pieces_layout.pieces, pieces_layout.colors[chess.WHITE])
-        signature = tuple(piece - 1 + 6 * color for piece, color in signature)
+    def calculate_combinations(pieces_layout: PiecesLayout) -> List[Tuple[int, ...]]:
+        total = math.perm(len(chess.SQUARES), pieces_layout.count)
+        perms = permutations(chess.SQUARES, pieces_layout.count)
+        symmetric = pieces_layout.symmetric
 
-        deduplicated_perms = []
-        for perm in perms:
-            index = frozenset(square | (sig << 6) for square, sig in zip(perm, signature))
-
-            if index in indices:
+        arrangements = set()
+        unique_combinations = []
+        for perm in tqdm(perms, total=total, desc="Preparing permutations"):
+            arrangement = pieces_layout.arrange(perm)
+            if arrangement in arrangements:
                 continue
 
-            indices.add(index)
-            deduplicated_perms.append(perm)
+            combination = Combination(arrangement, pieces_layout.transformation_group)
+            arrangements.update(combination.generate_all_arrangements())
+            if symmetric:
+                mirror_arrangement = arrangement[2 : pieces_layout.count // 2] + arrangement[: pieces_layout.count // 2]
+                mirror_combination = Combination(mirror_arrangement, pieces_layout.transformation_group)
+                arrangements.update(mirror_combination.generate_all_arrangements())
 
-        return deduplicated_perms
+            unique_combinations.append(combination.flatten())
+
+        return unique_combinations
 
     def generate_positions(self, layout: str, batch_size: int = 4096, max_workers: int = 8) -> None:
         pieces_layout = PiecesLayout.from_string(layout)
-        perms = permutations(chess.SQUARES, pieces_layout.count)
-        deduplicated_perms = self.deduplicate_permutations(perms, pieces_layout)
-        batches = self.batch(deduplicated_perms, batch_size)
+        unique_combinations = self.calculate_combinations(pieces_layout)
+        batches = self.batch(unique_combinations, batch_size)
 
         partial_results_path = Path(TEMP_PATH) / layout
         partial_results_path.mkdir(exist_ok=True, parents=True)
@@ -139,36 +144,29 @@ class EndgameGenerator:
         gaviota = chess.gaviota.open_tablebase(str(tablebase_path / "gaviota"))
 
         for squares in batch:
-            for white, colors in pieces_layout.colors.items():
-                board = chess.Board(None)
-                board.clear()
-                bishop_color = EndgameGenerator.set_board(board, pieces_layout.pieces, squares, colors)
-                white_pieces = EndgameGenerator.get_side_pieces(pieces_layout, white)
-                black_pieces = EndgameGenerator.get_side_pieces(pieces_layout, not white)
-                for side in (chess.WHITE, chess.BLACK):
-                    board.turn = side
-                    if not board.is_valid():
-                        continue
+            board = chess.Board(None)
+            board.clear()
+            bishop_color = EndgameGenerator.set_board(board, squares, pieces_layout)
+            for side in (chess.WHITE, chess.BLACK):
+                board.turn = side
+                if not board.is_valid():
+                    continue
 
-                    try:
-                        dtz = syzygy.probe_dtz(board)
-                        dtm = gaviota.probe_dtm(board)
-                        result = "win" if dtz > 0 else "loss" if dtz < 0 else "draw"
-                        results.append(
-                            (
-                                board.fen(),
-                                int(dtz),
-                                int(dtm),
-                                white,
-                                bool(side),
-                                result,
-                                white_pieces,
-                                black_pieces,
-                                bishop_color,
-                            )
+                arrangement = ",".join(map(str, squares))
+                try:
+                    dtz = int(syzygy.probe_dtz(board))
+                    dtm = int(gaviota.probe_dtm(board))
+                    results.append(
+                        (
+                            arrangement,
+                            side,
+                            dtz,
+                            dtm,
+                            bishop_color,
                         )
-                    except Exception as error:
-                        print(error)
+                    )
+                except Exception as error:
+                    print(error)
 
         syzygy.close()
         gaviota.close()

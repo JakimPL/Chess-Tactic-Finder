@@ -5,6 +5,7 @@ from typing import Dict, FrozenSet, Tuple
 import chess
 
 from modules.endgame import ENDGAME_LAYOUTS
+from modules.symmetry.transformations import TransformationGroup
 
 PIECES: Dict[str, int] = {
     "P": chess.PAWN,
@@ -42,10 +43,6 @@ class PiecesLayout:
         assert len(pieces_layout) == 2, "Expected only two groups"
         return tuple(([chess.WHITE] * len(pieces_layout[0])) + ([chess.BLACK] * len(pieces_layout[1])))
 
-    @property
-    def count(self) -> int:
-        return len(self.pieces)
-
     def arrange(self, squares: Tuple[int, ...]) -> Tuple[FrozenSet[int], ...]:
         assert len(squares) == len(self.signature), "Invalid number of squares"
         items = defaultdict(list)
@@ -53,3 +50,15 @@ class PiecesLayout:
             items[signature].append(square)
 
         return tuple(map(frozenset, items.values()))
+
+    @property
+    def count(self) -> int:
+        return len(self.pieces)
+
+    @property
+    def transformation_group(self) -> TransformationGroup:
+        return TransformationGroup.Z2 if "P" in self.name else TransformationGroup.D4
+
+    @property
+    def symmetric(self) -> bool:
+        return self.name.split("v")[0] == self.name.split("v")[1]
