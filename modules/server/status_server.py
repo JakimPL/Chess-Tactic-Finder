@@ -1,3 +1,5 @@
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from multiprocessing.connection import Listener
 from urllib import parse
 
@@ -10,31 +12,37 @@ NO_ANALYSIS_MESSAGE = "No analysis in progress."
 class StatusServer(Singleton):
     listener: Listener
     message: str
+    _executor: ThreadPoolExecutor
+    _running: threading.Event
 
     def init(self):
-        self.listener: Listener = get_listener()
-        self.message: str = NO_ANALYSIS_MESSAGE
+        self.listener = get_listener()
+        self.message = NO_ANALYSIS_MESSAGE
+        self._executor = ThreadPoolExecutor(max_workers=1)
+        self._running = threading.Event()
 
     def communicate(self):
-        while True:
-            running = True
+        self._running.set()
+        while self._running.is_set():
             connection = self.listener.accept()
-            while running:
+            while self._running.is_set():
                 try:
                     self.message = connection.recv()
                     text = parse.parse_qsl(self.message)[0][1]
                     if "completed" in text or "interrupted" in text or "Stockfish error" in text:
                         connection.close()
-                        running = False
+                        break
                 except EOFError:
-                    running = False
                     self.message = NO_ANALYSIS_MESSAGE
+                    break
                 except KeyboardInterrupt:
-                    self.message = NO_ANALYSIS_MESSAGE
+                    self.stop()
                     return
 
-    def close(self):
-        self.listener.close()
+    def start(self):
+        self._executor.submit(self.communicate)
 
-    def __del__(self):
-        self.close()
+    def stop(self):
+        self._running.clear()
+        self.listener.close()
+        self._executor.shutdown(wait=False)

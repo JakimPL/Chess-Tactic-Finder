@@ -45,13 +45,13 @@
         "processed": "games",
         "tactics": "tactics",
         "reviews": "reviews",
+        "temp_endgame": "temp/endgames/",
         "temp_file": "temp/temp.pgn",
         "input_pgn": "temp/input.pgn",
         "gathered_puzzles": "json/puzzles.json",
         "gathered_reviews": "json/reviews.json",
         "progress": "json/progress.json",
         "tablebase": "tables",
-        "database": "database/database.db",
         "log": "log.txt"
     },
     "export": {
