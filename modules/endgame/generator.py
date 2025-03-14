@@ -1,3 +1,4 @@
+import math
 import os
 import pickle
 from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -16,6 +17,7 @@ from modules.endgame.database import EndgameDatabase
 from modules.endgame.layout import PiecesLayout
 from modules.server.client import DummyClient
 from modules.structures.message import Message
+from modules.symmetry.combination import Combination
 
 
 class EndgameGenerator:
@@ -39,42 +41,57 @@ class EndgameGenerator:
     @staticmethod
     def set_board(
         board: chess.Board,
-        pieces: List[chess.Piece],
-        squares: Tuple[int],
-        colors: List[bool],
+        squares: Tuple[int, ...],
+        pieces_layout: PiecesLayout,
     ) -> Optional[bool]:
-        bishop_color = None
-        for square, piece, color in zip(squares, pieces, colors):
+        bishop_color = False
+        for square, piece, color in zip(squares, pieces_layout.pieces, pieces_layout.colors):
             board.set_piece_at(square, chess.Piece(piece, color))
             if piece == chess.BISHOP:
                 bishop_color = EndgameGenerator.get_bishop_color(square)
 
-        if sum(piece == chess.BISHOP for piece in pieces) == 1:
-            return bishop_color
+        return bishop_color and sum(piece == chess.BISHOP for piece in pieces_layout.pieces) == 1
 
     @staticmethod
-    def deduplicate_permutations(perms: permutations, pieces_layout: PiecesLayout) -> List[Tuple[int, ...]]:
-        indices = set()
-        signature = zip(pieces_layout.pieces, pieces_layout.colors[chess.WHITE])
-        signature = tuple(piece - 1 + 6 * color for piece, color in signature)
+    def calculate_combinations(pieces_layout: PiecesLayout) -> List[Tuple[int, ...]]:
+        total = math.perm(len(chess.SQUARES), pieces_layout.count)
+        perms = permutations(chess.SQUARES, pieces_layout.count)
+        symmetric = pieces_layout.symmetric
 
-        deduplicated_perms = []
-        for perm in perms:
-            index = frozenset(square | (sig << 6) for square, sig in zip(perm, signature))
-
-            if index in indices:
+        hashes = set()
+        unique_combinations = []
+        for perm in tqdm(perms, total=total, desc="Preparing permutations"):
+            arrangement = pieces_layout.arrange(perm)
+            if hash(arrangement) in hashes:
                 continue
 
-            indices.add(index)
-            deduplicated_perms.append(perm)
+            combination = Combination(arrangement, pieces_layout.transformation_group)
+            hashes.update(map(hash, combination.generate_all_arrangements()))
+            if symmetric:
+                mirror_arrangement = arrangement[2 : pieces_layout.count // 2] + arrangement[: pieces_layout.count // 2]
+                mirror_combination = Combination(mirror_arrangement, pieces_layout.transformation_group)
+                hashes.update(map(hash, mirror_combination.generate_all_arrangements()))
 
-        return deduplicated_perms
+            unique_combinations.append(combination.flatten())
+
+        return unique_combinations
+
+    @staticmethod
+    def load_unique_combinations(pieces_layout: PiecesLayout) -> List[Tuple[int, ...]]:
+        path = Path(TEMP_PATH) / f"{pieces_layout.name}.pkl"
+        if path.exists():
+            with open(path, "rb") as file:
+                return pickle.load(file)
+        else:
+            unique_combinations = EndgameGenerator.calculate_combinations(pieces_layout)
+            with open(path, "wb") as file:
+                pickle.dump(unique_combinations, file)
+            return unique_combinations
 
     def generate_positions(self, layout: str, batch_size: int = 4096, max_workers: int = 8) -> None:
         pieces_layout = PiecesLayout.from_string(layout)
-        perms = permutations(chess.SQUARES, pieces_layout.count)
-        deduplicated_perms = self.deduplicate_permutations(perms, pieces_layout)
-        batches = self.batch(deduplicated_perms, batch_size)
+        unique_combinations = self.load_unique_combinations(pieces_layout)
+        batches = self.batch(unique_combinations, batch_size)
 
         partial_results_path = Path(TEMP_PATH) / layout
         partial_results_path.mkdir(exist_ok=True, parents=True)
@@ -122,57 +139,67 @@ class EndgameGenerator:
                 desc="Processing positions",
                 total=total,
             ):
-                partial_result = future.result()
+                partial_result, fen = future.result()
                 partial_results_file = partial_results_path / f"{i:04d}.pkl"
                 self.save_partial_results(partial_results_file, partial_result)
-                self.send_message(j + 1, total, partial_result[0][0] if partial_result else None)
+                self.send_message(j + 1, total, fen)
+
+    @staticmethod
+    def get_fen_from_arrangement(arrangement: Tuple[int, ...], layout: PiecesLayout) -> Optional[str]:
+        if not arrangement:
+            return
+
+        board = chess.Board(None)
+        board.clear()
+        for square, piece, color in zip(arrangement, layout.pieces, layout.colors):
+            board.set_piece_at(square, chess.Piece(piece, color))
+
+        return board.fen()
 
     @staticmethod
     def process_batch(
         batch,
         pieces_layout: PiecesLayout,
         tablebase_path: Union[str, os.PathLike] = TABLEBASE_PATH,
-    ):
+    ) -> Tuple[List[Tuple], Optional[str]]:
         results = []
         tablebase_path = Path(tablebase_path)
         syzygy = chess.syzygy.open_tablebase(str(tablebase_path / "syzygy"))
         gaviota = chess.gaviota.open_tablebase(str(tablebase_path / "gaviota"))
 
         for squares in batch:
-            for white, colors in pieces_layout.colors.items():
-                board = chess.Board(None)
-                board.clear()
-                bishop_color = EndgameGenerator.set_board(board, pieces_layout.pieces, squares, colors)
-                white_pieces = EndgameGenerator.get_side_pieces(pieces_layout, white)
-                black_pieces = EndgameGenerator.get_side_pieces(pieces_layout, not white)
-                for side in (chess.WHITE, chess.BLACK):
-                    board.turn = side
-                    if not board.is_valid():
-                        continue
+            board = chess.Board(None)
+            board.clear()
+            bishop_color = EndgameGenerator.set_board(board, squares, pieces_layout)
+            for side in (chess.WHITE, chess.BLACK):
+                board.turn = side
+                if not board.is_valid():
+                    continue
 
-                    try:
-                        dtz = syzygy.probe_dtz(board)
-                        dtm = gaviota.probe_dtm(board)
-                        result = "win" if dtz > 0 else "loss" if dtz < 0 else "draw"
-                        results.append(
-                            (
-                                board.fen(),
-                                int(dtz),
-                                int(dtm),
-                                white,
-                                bool(side),
-                                result,
-                                white_pieces,
-                                black_pieces,
-                                bishop_color,
-                            )
+                arrangement = ",".join(map(str, squares))
+                try:
+                    dtz = int(syzygy.probe_dtz(board))
+                    dtm = int(gaviota.probe_dtm(board))
+                    results.append(
+                        (
+                            arrangement,
+                            side,
+                            dtz,
+                            dtm,
+                            bishop_color,
                         )
-                    except Exception as error:
-                        print(error)
+                    )
+                except Exception as error:
+                    print(error)
 
         syzygy.close()
         gaviota.close()
-        return results
+
+        arrangement = results[-1][0] if results else None
+        arrangement = tuple(map(int, arrangement.split(","))) if arrangement else None
+        fen = EndgameGenerator.get_fen_from_arrangement(arrangement, pieces_layout)
+
+        return results, fen
 
     @staticmethod
     def save_partial_results(path: Union[str, os.PathLike], items: List[Tuple]) -> None:
