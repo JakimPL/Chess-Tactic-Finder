@@ -35,22 +35,13 @@ class EndgameGenerator:
         return "".join(map(lambda piece: chess.piece_symbol(piece).upper(), pieces_layout.layout[not white]))
 
     @staticmethod
-    def get_bishop_color(square: int) -> bool:
-        return bool((square + (square >> 3)) & 1)
-
-    @staticmethod
     def set_board(
         board: chess.Board,
         squares: Tuple[int, ...],
         pieces_layout: PiecesLayout,
-    ) -> Optional[bool]:
-        bishop_color = False
+    ):
         for square, piece, color in zip(squares, pieces_layout.pieces, pieces_layout.colors):
             board.set_piece_at(square, chess.Piece(piece, color))
-            if piece == chess.BISHOP:
-                bishop_color = EndgameGenerator.get_bishop_color(square)
-
-        return bishop_color and sum(piece == chess.BISHOP for piece in pieces_layout.pieces) == 1
 
     @staticmethod
     def calculate_combinations(pieces_layout: PiecesLayout) -> List[Tuple[int, ...]]:
@@ -170,7 +161,7 @@ class EndgameGenerator:
         for squares in batch:
             board = chess.Board(None)
             board.clear()
-            bishop_color = EndgameGenerator.set_board(board, squares, pieces_layout)
+            EndgameGenerator.set_board(board, squares, pieces_layout)
             for side in (chess.WHITE, chess.BLACK):
                 board.turn = side
                 if not board.is_valid():
@@ -186,7 +177,6 @@ class EndgameGenerator:
                             side,
                             dtz,
                             dtm,
-                            bishop_color,
                         )
                     )
                 except Exception as error:

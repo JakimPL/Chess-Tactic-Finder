@@ -41,16 +41,13 @@ class EndgameStudy:
         side_pieces: Optional[str] = None,
         dtm: Optional[int] = None,
         dtz: Optional[int] = None,
-        bishop_color: Optional[bool] = None,
     ) -> Tuple[int, ...]:
         side = side_pieces == layout.split("v")[0]
-        bishop_color = bishop_color if layout in ("KBNvK", "KQvKB") else None
         choices = self.database.find_positions(
             layout=layout,
             side=side,
             dtm=dtm,
             dtz=dtz,
-            bishop_color=bishop_color,
         )
 
         if not choices:
@@ -82,9 +79,8 @@ class EndgameStudy:
         side_pieces: Optional[str] = None,
         dtm: Optional[int] = None,
         dtz: Optional[int] = None,
-        bishop_color: Optional[bool] = None,
     ) -> GameInfo:
-        arrangement = self.draw_position(layout, side_pieces, dtm, dtz, bishop_color)
+        arrangement = self.draw_position(layout, side_pieces, dtm, dtz)
         self.set_board_from_arrangement(arrangement, layout, white)
         dtm = self.tablebase.probe_dtm(self.board)
         return GameInfo(fen=self.starting_position, dtm=dtm)

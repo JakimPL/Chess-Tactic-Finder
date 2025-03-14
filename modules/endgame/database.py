@@ -35,8 +35,7 @@ class EndgameDatabase:
                 arrangement TEXT PRIMARY KEY,
                 side BOOLEAN,
                 dtz INTEGER,
-                dtm INTEGER,
-                bishop_color BOOLEAN
+                dtm INTEGER
             )
         """
         )
@@ -91,7 +90,6 @@ class EndgameDatabase:
         side: Optional[bool] = None,
         dtz: Optional[int] = None,
         dtm: Optional[int] = None,
-        bishop_color: Optional[bool] = None,
     ) -> List[Tuple[int, ...]]:
         connection = self.get_connection()
         cursor = connection.cursor()
@@ -108,9 +106,6 @@ class EndgameDatabase:
         if side is not None:
             query += " AND side = %s"
             params.append(side)
-        if bishop_color is not None:
-            query += " AND bishop_color = %s"
-            params.append(bishop_color)
 
         logger.debug(cursor.mogrify(query, params).decode("utf-8"))
         cursor.execute(query, params)
