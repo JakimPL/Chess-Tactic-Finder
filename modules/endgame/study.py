@@ -38,26 +38,31 @@ class EndgameStudy:
     def draw_position(
         self,
         layout: str,
+        side_pieces: Optional[str] = None,
         dtm: Optional[int] = None,
         dtz: Optional[int] = None,
-        side_pieces: Optional[str] = None,
         bishop_color: Optional[bool] = None,
-    ):
+    ) -> Tuple[int, ...]:
         side = side_pieces == layout.split("v")[0]
+        bishop_color = bishop_color if layout in ("KBNvK", "KQvKB") else None
         choices = self.database.find_positions(
             layout=layout,
+            side=side,
             dtm=dtm,
             dtz=dtz,
-            side=side,
             bishop_color=bishop_color,
         )
 
         if not choices:
             raise ValueError("No position matching the criteria")
 
-        return np.random.choice(choices)
+        choice = np.random.choice(choices)
+        return tuple(map(int, choice.split(",")))
 
-    def set_board_from_arrangement(self, arrangement: Tuple[int, ...], layout: str, white: bool):
+    def set_board_from_arrangement(self, arrangement: Tuple[int, ...], layout: str, white: Optional[bool] = None):
+        if white is None:
+            white = bool(np.random.choice([True, False]))
+
         piece_layout = PiecesLayout.from_string(layout)
         transformation = np.random.choice(piece_layout.transformation_group.value)
         new_arrangement = tuple(map(transformation, arrangement))
@@ -66,23 +71,20 @@ class EndgameStudy:
 
         self.board.clear()
         for square, piece, color in zip(new_arrangement, piece_layout.pieces, piece_layout.colors):
-            self.board.set_piece_at(square, chess.Piece(piece, white ^ color))
+            self.board.set_piece_at(square, chess.Piece(piece, not (white ^ color)))
 
         self.starting_position = self.board.fen()
 
     def start_game(
         self,
         layout: str,
+        white: bool = True,
+        side_pieces: Optional[str] = None,
         dtm: Optional[int] = None,
         dtz: Optional[int] = None,
-        white: bool = True,
         bishop_color: Optional[bool] = None,
-        side_pieces: Optional[str] = None,
     ) -> GameInfo:
-        if white is None:
-            white = bool(np.random.choice([True, False]))
-
-        arrangement = self.draw_position(layout, dtm, dtz, side_pieces, bishop_color)
+        arrangement = self.draw_position(layout, side_pieces, dtm, dtz, bishop_color)
         self.set_board_from_arrangement(arrangement, layout, white)
         dtm = self.tablebase.probe_dtm(self.board)
         return GameInfo(fen=self.starting_position, dtm=dtm)

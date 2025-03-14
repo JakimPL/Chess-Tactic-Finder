@@ -427,7 +427,7 @@ function fetchLayouts() {
             }
 
             if (!hasAvailableOptions) {
-                alert("No endgame layouts are available. Please generate them beforehand.");
+                alert("No endgame layouts are available. Check the database connection or generate layouts if not present.");
             } else if (firstAvailable) {
                 studyLayoutSelect.value = firstAvailable;
                 studyLayoutSelect.dispatchEvent(new Event("change"));
@@ -503,14 +503,16 @@ function updateCounter(value) {
         return;
     }
 
-    const pieces = value;
     const layout = document.getElementById("study_layout").value;
+    const pieces = value;
     const ranges = layoutRanges[layout][pieces];
-
-    const distanceToMate = document.getElementById("distance_to_mate_or_zeroing").checked;
+    if (ranges === undefined) {
+        return;
+    }
 
     let minValue = null;
     let maxValue = null;
+    const distanceToMate = document.getElementById("distance_to_mate_or_zeroing").checked;
     if (distanceToMate) {
         minValue = ranges["min_dtm"];
         maxValue = ranges["max_dtm"];

@@ -61,25 +61,29 @@ class EndgameDatabase:
         connection.close()
 
     def get_available_layouts(self) -> List[str]:
-        connection = self.get_connection()
-        cursor = connection.cursor()
-        cursor.execute(
+        try:
+            connection = self.get_connection()
+            cursor = connection.cursor()
+            cursor.execute(
+                """
+                SELECT table_name
+                FROM information_schema.tables
+                WHERE table_schema = 'public'
             """
-            SELECT table_name
-            FROM information_schema.tables
-            WHERE table_schema = 'public'
-        """
-        )
-        tables = cursor.fetchall()
+            )
+            tables = cursor.fetchall()
 
-        non_empty_tables = []
-        for (table_name,) in tables:
-            cursor.execute(f"SELECT 1 FROM {table_name} LIMIT 1")
-            if cursor.fetchone() is not None:
-                non_empty_tables.append(table_name.upper().replace("V", "v"))
+            non_empty_tables = []
+            for (table_name,) in tables:
+                cursor.execute(f"SELECT 1 FROM {table_name} LIMIT 1")
+                if cursor.fetchone() is not None:
+                    non_empty_tables.append(table_name.upper().replace("V", "v"))
 
-        connection.close()
-        return non_empty_tables
+            connection.close()
+            return non_empty_tables
+        except psycopg2.OperationalError as error:
+            logger.error(error)
+            return []
 
     def find_positions(
         self,
@@ -108,7 +112,8 @@ class EndgameDatabase:
             query += " AND bishop_color = %s"
             params.append(bishop_color)
 
+        logger.debug(cursor.mogrify(query, params).decode("utf-8"))
         cursor.execute(query, params)
-        result = [tuple(map(int, row[0].split(","))) for row in cursor.fetchall()]
+        result = [row[0] for row in cursor.fetchall()]
         connection.close()
         return result

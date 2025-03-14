@@ -143,7 +143,7 @@ async def endgame_start(data: dict):
     side_pieces = data.get("side_pieces")
     if layout is not None and (dtm is not None or dtz is not None):
         try:
-            game_info = endgame_study.start_game(layout, dtm, dtz, white, bishop_color, side_pieces)
+            game_info = endgame_study.start_game(layout, white, side_pieces, dtm, dtz, bishop_color)
             return JSONResponse(game_info.__dict__)
         except ValueError:
             raise HTTPException(status_code=400, detail="No position matching the criteria")
@@ -174,6 +174,7 @@ async def endgame_layouts() -> JSONResponse:
     endgame_singleton = EndgameStudySingleton().get_instance()
     endgame_study = endgame_singleton.endgame_study
     layouts = endgame_study.get_layouts()
+    logger.debug(layouts)
     return JSONResponse(layouts)
 
 
