@@ -447,6 +447,10 @@ function updatePiecesSelect(ranges, replace = false) {
         removeChildren(piecesSelect);
     }
 
+    if (ranges === undefined) {
+        return;
+    }
+
     let firstAvailable = null;
     const white = document.getElementById("side").value !== "black";
     const entries = Object.entries(ranges);
