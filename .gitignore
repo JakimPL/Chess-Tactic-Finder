@@ -1,10 +1,14 @@
 venv/
+node_modules/
 
 .ipynb_checkpoints/
 __pycache__/
 
 *.idea/
 */.ipynb_checkpoints/*
+
+static/css/import
+static/js/import
 
 *.json
 *.pgn

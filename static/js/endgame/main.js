@@ -1,3 +1,5 @@
+import { Chessground } from "../import/chessground.js";
+
 import { bindKey, bindKeys } from "../bindings.js";
 import Colors from "../colors.js";
 import MovesList from "../movesList.js";
@@ -18,7 +20,7 @@ import Game from "./game.js";
 
 const $panel = $("#panel");
 
-let board = Chessboard("endgame_board");
+// let board = Chessboard("endgame_board");
 let game = null;
 let player = null;
 let moveIndex = null;
@@ -578,6 +580,12 @@ document.addEventListener("DOMContentLoaded", function() {
     const distanceToMateOrZeroing = document.getElementById("distance_to_mate_or_zeroing");
     updateDistanceToMateOrZeroing(distanceToMateOrZeroing.checked);
     setMateCounter();
+
+    const boardElement = document.getElementById("endgame_board");
+    const chessground = Chessground(boardElement, {
+        movable: { color: "white", free: false },
+        draggable: { showGhost: true },
+    });
 });
 
 document.getElementById("study_layout").addEventListener("keydown", function(e) {
@@ -585,5 +593,4 @@ document.getElementById("study_layout").addEventListener("keydown", function(e) 
         e.preventDefault();
     }
 });
-
 blockScroll("endgame_board");
