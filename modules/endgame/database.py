@@ -32,14 +32,13 @@ class EndgameDatabase:
         cursor.execute(
             f"""
             CREATE TABLE IF NOT EXISTS {layout} (
-                arrangement TEXT PRIMARY KEY,
-                side BOOLEAN,
-                dtz INTEGER,
-                dtm INTEGER
+                arrangement TEXT NOT NULL,
+                side BOOLEAN NOT NULL,
+                dtz INTEGER NOT NULL,
+                dtm INTEGER NOT NULL
             )
         """
         )
-        cursor.execute(f"CREATE INDEX IF NOT EXISTS idx_arrangement_{layout} ON {layout} (arrangement)")
         cursor.execute(f"CREATE INDEX IF NOT EXISTS idx_dtz_{layout} ON {layout} (dtz)")
         cursor.execute(f"CREATE INDEX IF NOT EXISTS idx_dtm_{layout} ON {layout} (dtm)")
         connection.commit()
@@ -55,7 +54,7 @@ class EndgameDatabase:
     def save_batch(self, layout: str, batch: List[Tuple]) -> None:
         connection = self.get_connection()
         cursor = connection.cursor()
-        execute_values(cursor, f"INSERT INTO {layout} VALUES %s ON CONFLICT (arrangement) DO NOTHING", batch)
+        execute_values(cursor, f"INSERT INTO {layout} VALUES %s", batch)
         connection.commit()
         connection.close()
 
