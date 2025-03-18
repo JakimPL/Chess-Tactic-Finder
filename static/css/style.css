@@ -32,6 +32,13 @@ input {
 footer {
     font-size: 8pt;
     text-align: center;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: 0;
+    width: 100%;
+    background-color: var(--light-square);
 }
 
 button,
@@ -79,7 +86,7 @@ button:active {
 }
 
 .options {
-    width: 200px;
+    width: 175px;
 }
 
 .log-container {
@@ -117,7 +124,7 @@ button:active {
     overflow-y: hidden;
     display: block;
     float: left;
-    max-width: 40%;
+    max-width: 48%;
 }
 
 #game_board {
@@ -289,7 +296,7 @@ table#moves_list_table td:nth-child(1) {
 
 table#moves_list_table td:nth-child(2),
 table#moves_list_table td:nth-child(4) {
-    width: 30px;
+    width: 40px;
     font-weight: bold;
 }
 
