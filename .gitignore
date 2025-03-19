@@ -1,10 +1,14 @@
 venv/
+node_modules/
 
 .ipynb_checkpoints/
 __pycache__/
 
 *.idea/
 */.ipynb_checkpoints/*
+
+static/css/import
+static/js/import
 
 *.json
 *.pgn
@@ -29,7 +33,6 @@ md5sum
 wsgi.py
 
 **/import/
-node_modules/
 chess.js
 chessboard-1.0.0.min.js
 jquery-3.4.1.min.js

@@ -1,10 +1,10 @@
+import ChessBoard from "../board/chessground.js";
+
 import { bindKey, bindKeys } from "../bindings.js";
 import Colors from "../colors.js";
 import MovesList from "../movesList.js";
 import {
     blockScroll,
-    clearSquaresColors,
-    colorSquare,
     fetchLayoutsDefinitions,
     getPiecesSymbol,
     markButton,
@@ -18,7 +18,8 @@ import Game from "./game.js";
 
 const $panel = $("#panel");
 
-let board = Chessboard("endgame_board");
+const board = new ChessBoard("endgame_board", true, onDragStart, onDrop, onSnapEnd);
+
 let game = null;
 let player = null;
 let moveIndex = null;
@@ -70,22 +71,12 @@ $("#hint").on("click", function () {
     getHint();
 });
 
-function getConfig(fen) {
-    return {
-        draggable: true,
-        position: fen,
-        onDragStart: onDragStart,
-        onDrop: onDrop,
-        onSnapEnd: onSnapEnd,
-    };
-}
-
 function setPosition() {
     const dtz = game.getDTZ();
     const fen = game.getFEN();
     const pgn = game.getPGN();
 
-    board.position(fen);
+    board.setPosition(fen);
     setMateCounter(dtz);
     colorSquares();
     hint = null;
@@ -99,13 +90,13 @@ function onDrop(source, target) {
     const fen = game.getFEN();
     const isLastMove = game.isLastMove();
     const move = game.move(uci);
-    if (move !== null && move.promotion !== undefined) {
-        uci += move.promotion;
-    }
 
     if (move === null) {
         return "snapback";
     } else {
+        if (move.promotion !== undefined) {
+            uci += move.promotion;
+        }
         if (!isLastMove) {
             movesList.truncate(game.currentMove - 1);
             movesList.render();
@@ -210,8 +201,8 @@ function getHint() {
     if (hint !== null) {
         const source = hint.slice(0, 2);
         const target = hint.slice(2, 4);
-        colorSquare(source, Colors.hintColor);
-        colorSquare(target, Colors.hintColor);
+        board.colorSquare(source, Colors.hintColor);
+        board.colorSquare(target, Colors.hintColor);
         return;
     }
 
@@ -240,7 +231,7 @@ function getHint() {
         .then((reply) => {
             hint = reply.uci;
             const source = hint.slice(0, 2);
-            colorSquare(source, Colors.hintColor);
+            board.colorSquare(source, Colors.hintColor);
         })
         .catch((error) => {
             console.error("Error during retrieving a hint:", error);
@@ -267,7 +258,7 @@ function sendMove(fen, uci) {
     const difficulty = document.getElementById("difficulty").value;
     const beta = parseFloat(difficulty) === 1.0 ? "inf" : difficulty / (1 - difficulty);
 
-    clearSquaresColors();
+    board.clearSquaresColors();
     const data = {
         fen: fen,
         move: uci,
@@ -297,7 +288,7 @@ function sendMove(fen, uci) {
             wait = true;
             setTimeout(() => {
                 moveIndex = game.currentMove;
-                board.position(reply.fen);
+                board.setPosition(reply.fen);
                 if (reply.uci !== null) {
                     game.move(reply.uci, reply.current_dtm);
                     setMateCounter(reply.current_dtm);
@@ -377,20 +368,24 @@ function requestNewGame() {
 }
 
 function startNewGame(fen, dtm) {
-    board = Chessboard("endgame_board", getConfig(fen));
     game = new Game(fen, dtm);
     player = game.getTurn();
     setMateCounter(dtm);
     unmarkButton("new_study");
     requestWait = false;
 
-    if (player === "b") {
+    board.setPosition(fen);
+    board.clearSquaresColors();
+    board.setSide(fen);
+
+    const turn = game.getTurn() === "w" ? "white" : "black";
+    if (turn !== board.getOrientation()) {
         board.flip();
     }
 }
 
 function colorSquares() {
-    clearSquaresColors();
+    board.clearSquaresColors();
     if (document.getElementById("hide_review").checked) {
         return;
     }
@@ -400,8 +395,8 @@ function colorSquares() {
         const color = movesList.getMoveColor(
             movesList.getMoveType(move.classification),
         );
-        colorSquare(move.move.slice(0, 2), color);
-        colorSquare(move.move.slice(2, 4), color);
+        board.colorSquare(move.move.slice(0, 2), color);
+        board.colorSquare(move.move.slice(2, 4), color);
     }
 }
 
@@ -585,5 +580,4 @@ document.getElementById("study_layout").addEventListener("keydown", function(e) 
         e.preventDefault();
     }
 });
-
 blockScroll("endgame_board");

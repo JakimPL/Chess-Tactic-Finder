@@ -1,3 +1,5 @@
+import ChessBoard from "../board/chessground.js";
+
 import { bindKeys } from "../bindings.js";
 import Colors from "../colors.js";
 import Link from "../link.js";
@@ -5,9 +7,7 @@ import MovesList from "../movesList.js";
 import Storage from "../storage.js";
 import {
     blockScroll,
-    clearSquaresColors,
     clearTable,
-    colorSquare,
     createTableRowEntry,
     getPath,
     loadFavorites,
@@ -25,7 +25,8 @@ const $panel = $("#panel");
 window.loadReview = loadReview;
 window.refresh = refresh;
 
-let board = Chessboard("game_board", "start");
+const board = new ChessBoard("game_board", false);
+board.setPosition("start");
 
 const emptyImage =
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
@@ -91,6 +92,18 @@ $("#favorite").on("click", function () {
         storage.set("favorites", favorites);
     }
 });
+
+function colorSquares() {
+    board.clearSquaresColors();
+    const move = review.moves[game.moveIndex];
+    if (move !== null && move !== undefined) {
+        const moveColor = movesList.getMoveColor(
+            movesList.getMoveType(move.classification),
+        );
+        board.colorSquare(move.move.slice(0, 2), moveColor);
+        board.colorSquare(move.move.slice(2, 4), moveColor);
+    }
+}
 
 function updateNumberOfReviews() {
     if (reviews !== null && reviews !== undefined) {
@@ -228,9 +241,7 @@ function startGame() {
     game = new Game(pgn);
     fen = game.fen;
     chess = new Chess(game.fen);
-    board = Chessboard("game_board", {
-        position: game.fen,
-    });
+    board.setPosition(game.fen);
 }
 
 function evaluationToString(evaluation) {
@@ -245,7 +256,7 @@ function evaluationToString(evaluation) {
 }
 
 function setEvaluationBar(value, scale) {
-    const orientation = board.orientation() === "black";
+    const orientation = board.getOrientation() === "black";
     scale = orientation ? -scale : scale;
     const height =
         scale === null ? 50 : Math.max(0, Math.min(100, 50 - scale * 50));
@@ -342,18 +353,9 @@ function setFEN(previousMoveIndex) {
     movesList.highlightNextMove(previousMoveIndex, game.moveIndex);
 
     chess.load(fen);
-    board.position(fen);
+    board.setPosition(fen);
 
-    clearSquaresColors();
-    const move = review.moves[game.moveIndex];
-    if (move !== null && move !== undefined) {
-        const moveColor = movesList.getMoveColor(
-            movesList.getMoveType(move.classification),
-        );
-        colorSquare(move.move.slice(0, 2), moveColor);
-        colorSquare(move.move.slice(2, 4), moveColor);
-    }
-
+    colorSquares();
     setEvaluation();
     setEngineLines();
     setLinks(pgn, fen);

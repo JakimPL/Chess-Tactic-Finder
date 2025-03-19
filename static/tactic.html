@@ -14,19 +14,24 @@
             type="image/png"
             href="img/chesspieces/wikipedia/wB.png"
         />
-        <link rel="stylesheet" href="css/style.css" />
         <link
             rel="stylesheet"
             href="css/import/chessboard-1.0.0.min.css"
             integrity="sha384-q94+BZtLrkL1/ohfjR8c6L+A6qzNH9R2hBLwyoAfu3i/WCvQjzL2RQJ3uNHDISdU"
             crossorigin="anonymous"
         />
+        <link rel="stylesheet" href="css/import/chessground.base.css" />
+        <link rel="stylesheet" href="css/import/chessground.brown.css" />
+        <link rel="stylesheet" href="css/import/chessground.cburnett.css" />
+        <link rel="stylesheet" href="css/chessground.css" />
+        <link rel="stylesheet" href="css/style.css" />
 
         <script
             src="js/import/jquery-3.4.1.min.js"
             integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
             crossorigin="anonymous"
         ></script>
+        <script type="module" src="js/import/chessground.min.js"></script>
         <script
             src="js/import/chessboard-1.0.0.min.js"
             integrity="sha384-8Vi8VHwn3vjQ9eUHUxex3JSN/NFqUg3QbPyX8kWyb93+8AC/pPWTzj+nHtbC5bxD"
@@ -79,7 +84,7 @@
                     <button id="random">Play a random puzzle</button>
                     <button id="next" type="button">&#9654; Next</button>
                 </div>
-                <div id="game_board"></div>
+                <div id="game_board" class="board"></div>
                 <div class="buttons">
                     <button id="backward" type="button">&#9664;</button>
                     <button id="reset" type="button">Reset puzzle</button>

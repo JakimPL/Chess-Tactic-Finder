@@ -1,12 +1,12 @@
+import ChessBoard from "../board/chessground.js";
+
 import { bindKey } from "../bindings.js";
 import Colors from "../colors.js";
 import Link from "../link.js";
 import Storage from "../storage.js";
 import {
     blockScroll,
-    clearSquaresColors,
     clearTable,
-    colorSquare,
     createTableRowEntry,
     getFullPieceName,
     getPath,
@@ -22,7 +22,7 @@ import History from "./history.js";
 import Progress from "./progress.js";
 import Tactic from "./tactic.js";
 
-let board = Chessboard("game_board");
+const board = new ChessBoard("game_board", true, onDragStart, onDrop, onSnapEnd);
 
 window.loadPGN = loadPGN;
 window.refresh = refresh;
@@ -64,8 +64,6 @@ const filterPuzzlesCallback = null;
 let beforeLoadCallback = null;
 let afterLoadCallback = null;
 
-let hideFirstMove = true;
-let keepPlaying = true;
 let hardEvaluation = true;
 
 function delay(callback, time) {
@@ -148,24 +146,14 @@ function calculateSuccessRate() {
 function makeMove(move, instant) {
     if (move !== null && move !== undefined) {
         move = game.move(move);
-        board.position(game.fen(), !instant);
-        clearSquaresColors();
+        board.setPosition(game.fen(), !instant);
+        board.clearSquaresColors();
     }
 }
 
 function getMoves() {
     moves = game.moves({ verbose: true });
     return game.pgn().split(/\d+\./).slice(1).join("");
-}
-
-function getConfig() {
-    return {
-        draggable: true,
-        position: tactic.baseFEN,
-        onDragStart: onDragStart,
-        onDrop: onDrop,
-        onSnapEnd: onSnapEnd,
-    };
 }
 
 function onDrop(source, target) {
@@ -179,14 +167,14 @@ function onDrop(source, target) {
     if (wait || move === null) {
         return "snapback";
     } else {
-        clearSquaresColors();
+        board.clearSquaresColors();
         const nextMove = tactic.nextMove;
         if (nextMove !== move.san) {
             panelTextCallback("Incorrect move!");
             save(currentPuzzleId, tactic.moveIndex - 1);
             delay(() => {
                 game.undo();
-                board.position(game.fen());
+                board.setPosition(game.fen());
                 panelTextCallback();
             });
         } else {
@@ -223,22 +211,22 @@ function onDragStart(source, piece) {
 }
 
 function onSnapEnd() {
-    board.position(game.fen());
+    board.setPosition(game.fen());
 }
 
 function forward() {
-    clearSquaresColors();
+    board.clearSquaresColors();
     game.move(tactic.nextMove);
     tactic.forward();
-    board.position(game.fen());
+    board.setPosition(game.fen());
     updateStatus();
 }
 
 function backward() {
-    clearSquaresColors();
+    board.clearSquaresColors();
     game.undo();
     tactic.backward();
-    board.position(game.fen());
+    board.setPosition(game.fen());
     updateStatus();
 }
 
@@ -246,13 +234,16 @@ function reset() {
     player = null;
     tactic = new Tactic(pgn);
     game = new Chess(tactic.baseFEN);
-    board = Chessboard("game_board", getConfig());
-    clearSquaresColors();
+    board.setPosition(tactic.baseFEN);
+    board.setSide(tactic.baseFEN, true);
+    board.clearSquaresColors();
 
-    if (game.turn() === "w") {
+    const turn = game.turn() === "w" ? "white" : "black";
+    if (turn === board.getOrientation()) {
         board.flip();
     }
 
+    const hideFirstMove = document.getElementById("hide_first_move").checked;
     if (hideFirstMove) {
         makeMove(tactic.firstMove, true);
         player = game.turn();
@@ -276,6 +267,8 @@ function checkIfSolved() {
         panelTextCallback("Puzzle solved!");
         save(currentPuzzleId, tactic.moveIndex);
         tactic = null;
+
+        const keepPlaying = document.getElementById("keep_playing").checked;
         if (keepPlaying) {
             delay(loadNextPuzzle);
         } else {
@@ -340,14 +333,6 @@ $.when(progressLoaded, puzzlesLoaded).done(function () {
     updateSuccessRate();
     updateSolvedStates();
     loadNextPuzzle();
-});
-
-$("#hide_first_move").on("click", function () {
-    hideFirstMove = document.getElementById("hide_first_move").checked;
-});
-
-$("#keep_playing").on("click", function () {
-    keepPlaying = document.getElementById("keep_playing").checked;
 });
 
 $("#backward").on("click", function () {
@@ -492,14 +477,17 @@ $("#progressImport").on("click", function () {
 });
 
 function getHint() {
-    if (tactic === null) {
+    if (tactic === null || game.turn() !== player) {
         return;
     }
 
-    if (!tactic.solved && tactic.nextMove !== null) {
+    if (!tactic.solved && tactic.nextMove !== null && tactic.nextMove !== undefined) {
         const san = sanToUci(tactic.nextMove);
+        if (san === null) {
+            return;
+        }
         const source = san.slice(0, 2);
-        colorSquare(source, Colors.hintColor);
+        board.colorSquare(source, Colors.hintColor);
 
         const move = game.move(tactic.nextMove);
         game.undo();
@@ -511,16 +499,19 @@ function getHint() {
 }
 
 function getSolution() {
-    if (tactic === null) {
+    if (tactic === null || game.turn() !== player) {
         return;
     }
 
-    if (!tactic.solved && tactic.nextMove !== null) {
+    if (!tactic.solved && tactic.nextMove !== null && tactic.nextMove !== undefined) {
         const san = sanToUci(tactic.nextMove);
+        if (san === null) {
+            return;
+        }
         const source = san.slice(0, 2);
         const target = san.slice(2, 4);
-        colorSquare(source, Colors.hintColor);
-        colorSquare(target, Colors.hintColor);
+        board.colorSquare(source, Colors.hintColor);
+        board.colorSquare(target, Colors.hintColor);
         setPanel($panel, "Hint: " + tactic.nextMove);
         delay(() => {
             setPanel($panel);
@@ -816,9 +807,6 @@ progress = new Progress(
 configuration = loadConfiguration();
 loadLocalConfiguration();
 favorites = loadFavorites(storage);
-
-hideFirstMove = document.getElementById("hide_first_move").checked;
-keepPlaying = document.getElementById("keep_playing").checked;
 markButton("random");
 
 bindKey(72, getHint);

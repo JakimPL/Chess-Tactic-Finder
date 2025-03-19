@@ -1,6 +1,8 @@
+import ChessBoard from "../board/chessground.js";
+
 import { fetchLayoutsDefinitions, markButton, unmarkButton } from "../common.js";
 
-const board = Chessboard("game_board");
+const board = new ChessBoard("game_board", false);
 
 let configuration = null;
 
@@ -162,7 +164,7 @@ function getState() {
                 setProgressBar(data["text"], data["analyzed"], data["total"]);
 
                 if (data["fen"] !== null && data["fen"] !== undefined) {
-                    board.position(data["fen"]);
+                    board.setPosition(data["fen"]);
                 }
 
                 if (data["last_move"] !== null && data["last_move"] !== undefined && data["evaluation"] !== null) {
@@ -259,32 +261,34 @@ function run(argument) {
 const generateButton = document.getElementById("generate_endgames");
 const layoutSelect = document.getElementById("study_layout");
 
-generateButton.addEventListener("click", async () => {
-    clearGameDescription();
-    const layout = layoutSelect.value;
-    if (layout === "" || layout === null) {
-        return;
-    }
+if (generateButton !== null) {
+    generateButton.addEventListener("click", async () => {
+        clearGameDescription();
+        const layout = layoutSelect.value;
+        if (layout === "" || layout === null) {
+            return;
+        }
 
-    const response = await fetch("/endgame/generate", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ layout: layout }),
+        const response = await fetch("/endgame/generate", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ layout: layout }),
+        });
+
+        if (response.ok) {
+            analysis = true;
+        } else {
+            console.error("Endgame generation failed:", await response.text());
+        }
     });
 
-    if (response.ok) {
-        analysis = true;
-    } else {
-        console.error("Endgame generation failed:", await response.text());
-    }
-});
+    document.addEventListener("DOMContentLoaded", function() {
+        fetchLayouts();
+    });
 
-document.addEventListener("DOMContentLoaded", function() {
-    fetchLayouts();
-});
-
-loadConfiguration();
-getState();
-setInterval(getState, 1000);
+    loadConfiguration();
+    getState();
+    setInterval(getState, 1000);
+}

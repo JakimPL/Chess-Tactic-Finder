@@ -87,6 +87,7 @@ class EndgameStudy:
         for square, piece, color in zip(new_arrangement, piece_layout.pieces, piece_layout.colors):
             self.board.set_piece_at(square, chess.Piece(piece, not (white ^ color)))
 
+        self.board.turn = white
         self.starting_position = self.board.fen()
 
     def start_game(
@@ -150,14 +151,21 @@ class EndgameStudy:
         return self.choose_move(replies, beta, seed)
 
     @staticmethod
-    def rate_move(legal_moves: int, previous_dtm: int, current_dtm: int) -> str:
+    def rate_move(legal_moves: int, previous_dtm: int, current_dtm: int, outcome: WinningSideResult) -> str:
         if legal_moves == 1:
             return "forced"
 
         difference = previous_dtm + current_dtm
         if previous_dtm != 0:
-            if difference == 1 or (difference == 0 and current_dtm != 0):
+            if difference == 0 and current_dtm != 0:
                 return "best"
+            elif difference == 1:
+                if current_dtm != 0:
+                    return "best"
+                elif outcome == WinningSideResult.LOSS:
+                    return "best"
+                else:
+                    return "blunder"
             elif current_dtm * previous_dtm >= 0:
                 return "blunder"
             elif abs(difference) > 8:
@@ -189,7 +197,8 @@ class EndgameStudy:
 
         self.play_move(move)
         current_dtm = self.tablebase.probe_dtm(self.board)
-        previous_rating = self.rate_move(legal_moves, previous_dtm, current_dtm)
+        outcome = WinningSideResult.from_string(self.board.result(), self.board.turn)
+        previous_rating = self.rate_move(legal_moves, previous_dtm, current_dtm, outcome)
 
         if self.board.is_game_over():
             return MoveReply(
@@ -206,7 +215,8 @@ class EndgameStudy:
         legal_moves = len(list(self.board.legal_moves))
         self.play_move(reply)
         new_dtm = self.tablebase.probe_dtm(self.board)
-        current_rating = self.rate_move(legal_moves, current_dtm, new_dtm)
+        outcome = WinningSideResult.from_string(self.board.result(), self.board.turn)
+        current_rating = self.rate_move(legal_moves, current_dtm, new_dtm, outcome)
 
         return MoveReply(
             uci=reply.uci(),
