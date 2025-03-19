@@ -115,6 +115,10 @@ export default class ChessBoard {
     }
 
     colorSquare(square, color) {
+        if (square === null || color === null) {
+            return;
+        }
+
         const squareElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         squareElement.setAttribute("class", "highlight");
 

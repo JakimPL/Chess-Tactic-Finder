@@ -368,15 +368,18 @@ function requestNewGame() {
 }
 
 function startNewGame(fen, dtm) {
-    board.setPosition(fen);
     game = new Game(fen, dtm);
     player = game.getTurn();
-    board.setSide(fen);
     setMateCounter(dtm);
     unmarkButton("new_study");
     requestWait = false;
 
-    if (player === "b") {
+    board.setPosition(fen);
+    board.clearSquaresColors();
+    board.setSide(fen);
+
+    const turn = game.getTurn() === "w" ? "white" : "black";
+    if (turn !== board.getOrientation()) {
         board.flip();
     }
 }
