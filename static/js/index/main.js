@@ -261,32 +261,34 @@ function run(argument) {
 const generateButton = document.getElementById("generate_endgames");
 const layoutSelect = document.getElementById("study_layout");
 
-generateButton.addEventListener("click", async () => {
-    clearGameDescription();
-    const layout = layoutSelect.value;
-    if (layout === "" || layout === null) {
-        return;
-    }
+if (generateButton !== null) {
+    generateButton.addEventListener("click", async () => {
+        clearGameDescription();
+        const layout = layoutSelect.value;
+        if (layout === "" || layout === null) {
+            return;
+        }
 
-    const response = await fetch("/endgame/generate", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ layout: layout }),
+        const response = await fetch("/endgame/generate", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ layout: layout }),
+        });
+
+        if (response.ok) {
+            analysis = true;
+        } else {
+            console.error("Endgame generation failed:", await response.text());
+        }
     });
 
-    if (response.ok) {
-        analysis = true;
-    } else {
-        console.error("Endgame generation failed:", await response.text());
-    }
-});
+    document.addEventListener("DOMContentLoaded", function() {
+        fetchLayouts();
+    });
 
-document.addEventListener("DOMContentLoaded", function() {
-    fetchLayouts();
-});
-
-loadConfiguration();
-getState();
-setInterval(getState, 1000);
+    loadConfiguration();
+    getState();
+    setInterval(getState, 1000);
+}

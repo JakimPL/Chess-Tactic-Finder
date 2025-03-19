@@ -10,8 +10,10 @@ export default class ChessBoard {
         this.onSnapEnd = onSnapEnd;
 
         this.element = document.getElementById(elementId);
-        this.board = Chessground(this.element, this.getConfig(draggable));
-        this.boardElement = document.querySelector("cg-board");
+        if (this.element !== null) {
+            this.board = Chessground(this.element, this.getConfig(draggable));
+            this.boardElement = document.querySelector("cg-board");
+        }
     }
 
     getConfig(draggable = true, fen = this.emptyFEN) {
