@@ -5,9 +5,7 @@ import MovesList from "../movesList.js";
 import Storage from "../storage.js";
 import {
     blockScroll,
-    clearSquaresColors,
     clearTable,
-    colorSquare,
     createTableRowEntry,
     getPath,
     loadFavorites,
@@ -17,6 +15,8 @@ import {
     setPanel,
     unmarkButton,
 } from "../common.js";
+
+import { clearSquaresColors, colorSquare } from "../board/chessground.js";
 
 import Game from "./game.js";
 

@@ -33,7 +33,6 @@ md5sum
 wsgi.py
 
 **/import/
-node_modules/
 chess.js
 chessboard-1.0.0.min.js
 jquery-3.4.1.min.js

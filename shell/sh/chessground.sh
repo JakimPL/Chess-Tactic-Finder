@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# npm install --save chessground
+npm install --save chessground
 
 cp node_modules/chessground/assets/chessground.base.css static/css/import/
 cp node_modules/chessground/assets/chessground.brown.css static/css/import/

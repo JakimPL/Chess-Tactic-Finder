@@ -1,12 +1,10 @@
-import { Chessground } from "../import/chessground.js";
+import { ChessBoard, clearSquaresColors, colorSquare } from "../board/chessboard.js";
 
 import { bindKey, bindKeys } from "../bindings.js";
 import Colors from "../colors.js";
 import MovesList from "../movesList.js";
 import {
     blockScroll,
-    clearSquaresColors,
-    colorSquare,
     fetchLayoutsDefinitions,
     getPiecesSymbol,
     markButton,
@@ -20,7 +18,8 @@ import Game from "./game.js";
 
 const $panel = $("#panel");
 
-// let board = Chessboard("endgame_board");
+const board = new ChessBoard("endgame_board", onDragStart, onDrop, onSnapEnd);
+
 let game = null;
 let player = null;
 let moveIndex = null;
@@ -72,22 +71,12 @@ $("#hint").on("click", function () {
     getHint();
 });
 
-function getConfig(fen) {
-    return {
-        draggable: true,
-        position: fen,
-        onDragStart: onDragStart,
-        onDrop: onDrop,
-        onSnapEnd: onSnapEnd,
-    };
-}
-
 function setPosition() {
     const dtz = game.getDTZ();
     const fen = game.getFEN();
     const pgn = game.getPGN();
 
-    board.position(fen);
+    board.setPosition(fen);
     setMateCounter(dtz);
     colorSquares();
     hint = null;
@@ -299,7 +288,7 @@ function sendMove(fen, uci) {
             wait = true;
             setTimeout(() => {
                 moveIndex = game.currentMove;
-                board.position(reply.fen);
+                board.setPosition(reply.fen);
                 if (reply.uci !== null) {
                     game.move(reply.uci, reply.current_dtm);
                     setMateCounter(reply.current_dtm);
@@ -379,7 +368,7 @@ function requestNewGame() {
 }
 
 function startNewGame(fen, dtm) {
-    board = Chessboard("endgame_board", getConfig(fen));
+    board.setPosition(fen);
     game = new Game(fen, dtm);
     player = game.getTurn();
     setMateCounter(dtm);
@@ -580,12 +569,6 @@ document.addEventListener("DOMContentLoaded", function() {
     const distanceToMateOrZeroing = document.getElementById("distance_to_mate_or_zeroing");
     updateDistanceToMateOrZeroing(distanceToMateOrZeroing.checked);
     setMateCounter();
-
-    const boardElement = document.getElementById("endgame_board");
-    const chessground = Chessground(boardElement, {
-        movable: { color: "white", free: false },
-        draggable: { showGhost: true },
-    });
 });
 
 document.getElementById("study_layout").addEventListener("keydown", function(e) {

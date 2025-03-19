@@ -4,9 +4,7 @@ import Link from "../link.js";
 import Storage from "../storage.js";
 import {
     blockScroll,
-    clearSquaresColors,
     clearTable,
-    colorSquare,
     createTableRowEntry,
     getFullPieceName,
     getPath,
@@ -17,6 +15,8 @@ import {
     setPanel,
     unmarkButton,
 } from "../common.js";
+
+import { clearSquaresColors, colorSquare } from "../board/chessground.js";
 
 import History from "./history.js";
 import Progress from "./progress.js";
