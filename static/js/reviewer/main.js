@@ -1,3 +1,5 @@
+import { ChessBoard, clearSquaresColors, colorSquare } from "../board/chessboard.js";
+
 import { bindKeys } from "../bindings.js";
 import Colors from "../colors.js";
 import Link from "../link.js";
@@ -16,8 +18,6 @@ import {
     unmarkButton,
 } from "../common.js";
 
-import { clearSquaresColors, colorSquare } from "../board/chessground.js";
-
 import Game from "./game.js";
 
 const $panel = $("#panel");
@@ -25,7 +25,8 @@ const $panel = $("#panel");
 window.loadReview = loadReview;
 window.refresh = refresh;
 
-let board = Chessboard("game_board", "start");
+const board = new ChessBoard("game_board", false);
+board.setPosition("start");
 
 const emptyImage =
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
@@ -228,9 +229,7 @@ function startGame() {
     game = new Game(pgn);
     fen = game.fen;
     chess = new Chess(game.fen);
-    board = Chessboard("game_board", {
-        position: game.fen,
-    });
+    board.setPosition(game.fen);
 }
 
 function evaluationToString(evaluation) {
@@ -245,7 +244,7 @@ function evaluationToString(evaluation) {
 }
 
 function setEvaluationBar(value, scale) {
-    const orientation = board.orientation() === "black";
+    const orientation = board.getOrientation() === "black";
     scale = orientation ? -scale : scale;
     const height =
         scale === null ? 50 : Math.max(0, Math.min(100, 50 - scale * 50));
@@ -342,7 +341,7 @@ function setFEN(previousMoveIndex) {
     movesList.highlightNextMove(previousMoveIndex, game.moveIndex);
 
     chess.load(fen);
-    board.position(fen);
+    board.setPosition(fen);
 
     clearSquaresColors();
     const move = review.moves[game.moveIndex];

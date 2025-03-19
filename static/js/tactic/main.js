@@ -1,3 +1,5 @@
+import { ChessBoard, clearSquaresColors, colorSquare } from "../board/chessboard.js";
+
 import { bindKey } from "../bindings.js";
 import Colors from "../colors.js";
 import Link from "../link.js";
@@ -16,13 +18,11 @@ import {
     unmarkButton,
 } from "../common.js";
 
-import { clearSquaresColors, colorSquare } from "../board/chessground.js";
-
 import History from "./history.js";
 import Progress from "./progress.js";
 import Tactic from "./tactic.js";
 
-let board = Chessboard("game_board");
+const board = new ChessBoard("game_board", true, onDragStart, onDrop, onSnapEnd);
 
 window.loadPGN = loadPGN;
 window.refresh = refresh;
@@ -148,7 +148,7 @@ function calculateSuccessRate() {
 function makeMove(move, instant) {
     if (move !== null && move !== undefined) {
         move = game.move(move);
-        board.position(game.fen(), !instant);
+        board.setPosition(game.fen(), !instant);
         clearSquaresColors();
     }
 }
@@ -156,16 +156,6 @@ function makeMove(move, instant) {
 function getMoves() {
     moves = game.moves({ verbose: true });
     return game.pgn().split(/\d+\./).slice(1).join("");
-}
-
-function getConfig() {
-    return {
-        draggable: true,
-        position: tactic.baseFEN,
-        onDragStart: onDragStart,
-        onDrop: onDrop,
-        onSnapEnd: onSnapEnd,
-    };
 }
 
 function onDrop(source, target) {
@@ -186,7 +176,7 @@ function onDrop(source, target) {
             save(currentPuzzleId, tactic.moveIndex - 1);
             delay(() => {
                 game.undo();
-                board.position(game.fen());
+                board.setPosition(game.fen());
                 panelTextCallback();
             });
         } else {
@@ -223,14 +213,14 @@ function onDragStart(source, piece) {
 }
 
 function onSnapEnd() {
-    board.position(game.fen());
+    board.setPosition(game.fen());
 }
 
 function forward() {
     clearSquaresColors();
     game.move(tactic.nextMove);
     tactic.forward();
-    board.position(game.fen());
+    board.setPosition(game.fen());
     updateStatus();
 }
 
@@ -246,7 +236,7 @@ function reset() {
     player = null;
     tactic = new Tactic(pgn);
     game = new Chess(tactic.baseFEN);
-    board = Chessboard("game_board", getConfig());
+    board.setPosition(tactic.baseFEN);
     clearSquaresColors();
 
     if (game.turn() === "w") {

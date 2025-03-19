@@ -1,6 +1,8 @@
+import { ChessBoard } from "../board/chessboard.js";
+
 import { fetchLayoutsDefinitions, markButton, unmarkButton } from "../common.js";
 
-const board = Chessboard("game_board");
+const board = new ChessBoard("game_board", false);
 
 let configuration = null;
 
@@ -162,7 +164,7 @@ function getState() {
                 setProgressBar(data["text"], data["analyzed"], data["total"]);
 
                 if (data["fen"] !== null && data["fen"] !== undefined) {
-                    board.position(data["fen"]);
+                    board.setPosition(data["fen"]);
                 }
 
                 if (data["last_move"] !== null && data["last_move"] !== undefined && data["evaluation"] !== null) {

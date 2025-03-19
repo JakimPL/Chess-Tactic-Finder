@@ -1,19 +1,23 @@
 export class ChessBoard {
-    constructor(elementId, onDragStart, onDrop, onSnapEnd) {
+    constructor(elementId, draggable, onDragStart, onDrop, onSnapEnd) {
         this.onDragStart = onDragStart;
         this.onDrop = onDrop;
         this.onSnapEnd = onSnapEnd;
-        this.board = Chessboard(elementId, this.getConfig());
+        this.board = Chessboard(elementId, this.getConfig(draggable));
     }
 
-    getConfig(fen = "") {
+    getConfig(draggable = true, fen = "") {
         return {
-            draggable: true,
+            draggable: draggable,
             position: fen,
             onDragStart: this.onDragStart,
             onDrop: this.onDrop,
             onSnapEnd: this.onSnapEnd,
         };
+    }
+
+    getOrientation() {
+        return this.board.orientation();
     }
 
     setPosition(fen) {

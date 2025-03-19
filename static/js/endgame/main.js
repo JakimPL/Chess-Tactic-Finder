@@ -18,7 +18,7 @@ import Game from "./game.js";
 
 const $panel = $("#panel");
 
-const board = new ChessBoard("endgame_board", onDragStart, onDrop, onSnapEnd);
+const board = new ChessBoard("endgame_board", true, onDragStart, onDrop, onSnapEnd);
 
 let game = null;
 let player = null;
