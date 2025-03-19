@@ -80,7 +80,7 @@ export default class ChessBoard {
     }
 
     clear() {
-        highlightedSquares = [];
+        this.highlightedSquares = [];
         this.board.set({
             fen: this.emptyFEN,
         });
