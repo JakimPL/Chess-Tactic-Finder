@@ -5,8 +5,6 @@ export default class ChessBoard {
         this.emptyFEN = "8/8/8/8/8/8/8/8 w - - 0 1";
 
         this.playerColor = null;
-        this.highlightedSquares = [];
-
         this.onDragStart = onDragStart;
         this.onDrop = onDrop;
         this.onSnapEnd = onSnapEnd;
@@ -71,8 +69,6 @@ export default class ChessBoard {
                 dests: dests,
             },
         });
-
-        this.highlightSquares();
     }
 
     flip() {
@@ -80,7 +76,6 @@ export default class ChessBoard {
     }
 
     clear() {
-        this.highlightedSquares = [];
         this.board.set({
             fen: this.emptyFEN,
         });
@@ -120,43 +115,29 @@ export default class ChessBoard {
     }
 
     colorSquare(square, color) {
-        if (square === null || color === null) {
-            return;
-        }
+        const squareElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        squareElement.setAttribute("class", "highlight");
 
-        this.highlightedSquares.push([square, color]);
-        this.highlightSquares();
-    }
-
-    highlightSquare(square, color) {
-        const squareElement = document.createElement("square");
-        squareElement.className = "highlight";
-
-        const boardRect = this.boardElement.getBoundingClientRect();
-        const squareSize = boardRect.width / 8;
-
-        const backgroundColor = this.isLightSquare(square) ? color.lightSquare : color.darkSquare;
+        const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
         const file = square.charCodeAt(0) - "a".charCodeAt(0);
         const rank = 8 - parseInt(square[1]);
 
-        squareElement.style.transform = `translate(${file * squareSize}px, ${rank * squareSize}px)`;
-        squareElement.style.position = "absolute";
-        squareElement.style.width = squareSize + "px";
-        squareElement.style.height = squareSize + "px";
-        squareElement.style.backgroundColor = backgroundColor;
-        squareElement.style.pointerEvents = "none";
-        this.boardElement.appendChild(squareElement);
-    }
+        rect.setAttribute("width", "100%");
+        rect.setAttribute("height", "100%");
+        rect.setAttribute("fill", this.isLightSquare(square) ? color.lightSquare : color.darkSquare);
+        squareElement.appendChild(rect);
 
-    highlightSquares() {
-        for (const [square, color] of this.highlightedSquares) {
-            this.highlightSquare(square, color);
-        }
+        squareElement.style.position = "absolute";
+        squareElement.style.width = "12.5%";
+        squareElement.style.height = "12.5%";
+        squareElement.style.left = `${file * 12.5}%`;
+        squareElement.style.top = `${rank * 12.5}%`;
+
+        this.boardElement.insertBefore(squareElement, this.boardElement.firstChild);
     }
 
     clearSquaresColors() {
-        this.highlightedSquares = [];
-        const squares = document.querySelectorAll("cg-board square.highlight");
+        const squares = document.querySelectorAll("cg-board svg.highlight");
         squares.forEach(square => square.remove());
     }
 }
