@@ -1,4 +1,4 @@
-import { ChessBoard } from "../board/chessboard.js";
+import ChessBoard from "../board/chessboard.js";
 
 import { fetchLayoutsDefinitions, markButton, unmarkButton } from "../common.js";
 

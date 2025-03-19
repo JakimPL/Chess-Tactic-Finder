@@ -1,4 +1,4 @@
-import { ChessBoard, clearSquaresColors, colorSquare } from "../board/chessboard.js";
+import ChessBoard from "../board/chessboard.js";
 
 import { bindKey } from "../bindings.js";
 import Colors from "../colors.js";
@@ -149,7 +149,7 @@ function makeMove(move, instant) {
     if (move !== null && move !== undefined) {
         move = game.move(move);
         board.setPosition(game.fen(), !instant);
-        clearSquaresColors();
+        board.clearSquaresColors();
     }
 }
 
@@ -169,7 +169,7 @@ function onDrop(source, target) {
     if (wait || move === null) {
         return "snapback";
     } else {
-        clearSquaresColors();
+        board.clearSquaresColors();
         const nextMove = tactic.nextMove;
         if (nextMove !== move.san) {
             panelTextCallback("Incorrect move!");
@@ -217,7 +217,7 @@ function onSnapEnd() {
 }
 
 function forward() {
-    clearSquaresColors();
+    board.clearSquaresColors();
     game.move(tactic.nextMove);
     tactic.forward();
     board.setPosition(game.fen());
@@ -225,7 +225,7 @@ function forward() {
 }
 
 function backward() {
-    clearSquaresColors();
+    board.clearSquaresColors();
     game.undo();
     tactic.backward();
     board.position(game.fen());
@@ -237,7 +237,7 @@ function reset() {
     tactic = new Tactic(pgn);
     game = new Chess(tactic.baseFEN);
     board.setPosition(tactic.baseFEN);
-    clearSquaresColors();
+    board.clearSquaresColors();
 
     if (game.turn() === "w") {
         board.flip();
@@ -489,7 +489,7 @@ function getHint() {
     if (!tactic.solved && tactic.nextMove !== null) {
         const san = sanToUci(tactic.nextMove);
         const source = san.slice(0, 2);
-        colorSquare(source, Colors.hintColor);
+        board.colorSquare(source, Colors.hintColor);
 
         const move = game.move(tactic.nextMove);
         game.undo();
@@ -509,8 +509,8 @@ function getSolution() {
         const san = sanToUci(tactic.nextMove);
         const source = san.slice(0, 2);
         const target = san.slice(2, 4);
-        colorSquare(source, Colors.hintColor);
-        colorSquare(target, Colors.hintColor);
+        board.colorSquare(source, Colors.hintColor);
+        board.colorSquare(target, Colors.hintColor);
         setPanel($panel, "Hint: " + tactic.nextMove);
         delay(() => {
             setPanel($panel);

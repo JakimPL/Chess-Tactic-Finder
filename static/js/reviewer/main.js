@@ -1,4 +1,4 @@
-import { ChessBoard, clearSquaresColors, colorSquare } from "../board/chessboard.js";
+import ChessBoard from "../board/chessground.js";
 
 import { bindKeys } from "../bindings.js";
 import Colors from "../colors.js";
@@ -343,14 +343,14 @@ function setFEN(previousMoveIndex) {
     chess.load(fen);
     board.setPosition(fen);
 
-    clearSquaresColors();
+    board.clearSquaresColors();
     const move = review.moves[game.moveIndex];
     if (move !== null && move !== undefined) {
         const moveColor = movesList.getMoveColor(
             movesList.getMoveType(move.classification),
         );
-        colorSquare(move.move.slice(0, 2), moveColor);
-        colorSquare(move.move.slice(2, 4), moveColor);
+        board.colorSquare(move.move.slice(0, 2), moveColor);
+        board.colorSquare(move.move.slice(2, 4), moveColor);
     }
 
     setEvaluation();

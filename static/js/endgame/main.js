@@ -1,4 +1,4 @@
-import { ChessBoard, clearSquaresColors, colorSquare } from "../board/chessboard.js";
+import ChessBoard from "../board/chessground.js";
 
 import { bindKey, bindKeys } from "../bindings.js";
 import Colors from "../colors.js";
@@ -201,8 +201,8 @@ function getHint() {
     if (hint !== null) {
         const source = hint.slice(0, 2);
         const target = hint.slice(2, 4);
-        colorSquare(source, Colors.hintColor);
-        colorSquare(target, Colors.hintColor);
+        board.colorSquare(source, Colors.hintColor);
+        board.colorSquare(target, Colors.hintColor);
         return;
     }
 
@@ -231,7 +231,7 @@ function getHint() {
         .then((reply) => {
             hint = reply.uci;
             const source = hint.slice(0, 2);
-            colorSquare(source, Colors.hintColor);
+            board.colorSquare(source, Colors.hintColor);
         })
         .catch((error) => {
             console.error("Error during retrieving a hint:", error);
@@ -258,7 +258,7 @@ function sendMove(fen, uci) {
     const difficulty = document.getElementById("difficulty").value;
     const beta = parseFloat(difficulty) === 1.0 ? "inf" : difficulty / (1 - difficulty);
 
-    clearSquaresColors();
+    board.clearSquaresColors();
     const data = {
         fen: fen,
         move: uci,
@@ -381,7 +381,7 @@ function startNewGame(fen, dtm) {
 }
 
 function colorSquares() {
-    clearSquaresColors();
+    board.clearSquaresColors();
     if (document.getElementById("hide_review").checked) {
         return;
     }
@@ -391,8 +391,8 @@ function colorSquares() {
         const color = movesList.getMoveColor(
             movesList.getMoveType(move.classification),
         );
-        colorSquare(move.move.slice(0, 2), color);
-        colorSquare(move.move.slice(2, 4), color);
+        board.colorSquare(move.move.slice(0, 2), color);
+        board.colorSquare(move.move.slice(2, 4), color);
     }
 }
 
