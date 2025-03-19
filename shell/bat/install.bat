@@ -68,3 +68,7 @@ rmdir /s /q tables\gaviota\3
 rmdir /s /q tables\gaviota\4
 
 del tables\gaviota\*.7z
+
+:: install chessground
+echo Installing Chessground.
+call shell\bat\chessground.bat

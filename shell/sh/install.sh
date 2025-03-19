@@ -57,3 +57,8 @@ rm -rf tables/gaviota/3
 rm -rf tables/gaviota/4
 
 rm tables/gaviota/*.7z
+
+# install chessground
+echo "Installing Chessground."
+chmod +x shell/sh/chessground.sh
+./shell/sh/chessground.sh
