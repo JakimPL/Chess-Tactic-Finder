@@ -120,7 +120,7 @@ export default class ChessBoard {
     isLightSquare(square) {
         const file = square.charCodeAt(0) - "a".charCodeAt(0) + 1;
         const rank = parseInt(square[1]);
-        return (file + rank) % 2 === 0;
+        return (file + rank) % 2 === 1;
     }
 
     colorSquare(square, color) {

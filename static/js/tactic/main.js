@@ -147,6 +147,7 @@ function calculateSuccessRate() {
 
 function makeMove(move, instant) {
     if (move !== null && move !== undefined) {
+        board.clearSquaresColors();
         move = game.move(move);
         setPosition();
     }
