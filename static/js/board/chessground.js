@@ -4,6 +4,7 @@ export default class ChessBoard {
     constructor(elementId, draggable, onDragStart, onDrop, onSnapEnd) {
         this.emptyFEN = "8/8/8/8/8/8/8/8 w - - 0 1";
 
+        this.playerColor = null;
         this.onDragStart = onDragStart;
         this.onDrop = onDrop;
         this.onSnapEnd = onSnapEnd;
@@ -17,19 +18,30 @@ export default class ChessBoard {
         return {
             enabled: draggable,
             fen: fen,
-            movable: { enabled: draggable },
+            turnColor: this.getTurnColor(fen),
+            movable: { enabled: draggable, color: this.playerColor },
             draggable: { showGhost: true },
+            highlight: {
+                lastMove: false,
+                check: true,
+            },
             events: {
                 move: this.onDrop,
-                dragStart: this.onDragStart,
-                dropNewPiece: this.onDrop,
             },
         };
+    }
+
+    setSide(side) {
+        this.playerColor = side === "w" ? "white" : "black";
+        this.board.set({
+            movable: { color: this.playerColor },
+        });
     }
 
     setPosition(fen) {
         this.board.set({
             fen: fen,
+            turnColor: this.getTurnColor(fen),
         });
     }
 
@@ -43,7 +55,21 @@ export default class ChessBoard {
         });
     }
 
+    getTurnColor(fen) {
+        return fen.split(" ")[1] === "w" ? "white" : "black";
+    }
+
+    isLightSquare(square) {
+        const file = square.charCodeAt(0) - "a".charCodeAt(0) + 1;
+        const rank = parseInt(square[1]);
+        return (file + rank) % 2 === 0;
+    }
+
     colorSquare(square, color) {
+        if (square === null || color === null) {
+            return;
+        }
+
         const squareElement = document.createElement("square");
         squareElement.className = "highlight";
 
@@ -58,7 +84,7 @@ export default class ChessBoard {
         squareElement.style.position = "absolute";
         squareElement.style.width = squareSize + "px";
         squareElement.style.height = squareSize + "px";
-        squareElement.style.backgroundColor = color;
+        squareElement.style.backgroundColor = this.isLightSquare(square) ? color.lightSquare : color.darkSquare;
         squareElement.style.pointerEvents = "none";
 
         this.boardElement.appendChild(squareElement);

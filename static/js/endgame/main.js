@@ -371,6 +371,7 @@ function startNewGame(fen, dtm) {
     board.setPosition(fen);
     game = new Game(fen, dtm);
     player = game.getTurn();
+    board.setSide(player);
     setMateCounter(dtm);
     unmarkButton("new_study");
     requestWait = false;

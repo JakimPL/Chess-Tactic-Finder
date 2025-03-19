@@ -87,6 +87,7 @@ class EndgameStudy:
         for square, piece, color in zip(new_arrangement, piece_layout.pieces, piece_layout.colors):
             self.board.set_piece_at(square, chess.Piece(piece, not (white ^ color)))
 
+        self.board.turn = white
         self.starting_position = self.board.fen()
 
     def start_game(
