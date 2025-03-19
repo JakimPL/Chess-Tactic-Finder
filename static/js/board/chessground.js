@@ -23,6 +23,9 @@ export default class ChessBoard {
                 enabled: draggable,
                 color: this.playerColor,
                 showDests: true,
+                events: {
+                    after: this.onSnapEnd,
+                },
             },
             premovable: {
                 enabled: false,
@@ -53,11 +56,13 @@ export default class ChessBoard {
     }
 
     setPosition(fen) {
+        const [gameOver, dests] = this.getGameStatus(fen);
         this.board.set({
             fen: fen,
-            turnColor: this.getTurnColor(fen),
+            turnColor: !gameOver ? this.getTurnColor(fen) : null,
             movable: {
-                dests: this.getLegalMoves(fen),
+                enabled: !gameOver,
+                dests: dests,
             },
         });
     }
@@ -76,6 +81,13 @@ export default class ChessBoard {
         const turn = fen.split(" ")[1];
         const side = turn === "w" ? "white" : "black";
         return swap ? (turn === "w" ? "black" : "white") : side;
+    }
+
+    getGameStatus(fen) {
+        const game = new Chess(fen);
+        const gameOver = game.game_over();
+        const dests = this.getLegalMoves(fen);
+        return [gameOver, dests];
     }
 
     getLegalMoves(fen) {
