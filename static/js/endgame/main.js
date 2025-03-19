@@ -90,13 +90,13 @@ function onDrop(source, target) {
     const fen = game.getFEN();
     const isLastMove = game.isLastMove();
     const move = game.move(uci);
-    if (move !== null && move.promotion !== undefined) {
-        uci += move.promotion;
-    }
 
     if (move === null) {
         return "snapback";
     } else {
+        if (move.promotion !== undefined) {
+            uci += move.promotion;
+        }
         if (!isLastMove) {
             movesList.truncate(game.currentMove - 1);
             movesList.render();
@@ -371,7 +371,7 @@ function startNewGame(fen, dtm) {
     board.setPosition(fen);
     game = new Game(fen, dtm);
     player = game.getTurn();
-    board.setSide(player);
+    board.setSide(fen);
     setMateCounter(dtm);
     unmarkButton("new_study");
     requestWait = false;

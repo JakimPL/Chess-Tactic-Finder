@@ -19,8 +19,19 @@ export default class ChessBoard {
             enabled: draggable,
             fen: fen,
             turnColor: this.getTurnColor(fen),
-            movable: { enabled: draggable, color: this.playerColor },
-            draggable: { showGhost: true },
+            movable: {
+                enabled: draggable,
+                color: this.playerColor,
+                showDests: true,
+            },
+            premovable: {
+                enabled: false,
+                showDests: true,
+            },
+            draggable: {
+                enabled: true,
+                showGhost: true,
+            },
             highlight: {
                 lastMove: false,
                 check: true,
@@ -31,10 +42,13 @@ export default class ChessBoard {
         };
     }
 
-    setSide(side) {
-        this.playerColor = side === "w" ? "white" : "black";
+    setSide(fen) {
+        this.playerColor = this.getTurnColor(fen);
         this.board.set({
-            movable: { color: this.playerColor },
+            movable: {
+                color: this.playerColor,
+                dests: this.getLegalMoves(fen),
+            },
         });
     }
 
@@ -42,6 +56,9 @@ export default class ChessBoard {
         this.board.set({
             fen: fen,
             turnColor: this.getTurnColor(fen),
+            movable: {
+                dests: this.getLegalMoves(fen),
+            },
         });
     }
 
@@ -55,8 +72,24 @@ export default class ChessBoard {
         });
     }
 
-    getTurnColor(fen) {
-        return fen.split(" ")[1] === "w" ? "white" : "black";
+    getTurnColor(fen, swap = false) {
+        const turn = fen.split(" ")[1];
+        const side = turn === "w" ? "white" : "black";
+        return swap ? (turn === "w" ? "black" : "white") : side;
+    }
+
+    getLegalMoves(fen) {
+        const dests = new Map();
+        const game = new Chess(fen);
+        const moves = game.moves({ verbose: true });
+        moves.forEach(move => {
+            if (!dests.has(move.from)) {
+                dests.set(move.from, []);
+            }
+            dests.get(move.from).push(move.to);
+        });
+
+        return dests;
     }
 
     isLightSquare(square) {
