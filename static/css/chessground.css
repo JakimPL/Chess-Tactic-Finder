@@ -11,3 +11,7 @@ cg-board {
 cg-board square.selected {
     background-color: rgba(120, 225, 30, 0.3);
 }
+
+cg-board square.current-premove {
+    background-color: rgba(0, 0, 0, 0);
+}

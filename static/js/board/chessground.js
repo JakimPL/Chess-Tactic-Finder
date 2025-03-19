@@ -1,13 +1,16 @@
 import { Chessground } from "../import/chessground.js";
 
 export default class ChessBoard {
-    constructor(elementId, draggable, onDragStart, onDrop, onSnapEnd) {
+    constructor(elementId, draggable, onDragStart, onDrop, onSnapEnd, onPremoveSet, onPremoveUnset) {
         this.emptyFEN = "8/8/8/8/8/8/8/8 w - - 0 1";
 
         this.playerColor = null;
         this.onDragStart = onDragStart;
         this.onDrop = onDrop;
         this.onSnapEnd = onSnapEnd;
+
+        this.onPremoveSet = onPremoveSet;
+        this.onPremoveUnset = onPremoveUnset;
 
         this.element = document.getElementById(elementId);
         if (this.element !== null) {
@@ -30,8 +33,12 @@ export default class ChessBoard {
                 },
             },
             premovable: {
-                enabled: false,
-                showDests: true,
+                enabled: true,
+                showDests: false,
+                events: {
+                    set: this.onPremoveSet,
+                    unset: this.onPremoveUnset,
+                },
             },
             draggable: {
                 enabled: true,
@@ -144,6 +151,11 @@ export default class ChessBoard {
 
     clearSquaresColors() {
         const squares = document.querySelectorAll("cg-board svg.highlight");
+        squares.forEach(square => square.remove());
+    }
+
+    clearPremoveHighlights() {
+        const squares = document.querySelectorAll("cg-board square.current-premove");
         squares.forEach(square => square.remove());
     }
 }
