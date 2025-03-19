@@ -477,12 +477,15 @@ $("#progressImport").on("click", function () {
 });
 
 function getHint() {
-    if (tactic === null) {
+    if (tactic === null || game.turn() !== player) {
         return;
     }
 
-    if (!tactic.solved && tactic.nextMove !== null) {
+    if (!tactic.solved && tactic.nextMove !== null && tactic.nextMove !== undefined) {
         const san = sanToUci(tactic.nextMove);
+        if (san === null) {
+            return;
+        }
         const source = san.slice(0, 2);
         board.colorSquare(source, Colors.hintColor);
 
@@ -496,12 +499,15 @@ function getHint() {
 }
 
 function getSolution() {
-    if (tactic === null) {
+    if (tactic === null || game.turn() !== player) {
         return;
     }
 
     if (!tactic.solved && tactic.nextMove !== null && tactic.nextMove !== undefined) {
         const san = sanToUci(tactic.nextMove);
+        if (san === null) {
+            return;
+        }
         const source = san.slice(0, 2);
         const target = san.slice(2, 4);
         board.colorSquare(source, Colors.hintColor);
