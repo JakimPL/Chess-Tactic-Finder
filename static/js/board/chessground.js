@@ -5,6 +5,8 @@ export default class ChessBoard {
         this.emptyFEN = "8/8/8/8/8/8/8/8 w - - 0 1";
 
         this.playerColor = null;
+        this.highlightedSquares = [];
+
         this.onDragStart = onDragStart;
         this.onDrop = onDrop;
         this.onSnapEnd = onSnapEnd;
@@ -45,8 +47,12 @@ export default class ChessBoard {
         };
     }
 
-    setSide(fen) {
-        this.playerColor = this.getTurnColor(fen);
+    getOrientation() {
+        return this.board.state.orientation;
+    }
+
+    setSide(fen, swap = false) {
+        this.playerColor = this.getTurnColor(fen, swap);
         this.board.set({
             movable: {
                 color: this.playerColor,
@@ -65,6 +71,8 @@ export default class ChessBoard {
                 dests: dests,
             },
         });
+
+        this.highlightSquares();
     }
 
     flip() {
@@ -72,6 +80,7 @@ export default class ChessBoard {
     }
 
     clear() {
+        highlightedSquares = [];
         this.board.set({
             fen: this.emptyFEN,
         });
@@ -115,27 +124,38 @@ export default class ChessBoard {
             return;
         }
 
+        this.highlightedSquares.push([square, color]);
+        this.highlightSquares();
+    }
+
+    highlightSquare(square, color) {
         const squareElement = document.createElement("square");
         squareElement.className = "highlight";
 
         const boardRect = this.boardElement.getBoundingClientRect();
         const squareSize = boardRect.width / 8;
 
+        const backgroundColor = this.isLightSquare(square) ? color.lightSquare : color.darkSquare;
         const file = square.charCodeAt(0) - "a".charCodeAt(0);
         const rank = 8 - parseInt(square[1]);
 
         squareElement.style.transform = `translate(${file * squareSize}px, ${rank * squareSize}px)`;
-
         squareElement.style.position = "absolute";
         squareElement.style.width = squareSize + "px";
         squareElement.style.height = squareSize + "px";
-        squareElement.style.backgroundColor = this.isLightSquare(square) ? color.lightSquare : color.darkSquare;
+        squareElement.style.backgroundColor = backgroundColor;
         squareElement.style.pointerEvents = "none";
-
         this.boardElement.appendChild(squareElement);
     }
 
+    highlightSquares() {
+        for (const [square, color] of this.highlightedSquares) {
+            this.highlightSquare(square, color);
+        }
+    }
+
     clearSquaresColors() {
+        this.highlightedSquares = [];
         const squares = document.querySelectorAll("cg-board square.highlight");
         squares.forEach(square => square.remove());
     }

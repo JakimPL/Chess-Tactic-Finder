@@ -1,4 +1,4 @@
-import ChessBoard from "../board/chessboard.js";
+import ChessBoard from "../board/chessground.js";
 
 import { bindKey } from "../bindings.js";
 import Colors from "../colors.js";
@@ -64,8 +64,6 @@ const filterPuzzlesCallback = null;
 let beforeLoadCallback = null;
 let afterLoadCallback = null;
 
-let hideFirstMove = true;
-let keepPlaying = true;
 let hardEvaluation = true;
 
 function delay(callback, time) {
@@ -228,7 +226,7 @@ function backward() {
     board.clearSquaresColors();
     game.undo();
     tactic.backward();
-    board.position(game.fen());
+    board.setPosition(game.fen());
     updateStatus();
 }
 
@@ -237,12 +235,15 @@ function reset() {
     tactic = new Tactic(pgn);
     game = new Chess(tactic.baseFEN);
     board.setPosition(tactic.baseFEN);
+    board.setSide(tactic.baseFEN, true);
     board.clearSquaresColors();
 
-    if (game.turn() === "w") {
+    const turn = game.turn() === "w" ? "white" : "black";
+    if (turn === board.getOrientation()) {
         board.flip();
     }
 
+    const hideFirstMove = document.getElementById("hide_first_move").checked;
     if (hideFirstMove) {
         makeMove(tactic.firstMove, true);
         player = game.turn();
@@ -266,6 +267,8 @@ function checkIfSolved() {
         panelTextCallback("Puzzle solved!");
         save(currentPuzzleId, tactic.moveIndex);
         tactic = null;
+
+        const keepPlaying = document.getElementById("keep_playing").checked;
         if (keepPlaying) {
             delay(loadNextPuzzle);
         } else {
@@ -330,14 +333,6 @@ $.when(progressLoaded, puzzlesLoaded).done(function () {
     updateSuccessRate();
     updateSolvedStates();
     loadNextPuzzle();
-});
-
-$("#hide_first_move").on("click", function () {
-    hideFirstMove = document.getElementById("hide_first_move").checked;
-});
-
-$("#keep_playing").on("click", function () {
-    keepPlaying = document.getElementById("keep_playing").checked;
 });
 
 $("#backward").on("click", function () {
@@ -505,7 +500,7 @@ function getSolution() {
         return;
     }
 
-    if (!tactic.solved && tactic.nextMove !== null) {
+    if (!tactic.solved && tactic.nextMove !== null && tactic.nextMove !== undefined) {
         const san = sanToUci(tactic.nextMove);
         const source = san.slice(0, 2);
         const target = san.slice(2, 4);
@@ -806,9 +801,6 @@ progress = new Progress(
 configuration = loadConfiguration();
 loadLocalConfiguration();
 favorites = loadFavorites(storage);
-
-hideFirstMove = document.getElementById("hide_first_move").checked;
-keepPlaying = document.getElementById("keep_playing").checked;
 markButton("random");
 
 bindKey(72, getHint);

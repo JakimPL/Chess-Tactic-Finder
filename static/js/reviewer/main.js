@@ -93,6 +93,18 @@ $("#favorite").on("click", function () {
     }
 });
 
+function colorSquares() {
+    board.clearSquaresColors();
+    const move = review.moves[game.moveIndex];
+    if (move !== null && move !== undefined) {
+        const moveColor = movesList.getMoveColor(
+            movesList.getMoveType(move.classification),
+        );
+        board.colorSquare(move.move.slice(0, 2), moveColor);
+        board.colorSquare(move.move.slice(2, 4), moveColor);
+    }
+}
+
 function updateNumberOfReviews() {
     if (reviews !== null && reviews !== undefined) {
         const numberOfReviews = Object.keys(reviews).length;
@@ -343,16 +355,7 @@ function setFEN(previousMoveIndex) {
     chess.load(fen);
     board.setPosition(fen);
 
-    board.clearSquaresColors();
-    const move = review.moves[game.moveIndex];
-    if (move !== null && move !== undefined) {
-        const moveColor = movesList.getMoveColor(
-            movesList.getMoveType(move.classification),
-        );
-        board.colorSquare(move.move.slice(0, 2), moveColor);
-        board.colorSquare(move.move.slice(2, 4), moveColor);
-    }
-
+    colorSquares();
     setEvaluation();
     setEngineLines();
     setLinks(pgn, fen);
