@@ -28,6 +28,7 @@ let hint = null;
 let counterValue = "-";
 
 let premove = null;
+const premoveDelay = 50;
 
 let layouts = null;
 let layoutRanges = null;
@@ -165,7 +166,7 @@ function makeOpponentMove(reply) {
     movesList.addMove(reply.uci, reply.san, true);
     updateMoveRating(reply.current_rating);
     setPosition();
-    setTimeout(tryPremove, 50);
+    setTimeout(tryPremove, premoveDelay);
 }
 
 function tryPremove() {
