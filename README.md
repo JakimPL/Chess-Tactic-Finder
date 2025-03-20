@@ -155,7 +155,7 @@ The _Tactic Finder_ algorithm parameters are contained in `algorithm` dictionary
 -   `checkmate_progress_threshold` - the value from 0.0 to 1.0 concerning the minimal fraction of moves . This allows to
     consider checkmate puzzles even if there are multiple correct moves at some point. The default `0.5` requires at least
     half of moves towards the checkpoint to consider a puzzle `mating net`.
--   `repetition_threshold` - the number of repetitions required to considered a position a draw (`repetition`) . The
+-   `repetition_threshold` - the number of repetitions required to consider a position a draw (`repetition`) . The
     default value is `2` and it enforces finding only the
 -   `min_relative_material_balance` - the minimal material difference in points to consider a `material advantage` puzzle.
     The default value is `3`.
@@ -204,9 +204,14 @@ Besides that, the package relies on the following packages:
 
 -   `anytree`
 -   `chess`
+-   `dotenv`
+-   `fastapi`
 -   `matplotlib`
+-   `psycopg2`
+-   `pydantic`
 -   `stockfish`
 -   `tqdm`
+-   `uvicorn`
 
 Make sure you set the proper paths (see `configuration.json`) to:
 
@@ -215,7 +220,8 @@ Make sure you set the proper paths (see `configuration.json`) to:
 
 The Tactic Player module is solely based on two JavaScript libraries:
 
--   [chessboard.js](https://chessboardjs.com/) for the board
+-   [chessground.js](https://github.com/lichess-org/chessground/) for the board
 -   [chess.js](https://github.com/jhlywa/chess.js/tree/master) for the game logic
+-   [OBSOLETE] [chessboard.js](https://chessboardjs.com/) previously for the board
 
 with a help of a [`sorttable`](https://www.kryogenix.org/code/browser/sorttable/) library for sorting tables.
