@@ -18,7 +18,7 @@ import Game from "./game.js";
 
 const $panel = $("#panel");
 
-const board = new ChessBoard("endgame_board", true, onDragStart, onDrop, onSnapEnd);
+const board = new ChessBoard("endgame_board", true, onDragStart, onDrop, onSnapEnd, onPremoveSet, onPremoveUnset);
 
 let game = null;
 let player = null;
@@ -26,6 +26,9 @@ let moveIndex = null;
 let movesList = null;
 let hint = null;
 let counterValue = "-";
+
+let premove = null;
+const premoveDelay = 50;
 
 let layouts = null;
 let layoutRanges = null;
@@ -129,6 +132,50 @@ function onDragStart(source, piece) {
 
 function onSnapEnd() {
     setPosition();
+}
+
+function onPremoveSet(source, target) {
+    board.colorSquare(source, Colors.forcedColor);
+    board.colorSquare(target, Colors.forcedColor);
+    premove = [source, target];
+}
+
+function onPremoveUnset() {
+    premove = null;
+}
+
+function updateMove(reply) {
+    game.updateDTZ(reply.previous_dtm);
+    setMateCounter(reply.previous_dtm);
+    updateMoveRating(reply.previous_rating);
+
+    wait = true;
+    setTimeout(() => {
+        moveIndex = game.currentMove;
+        board.setPosition(reply.fen);
+        if (reply.uci !== null) {
+            makeOpponentMove(reply);
+        }
+        wait = false;
+    }, delayTime);
+}
+
+function makeOpponentMove(reply) {
+    game.move(reply.uci, reply.current_dtm);
+    setMateCounter(reply.current_dtm);
+    movesList.addMove(reply.uci, reply.san, true);
+    updateMoveRating(reply.current_rating);
+    setPosition();
+    setTimeout(tryPremove, premoveDelay);
+}
+
+function tryPremove() {
+    if (premove !== null) {
+        const [source, target] = premove;
+        onDrop(source, target);
+        setPosition();
+        premove = null;
+    }
 }
 
 function forward() {
@@ -281,22 +328,7 @@ function sendMove(fen, uci) {
             return response.json();
         })
         .then((reply) => {
-            game.updateDTZ(reply.previous_dtm);
-            setMateCounter(reply.previous_dtm);
-            updateMoveRating(reply.previous_rating);
-
-            wait = true;
-            setTimeout(() => {
-                moveIndex = game.currentMove;
-                board.setPosition(reply.fen);
-                if (reply.uci !== null) {
-                    game.move(reply.uci, reply.current_dtm);
-                    setMateCounter(reply.current_dtm);
-                    movesList.addMove(reply.uci, reply.san, true);
-                    updateMoveRating(reply.current_rating);
-                }
-                wait = false;
-            }, delayTime);
+            updateMove(reply);
         })
         .catch((error) => {
             console.error("Error making move:", error);
@@ -573,6 +605,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const distanceToMateOrZeroing = document.getElementById("distance_to_mate_or_zeroing");
     updateDistanceToMateOrZeroing(distanceToMateOrZeroing.checked);
     setMateCounter();
+    blockScroll("endgame_board");
 });
 
 document.getElementById("study_layout").addEventListener("keydown", function(e) {
@@ -580,4 +613,3 @@ document.getElementById("study_layout").addEventListener("keydown", function(e) 
         e.preventDefault();
     }
 });
-blockScroll("endgame_board");

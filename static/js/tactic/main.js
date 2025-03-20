@@ -22,7 +22,7 @@ import History from "./history.js";
 import Progress from "./progress.js";
 import Tactic from "./tactic.js";
 
-const board = new ChessBoard("game_board", true, onDragStart, onDrop, onSnapEnd);
+const board = new ChessBoard("game_board", true, onDragStart, onDrop, onSnapEnd, onPremoveSet, onPremoveUnset);
 
 window.loadPGN = loadPGN;
 window.refresh = refresh;
@@ -51,10 +51,12 @@ let currentPuzzleId = null;
 
 let action = 0;
 let wait = false;
-const delayTime = 1000;
+const delayTime = 500;
+const premoveDelay = 100;
 
 let configuration = null;
 let progress = null;
+let premove = null;
 
 let panelTextCallback = null;
 let statusTextCallback = null;
@@ -145,9 +147,9 @@ function calculateSuccessRate() {
 
 function makeMove(move, instant) {
     if (move !== null && move !== undefined) {
-        move = game.move(move);
-        board.setPosition(game.fen(), !instant);
         board.clearSquaresColors();
+        move = game.move(move);
+        setPosition();
     }
 }
 
@@ -167,15 +169,16 @@ function onDrop(source, target) {
     if (wait || move === null) {
         return "snapback";
     } else {
-        board.clearSquaresColors();
+        setPosition();
         const nextMove = tactic.nextMove;
         if (nextMove !== move.san) {
             panelTextCallback("Incorrect move!");
             save(currentPuzzleId, tactic.moveIndex - 1);
             delay(() => {
                 game.undo();
-                board.setPosition(game.fen());
+                setPosition();
                 panelTextCallback();
+                board.clearSquaresColors();
             });
         } else {
             move = tactic.forward();
@@ -183,6 +186,7 @@ function onDrop(source, target) {
                 delay(() => {
                     makeMove(move);
                     tactic.forward();
+                    setTimeout(tryPremove, premoveDelay);
                 });
             }
         }
@@ -211,14 +215,40 @@ function onDragStart(source, piece) {
 }
 
 function onSnapEnd() {
+    setPosition();
+}
+
+function setPosition() {
     board.setPosition(game.fen());
+}
+
+function tryPremove() {
+    if (premove !== null) {
+        wait = false;
+        const [source, target] = premove;
+        onDrop(source, target);
+        premove = null;
+    }
+}
+
+function onPremoveSet(source, target) {
+    board.colorSquare(source, Colors.forcedColor);
+    board.colorSquare(target, Colors.forcedColor);
+    premove = [source, target];
+}
+
+function onPremoveUnset() {
+    if (premove !== null) {
+        board.clearSquaresColors();
+        premove = null;
+    }
 }
 
 function forward() {
     board.clearSquaresColors();
     game.move(tactic.nextMove);
     tactic.forward();
-    board.setPosition(game.fen());
+    setPosition();
     updateStatus();
 }
 
@@ -226,7 +256,7 @@ function backward() {
     board.clearSquaresColors();
     game.undo();
     tactic.backward();
-    board.setPosition(game.fen());
+    setPosition();
     updateStatus();
 }
 
@@ -234,14 +264,15 @@ function reset() {
     player = null;
     tactic = new Tactic(pgn);
     game = new Chess(tactic.baseFEN);
-    board.setPosition(tactic.baseFEN);
-    board.setSide(tactic.baseFEN, true);
     board.clearSquaresColors();
+    board.setSide(tactic.baseFEN, true);
+    setPosition();
 
     const turn = game.turn() === "w" ? "white" : "black";
     if (turn === board.getOrientation()) {
         board.flip();
     }
+
 
     const hideFirstMove = document.getElementById("hide_first_move").checked;
     if (hideFirstMove) {
@@ -804,11 +835,13 @@ progress = new Progress(
     },
 );
 
-configuration = loadConfiguration();
-loadLocalConfiguration();
-favorites = loadFavorites(storage);
-markButton("random");
+document.addEventListener("DOMContentLoaded", function() {
+    configuration = loadConfiguration();
+    loadLocalConfiguration();
+    favorites = loadFavorites(storage);
+    markButton("random");
 
-bindKey(72, getHint);
-bindKey(83, getSolution);
-blockScroll("game_board");
+    bindKey(72, getHint);
+    bindKey(83, getSolution);
+    blockScroll("game_board");
+});

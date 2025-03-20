@@ -24,6 +24,10 @@ export default class ChessBoard {
         this.board.position(fen);
     }
 
+    setSide() {
+        return;
+    }
+
     flip() {
         this.board.flip();
     }

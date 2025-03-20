@@ -1,7 +1,7 @@
 import { Chessground } from "../import/chessground.js";
 
 export default class ChessBoard {
-    constructor(elementId, draggable, onDragStart, onDrop, onSnapEnd) {
+    constructor(elementId, draggable, onDragStart, onDrop, onSnapEnd, onPremoveSet, onPremoveUnset) {
         this.emptyFEN = "8/8/8/8/8/8/8/8 w - - 0 1";
 
         this.playerColor = null;
@@ -9,6 +9,10 @@ export default class ChessBoard {
         this.onDrop = onDrop;
         this.onSnapEnd = onSnapEnd;
 
+        this.onPremoveSet = onPremoveSet;
+        this.onPremoveUnset = onPremoveUnset;
+
+        this.elementId = elementId;
         this.element = document.getElementById(elementId);
         if (this.element !== null) {
             this.board = Chessground(this.element, this.getConfig(draggable));
@@ -30,8 +34,12 @@ export default class ChessBoard {
                 },
             },
             premovable: {
-                enabled: false,
-                showDests: true,
+                enabled: true,
+                showDests: false,
+                events: {
+                    set: this.onPremoveSet,
+                    unset: this.onPremoveUnset,
+                },
             },
             draggable: {
                 enabled: true,
@@ -113,7 +121,7 @@ export default class ChessBoard {
     isLightSquare(square) {
         const file = square.charCodeAt(0) - "a".charCodeAt(0) + 1;
         const rank = parseInt(square[1]);
-        return (file + rank) % 2 === 0;
+        return (file + rank) % 2 === 1;
     }
 
     colorSquare(square, color) {
@@ -121,12 +129,18 @@ export default class ChessBoard {
             return;
         }
 
+        this.boardElement = document.querySelector("cg-board");
         const squareElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         squareElement.setAttribute("class", "highlight");
 
         const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-        const file = square.charCodeAt(0) - "a".charCodeAt(0);
-        const rank = 8 - parseInt(square[1]);
+        let file = square.charCodeAt(0) - "a".charCodeAt(0);
+        let rank = 8 - parseInt(square[1]);
+        const flipped = this.getOrientation() === "black";
+        if (flipped) {
+            file = 7 - file;
+            rank = 7 - rank;
+        }
 
         rect.setAttribute("width", "100%");
         rect.setAttribute("height", "100%");
@@ -139,7 +153,10 @@ export default class ChessBoard {
         squareElement.style.left = `${file * 12.5}%`;
         squareElement.style.top = `${rank * 12.5}%`;
 
-        this.boardElement.insertBefore(squareElement, this.boardElement.firstChild);
+        this.boardElement.appendChild(squareElement);
+        console.log(this.boardElement.childNodes.length);
+        console.log(this.boardElement.childNodes);
+        console.log("          ");
     }
 
     clearSquaresColors() {
