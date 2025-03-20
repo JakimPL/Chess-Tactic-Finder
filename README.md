@@ -183,6 +183,8 @@ The endgame studies are stored in a local PostgreSQL database. The database conn
 
 You need to have a running PostgreSQL server with a database named `chess`.
 
+**Warning**. The installation script does not handle creating the database.
+
 ### Layouts
 
 Supported layouts are:
