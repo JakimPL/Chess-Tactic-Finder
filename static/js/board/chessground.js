@@ -12,6 +12,7 @@ export default class ChessBoard {
         this.onPremoveSet = onPremoveSet;
         this.onPremoveUnset = onPremoveUnset;
 
+        this.elementId = elementId;
         this.element = document.getElementById(elementId);
         if (this.element !== null) {
             this.board = Chessground(this.element, this.getConfig(draggable));
@@ -128,21 +129,18 @@ export default class ChessBoard {
             return;
         }
 
-        // Ensure boardElement is available
-        if (!this.boardElement) {
-            this.boardElement = document.querySelector("cg-board");
-            if (!this.boardElement) {
-                console.warn("Chess board element not found");
-                return;
-            }
-        }
-
+        this.boardElement = document.querySelector("cg-board");
         const squareElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         squareElement.setAttribute("class", "highlight");
 
         const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-        const file = square.charCodeAt(0) - "a".charCodeAt(0);
-        const rank = 8 - parseInt(square[1]);
+        let file = square.charCodeAt(0) - "a".charCodeAt(0);
+        let rank = 8 - parseInt(square[1]);
+        const flipped = this.getOrientation() === "black";
+        if (flipped) {
+            file = 7 - file;
+            rank = 7 - rank;
+        }
 
         rect.setAttribute("width", "100%");
         rect.setAttribute("height", "100%");
@@ -155,16 +153,14 @@ export default class ChessBoard {
         squareElement.style.left = `${file * 12.5}%`;
         squareElement.style.top = `${rank * 12.5}%`;
 
-        this.boardElement.insertBefore(squareElement, this.boardElement.firstChild);
+        this.boardElement.appendChild(squareElement);
+        console.log(this.boardElement.childNodes.length);
+        console.log(this.boardElement.childNodes);
+        console.log("          ");
     }
 
     clearSquaresColors() {
         const squares = document.querySelectorAll("cg-board svg.highlight");
-        squares.forEach(square => square.remove());
-    }
-
-    clearPremoveHighlights() {
-        const squares = document.querySelectorAll("cg-board square.current-premove");
         squares.forEach(square => square.remove());
     }
 }

@@ -264,6 +264,7 @@ function reset() {
     player = null;
     tactic = new Tactic(pgn);
     game = new Chess(tactic.baseFEN);
+    board.clearSquaresColors();
     board.setSide(tactic.baseFEN, true);
     setPosition();
 
@@ -271,6 +272,7 @@ function reset() {
     if (turn === board.getOrientation()) {
         board.flip();
     }
+
 
     const hideFirstMove = document.getElementById("hide_first_move").checked;
     if (hideFirstMove) {
