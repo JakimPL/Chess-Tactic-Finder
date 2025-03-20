@@ -242,6 +242,7 @@ function startGame() {
     fen = game.fen;
     chess = new Chess(game.fen);
     board.setPosition(game.fen);
+    board.clearSquaresColors();
 }
 
 function evaluationToString(evaluation) {
