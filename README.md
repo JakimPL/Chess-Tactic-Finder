@@ -174,6 +174,17 @@ Endgame study is a training tool for common endgame positions. It allows to prac
 python endgame.py [layout]
 ```
 
+### Database
+
+The endgame studies are stored in a local PostgreSQL database. The database connection is governed by environment variables:
+
+-   `POSTGRES_USER` - the database user.
+-   `POSTGRES_PASSWORD` - the database password.
+
+You need to have a running PostgreSQL server with a database named `chess`.
+
+### Layouts
+
 Supported layouts are:
 
 -   `KvK` - King vs King
@@ -197,8 +208,7 @@ python endgame.py KRvK
 
 ## Dependencies
 
-_Chess Tactic Finder_ is primarily based on Stockfish, a UCI chess engine. Stockfish installation process is described
-in _Installation_ section. It also uses `pgn-extract` tool to extract UCI moves from PGN files.
+_Chess Tactic Finder_ is primarily based on Stockfish, a UCI chess engine. Stockfish installation process is described in _Installation_ section. It also uses `pgn-extract` tool to extract UCI moves from PGN files.
 
 Besides that, the package relies on the following packages:
 
