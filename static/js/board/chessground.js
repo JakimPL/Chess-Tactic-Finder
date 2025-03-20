@@ -128,6 +128,15 @@ export default class ChessBoard {
             return;
         }
 
+        // Ensure boardElement is available
+        if (!this.boardElement) {
+            this.boardElement = document.querySelector("cg-board");
+            if (!this.boardElement) {
+                console.warn("Chess board element not found");
+                return;
+            }
+        }
+
         const squareElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         squareElement.setAttribute("class", "highlight");
 

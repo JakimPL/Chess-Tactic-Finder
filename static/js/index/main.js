@@ -286,9 +286,8 @@ if (generateButton !== null) {
 
     document.addEventListener("DOMContentLoaded", function() {
         fetchLayouts();
+        loadConfiguration();
+        getState();
+        setInterval(getState, 1000);
     });
-
-    loadConfiguration();
-    getState();
-    setInterval(getState, 1000);
 }

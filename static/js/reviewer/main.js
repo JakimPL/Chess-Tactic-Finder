@@ -448,7 +448,9 @@ function refresh(gather) {
     });
 }
 
-loadConfiguration();
-favorites = loadFavorites(storage);
-bindKeys(backward, forward);
-blockScroll("game_board");
+document.addEventListener("DOMContentLoaded", function() {
+    loadConfiguration();
+    favorites = loadFavorites(storage);
+    bindKeys(backward, forward);
+    blockScroll("game_board");
+});

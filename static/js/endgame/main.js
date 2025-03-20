@@ -605,6 +605,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const distanceToMateOrZeroing = document.getElementById("distance_to_mate_or_zeroing");
     updateDistanceToMateOrZeroing(distanceToMateOrZeroing.checked);
     setMateCounter();
+    blockScroll("endgame_board");
 });
 
 document.getElementById("study_layout").addEventListener("keydown", function(e) {
@@ -612,4 +613,3 @@ document.getElementById("study_layout").addEventListener("keydown", function(e) 
         e.preventDefault();
     }
 });
-blockScroll("endgame_board");

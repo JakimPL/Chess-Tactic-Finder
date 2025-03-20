@@ -173,12 +173,12 @@ function onDrop(source, target) {
         const nextMove = tactic.nextMove;
         if (nextMove !== move.san) {
             panelTextCallback("Incorrect move!");
-            premove = null;
             save(currentPuzzleId, tactic.moveIndex - 1);
             delay(() => {
                 game.undo();
                 setPosition();
                 panelTextCallback();
+                board.clearSquaresColors();
             });
         } else {
             move = tactic.forward();
@@ -264,9 +264,8 @@ function reset() {
     player = null;
     tactic = new Tactic(pgn);
     game = new Chess(tactic.baseFEN);
-    board.setPosition(tactic.baseFEN);
     board.setSide(tactic.baseFEN, true);
-    board.clearSquaresColors();
+    setPosition();
 
     const turn = game.turn() === "w" ? "white" : "black";
     if (turn === board.getOrientation()) {
@@ -834,11 +833,13 @@ progress = new Progress(
     },
 );
 
-configuration = loadConfiguration();
-loadLocalConfiguration();
-favorites = loadFavorites(storage);
-markButton("random");
+document.addEventListener("DOMContentLoaded", function() {
+    configuration = loadConfiguration();
+    loadLocalConfiguration();
+    favorites = loadFavorites(storage);
+    markButton("random");
 
-bindKey(72, getHint);
-bindKey(83, getSolution);
-blockScroll("game_board");
+    bindKey(72, getHint);
+    bindKey(83, getSolution);
+    blockScroll("game_board");
+});
