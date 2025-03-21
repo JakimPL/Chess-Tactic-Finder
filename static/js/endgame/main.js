@@ -250,8 +250,11 @@ function loadLocalConfiguration() {
         for (const element of $(".game-options")) {
             if (element.id === "study_layout") {
                 const studyLayoutSelect = document.getElementById("study_layout");
-                studyLayoutSelect.value = localConfiguration?.game?.study_layout?.value;
-                studyLayoutSelect.dispatchEvent(new Event("change"));
+                const value = localConfiguration?.game?.study_layout?.value;
+                if (value !== null && value !== undefined) {
+                    studyLayoutSelect.value = localConfiguration?.game?.study_layout?.value;
+                    studyLayoutSelect.dispatchEvent(new Event("change"));
+                }
             } else {
                 element.checked = localConfiguration?.game?.[element.id] ?? element.checked;
                 element.value = localConfiguration?.game?.[element.id] ?? element.value;
@@ -491,6 +494,32 @@ function colorSquares() {
     }
 }
 
+function bindSettingsActions() {
+    document.getElementById("new_study").addEventListener("click", requestNewGame);
+    document.getElementById("study_layout").addEventListener("change", function () {
+        updateStudyLayout(this.value);
+    });
+    document.getElementById("pieces").addEventListener("change", function () {
+        updateCounter(this.value);
+    });
+    document.getElementById("distance_to_mate_or_zeroing").addEventListener("change", function() {
+        updateDistanceToMateOrZeroing(this.checked);
+    });
+    document.getElementById("side").addEventListener("change", function() {
+        const layout = document.getElementById("study_layout").value;
+        const ranges = layoutRanges[layout];
+        updatePiecesSelect(ranges, true);
+    });
+    document.getElementById("hide_counter").addEventListener("change", function() {
+        setMateCounter(game.getDTZ());
+    });
+    document.getElementById("hide_review").addEventListener("change", function() {
+        movesList.hideReview(this.checked);
+    });
+
+    document.getElementById("study_layout").dispatchEvent(new Event("change"));
+}
+
 function bindSaveConfigurationOnChange() {
     for (const item of [".board_settings", ".options", ".game-options"]) {
         $(item).change(function () {
@@ -632,51 +661,33 @@ function updateDistanceToMateOrZeroing(checked) {
     updateCounter(pieces);
 }
 
-bindKeys(backward, forward);
-bindKey(72, getHint);
-
-document.getElementById("new_study").addEventListener("click", requestNewGame);
-document.getElementById("study_layout").addEventListener("change", function () {
-    updateStudyLayout(this.value);
-});
-document.getElementById("pieces").addEventListener("change", function () {
-    updateCounter(this.value);
-});
-document.getElementById("distance_to_mate_or_zeroing").addEventListener("change", function() {
-    updateDistanceToMateOrZeroing(this.checked);
-});
-document.getElementById("side").addEventListener("change", function() {
-    const layout = document.getElementById("study_layout").value;
-    const ranges = layoutRanges[layout];
-    updatePiecesSelect(ranges, true);
-});
-document.getElementById("hide_counter").addEventListener("change", function() {
-    setMateCounter(game.getDTZ());
-});
-document.getElementById("hide_review").addEventListener("change", function() {
-    movesList.hideReview(this.checked);
-});
-
-document.getElementById("study_layout").dispatchEvent(new Event("change"));
-document.addEventListener("DOMContentLoaded", function() {
-    fetchLayoutsDefinitions().then(([layoutsData, rangesData]) => {
-        layouts = layoutsData;
-        layoutRanges = rangesData;
-    });
-    fetchLayouts().then(firstAvailable => {
-        updateStudyLayout(firstAvailable);
-        loadLocalConfiguration();
-        bindSaveConfigurationOnChange();
-
-        if (document.getElementById("keep_playing").checked) {
-            requestNewGame();
-        }
-    });
+function update(firstAvailable) {
+    updateStudyLayout(firstAvailable);
+    loadLocalConfiguration();
+    bindSaveConfigurationOnChange();
 
     const distanceToMateOrZeroing = document.getElementById("distance_to_mate_or_zeroing");
     updateDistanceToMateOrZeroing(distanceToMateOrZeroing.checked);
     setMateCounter();
     blockScroll("endgame_board");
+
+    bindSettingsActions();
+    if (document.getElementById("keep_playing").checked) {
+        requestNewGame();
+    }
+}
+
+bindKeys(backward, forward);
+bindKey(72, getHint);
+
+document.addEventListener("DOMContentLoaded", function() {
+    fetchLayoutsDefinitions().then(([layoutsData, rangesData]) => {
+        layouts = layoutsData;
+        layoutRanges = rangesData;
+        fetchLayouts().then(firstAvailable => {
+            update(firstAvailable);
+        });
+    });
 });
 
 document.getElementById("study_layout").addEventListener("keydown", function(e) {
