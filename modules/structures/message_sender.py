@@ -15,7 +15,7 @@ class MessageSender:
     analyzed: int = 0
     total: int = 0
 
-    def __call__(self, filename: str, fen: str, move_string: str, evaluation: Evaluation):
+    def __call__(self, filename: str, fen: str, move_string: str, turn: bool, evaluation: Evaluation):
         text = "{name} {text} {items} of {total} games ({percent:.2f}%)...".format(
             name=self.id,
             text=self.text,
@@ -31,6 +31,7 @@ class MessageSender:
             game_name=filename,
             fen=fen,
             last_move=move_string,
+            turn=turn,
             evaluation=str(evaluation),
         )
 

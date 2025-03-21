@@ -70,6 +70,7 @@ class Analyzer(Processor):
                 filename=output_filename,
                 fen=board.fen(),
                 move_string=move_string,
+                turn=board.turn,
                 evaluation=evaluation,
             )
 

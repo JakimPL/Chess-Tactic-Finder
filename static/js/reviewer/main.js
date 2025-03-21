@@ -295,7 +295,7 @@ function setEvaluation() {
     const reviewedMove = review.moves[game.moveIndex];
     if (reviewedMove !== null && reviewedMove !== undefined) {
         const evaluation = reviewedMove.evaluation;
-        evaluationBar.setEvaluation(evaluation);
+        evaluationBar.setEvaluation(evaluation, reviewedMove.turn);
     }
 }
 

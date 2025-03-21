@@ -10,6 +10,7 @@ class Message:
     game_name: str = ""
     fen: str = ""
     last_move: str = ""
+    turn: bool = True
     evaluation: str = ""
 
     def encode(self) -> str:

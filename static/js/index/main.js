@@ -1,8 +1,10 @@
 import ChessBoard from "../board/chessground.js";
 
 import { fetchLayoutsDefinitions, markButton, unmarkButton } from "../common.js";
+import EvaluationBar from "../evaluationBar.js";
 
 const board = new ChessBoard("game_board", false);
+const evaluationBar = new EvaluationBar(board);
 
 let configuration = null;
 
@@ -172,6 +174,8 @@ function getState() {
                         `${data["last_move"]}${data["evaluation"]}`,
                     );
                 }
+
+                evaluationBar.setEvaluation(data["evaluation"], data["turn"]);
             }
         },
         error: () => {

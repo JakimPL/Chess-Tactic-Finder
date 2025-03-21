@@ -102,6 +102,7 @@ class Reviewer(Processor):
                 filename=output_filename,
                 fen=board.fen(),
                 move_string=move_string,
+                turn=board.turn,
                 evaluation=Evaluation.from_evaluation(stockfish.get_evaluation()),
             )
 

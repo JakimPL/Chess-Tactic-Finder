@@ -34,7 +34,8 @@ export default class EvaluationBar {
         if (evaluation.includes(".")) {
             value = parseFloat(evaluation).toFixed(2);
         } else {
-            value = `M${parseInt(evaluation)}`;
+            const string = evaluation.replace("#", "");
+            value = `M${parseInt(string)}`;
         }
 
         return value.toString();
@@ -43,15 +44,18 @@ export default class EvaluationBar {
     parseEvaluation(evaluation) {
         let scale = 0;
         let value = 0;
+        if (evaluation === null || evaluation === undefined) {
+            return null;
+        }
+
         if (!evaluation.includes(".")) {
-            const integer = parseInt(evaluation);
+            const integer = parseInt(evaluation.replace("#", ""));
             if (integer === 0) {
-                const turn = reviewedMove.turn;
                 scale = turn ? 1 : -1;
             } else {
-                scale = evaluation > 0 ? 1 : -1;
+                scale = integer > 0 ? 1 : -1;
             }
-            value = "M" + Math.abs(evaluation);
+            value = "M" + Math.abs(integer);
         } else {
             const scaledEvaluation = 0.4 * evaluation;
             scale = scaledEvaluation / (1 + Math.abs(scaledEvaluation));
@@ -61,9 +65,12 @@ export default class EvaluationBar {
         return [value, scale];
     }
 
-    setEvaluation(evaluation) {
-        const [value, scale] = this.parseEvaluation(evaluation);
-        this.setEvaluationBar(value, scale);
+    setEvaluation(evaluation, turn) {
+        const result = this.parseEvaluation(evaluation, turn);
+        if (result !== null) {
+            const [value, scale] = result;
+            this.setEvaluationBar(value, scale);
+        }
     }
 
     reset() {
