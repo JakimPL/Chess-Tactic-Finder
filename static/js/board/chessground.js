@@ -154,9 +154,6 @@ export default class ChessBoard {
         squareElement.style.top = `${rank * 12.5}%`;
 
         this.boardElement.appendChild(squareElement);
-        console.log(this.boardElement.childNodes.length);
-        console.log(this.boardElement.childNodes);
-        console.log("          ");
     }
 
     clearSquaresColors() {

@@ -1,6 +1,7 @@
 import ChessBoard from "../board/chessground.js";
 
 import { bindKeys } from "../bindings.js";
+import EvaluationBar from "../evaluationBar.js";
 import Colors from "../colors.js";
 import Link from "../link.js";
 import MovesList from "../movesList.js";
@@ -26,6 +27,7 @@ window.loadReview = loadReview;
 window.refresh = refresh;
 
 const board = new ChessBoard("game_board", false);
+const evaluationBar = new EvaluationBar(board);
 board.setPosition("start");
 
 const emptyImage =
@@ -123,7 +125,7 @@ function updateAccuracyInfo() {
 
 function loadReview(path, reviewId) {
     document.getElementById("evaluation_chart").src = emptyImage;
-    setEvaluationBar("0.0", 0);
+    evaluationBar.reset();
     fetch(path)
         .then((response) => {
             if (!response.ok) {
@@ -245,40 +247,6 @@ function startGame() {
     board.clearSquaresColors();
 }
 
-function evaluationToString(evaluation) {
-    let value = 0.0;
-    if (evaluation.includes(".")) {
-        value = parseFloat(evaluation).toFixed(2);
-    } else {
-        value = `M${parseInt(evaluation)}`;
-    }
-
-    return value.toString();
-}
-
-function setEvaluationBar(value, scale) {
-    const orientation = board.getOrientation() === "black";
-    scale = orientation ? -scale : scale;
-    const height =
-        scale === null ? 50 : Math.max(0, Math.min(100, 50 - scale * 50));
-    $("#evaluation_bar")
-        .css("height", height + "%")
-        .attr("aria-valuenow", height);
-    if (scale >= 0) {
-        $("#evaluation_value").html(value);
-        $("#evaluation_bar").html("");
-    } else {
-        $("#evaluation_bar").html(value);
-        $("#evaluation_value").html("");
-    }
-
-    document.getElementById("evaluation").style.backgroundColor = orientation
-        ? Colors.darkSquareColor
-        : Colors.lightSquareColor;
-    document.getElementById("evaluation_bar").style.backgroundColor =
-        orientation ? Colors.lightSquareColor : Colors.darkSquareColor;
-}
-
 function setEngineLines() {
     const index = game.moveIndex + 1;
     const move = review.moves[index];
@@ -298,7 +266,7 @@ function setEngineLines() {
             bestChoice = true;
         }
 
-        const value = evaluationToString(bestMove[1]);
+        const value = evaluationBar.evaluationToString(bestMove[1]);
         createTableRowEntry(tr, value);
         tableObject.appendChild(tr);
     }
@@ -307,7 +275,7 @@ function setEngineLines() {
     if (!bestChoice && reviewMove.move !== null && reviewMove.move !== undefined) {
         const tr = document.createElement("tr");
         createTableRowEntry(tr, game.moves[index]);
-        createTableRowEntry(tr, evaluationToString(reviewMove.evaluation));
+        createTableRowEntry(tr, evaluationBar.evaluationToString(reviewMove.evaluation));
         tr.style.backgroundColor = Colors.darkSquareColor;
         tableObject.appendChild(tr);
     }
@@ -327,25 +295,7 @@ function setEvaluation() {
     const reviewedMove = review.moves[game.moveIndex];
     if (reviewedMove !== null && reviewedMove !== undefined) {
         const evaluation = reviewedMove.evaluation;
-
-        let scale = 0;
-        let value = 0;
-        if (!evaluation.includes(".")) {
-            const integer = parseInt(evaluation);
-            if (integer === 0) {
-                const turn = reviewedMove.turn;
-                scale = turn ? 1 : -1;
-            } else {
-                scale = evaluation > 0 ? 1 : -1;
-            }
-            value = "M" + Math.abs(evaluation);
-        } else {
-            const scaledEvaluation = 0.4 * evaluation;
-            scale = scaledEvaluation / (1 + Math.abs(scaledEvaluation));
-            value = Math.abs(parseFloat(evaluation)).toFixed(1);
-        }
-
-        setEvaluationBar(value, scale);
+        evaluationBar.setEvaluation(evaluation);
     }
 }
 
