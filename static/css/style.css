@@ -85,7 +85,8 @@ button:active {
     clear: both;
 }
 
-.options {
+.options,
+.game-options {
     width: 175px;
 }
 

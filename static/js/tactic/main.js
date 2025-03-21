@@ -23,6 +23,7 @@ import Progress from "./progress.js";
 import Tactic from "./tactic.js";
 
 const board = new ChessBoard("game_board", true, onDragStart, onDrop, onSnapEnd, onPremoveSet, onPremoveUnset);
+const storage = new Storage();
 
 window.loadPGN = loadPGN;
 window.refresh = refresh;
@@ -30,7 +31,6 @@ window.refresh = refresh;
 const $status = $("#status");
 const $panel = $("#panel");
 
-const storage = new Storage();
 let localConfiguration = {};
 const progressLoaded = $.Deferred();
 const puzzlesLoaded = $.Deferred();
@@ -642,13 +642,17 @@ function saveLocalConfiguration() {
         },
     };
 
-    storage.set("configuration", localConfiguration);
+    storage.set("tactic", localConfiguration);
 }
 
 function loadLocalConfiguration() {
-    const localStorageConfiguration = storage.get("configuration");
-    if (localStorageConfiguration !== null) {
+    const localStorageConfiguration = storage.get("tactic");
+    if (localStorageConfiguration !== null && localStorageConfiguration !== undefined) {
         localConfiguration = localStorageConfiguration;
+        if (localConfiguration === null || localConfiguration === undefined) {
+            return;
+        }
+
         for (const element of $(".board_settings")) {
             element.checked = localConfiguration?.board_settings?.[element.id] ?? element.checked;
         }

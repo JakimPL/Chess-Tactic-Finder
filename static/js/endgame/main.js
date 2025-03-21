@@ -3,6 +3,7 @@ import ChessBoard from "../board/chessground.js";
 import { bindKey, bindKeys } from "../bindings.js";
 import Colors from "../colors.js";
 import MovesList from "../movesList.js";
+import Storage from "../storage.js";
 import {
     blockScroll,
     fetchLayoutsDefinitions,
@@ -19,6 +20,7 @@ import Game from "./game.js";
 const $panel = $("#panel");
 
 const board = new ChessBoard("endgame_board", true, onDragStart, onDrop, onSnapEnd, onPremoveSet, onPremoveUnset);
+const storage = new Storage();
 
 let game = null;
 let player = null;
@@ -37,6 +39,8 @@ let requestWait = false;
 let wait = false;
 const delayTime = 500;
 const newGameDelayTime = 1000;
+
+let localConfiguration = null;
 
 $("#backward").on("click", function () {
     backward();
@@ -202,6 +206,61 @@ function goTo(index) {
         moveIndex = game.currentMove - 1;
         movesList.highlightNextMove(previousMoveIndex, moveIndex);
         setPosition();
+    }
+}
+
+function saveLocalConfiguration() {
+    localConfiguration = {
+        board_settings: {
+            keep_playing: $("#keep_playing").prop("checked"),
+        },
+        game: {
+            study_layout: {
+                value: $("#study_layout").val(),  // Use .val() instead of .prop("value")
+                label: $("#study_layout option:selected").text(),
+            },
+            distance_to_mate_or_zeroing: $("#distance_to_mate_or_zeroing").prop("checked"),
+            mate_in: $("#mate_in").prop("value"),
+            side: $("#side").prop("value"),
+            pieces: $("#pieces").prop("value"),
+            difficulty: $("#difficulty").prop("value"),
+            bishop_color: $("#bishop_color").prop("value"),
+        },
+        options: {
+            hide_counter: $("#hide_counter").prop("checked"),
+            hide_review: $("#hide_review").prop("checked"),
+        },
+    };
+
+    storage.set("endgame", localConfiguration);
+}
+
+function loadLocalConfiguration() {
+    const localStorageConfiguration = storage.get("endgame");
+    if (localStorageConfiguration !== null && localStorageConfiguration !== undefined) {
+        localConfiguration = localStorageConfiguration;
+        if (localConfiguration === null || localConfiguration === undefined) {
+            return;
+        }
+
+        for (const element of $(".board_settings")) {
+            element.checked = localConfiguration?.board_settings?.[element.id] ?? element.checked;
+        }
+
+        for (const element of $(".game-options")) {
+            if (element.id === "study_layout") {
+                const studyLayoutSelect = document.getElementById("study_layout");
+                studyLayoutSelect.value = localConfiguration?.game?.study_layout?.value;
+                studyLayoutSelect.dispatchEvent(new Event("change"));
+            } else {
+                element.checked = localConfiguration?.game?.[element.id] ?? element.checked;
+                element.value = localConfiguration?.game?.[element.id] ?? element.value;
+            }
+        }
+
+        for (const element of $(".options")) {
+            element.checked = localConfiguration?.options?.[element.id] ?? element.checked;
+        }
     }
 }
 
@@ -432,6 +491,14 @@ function colorSquares() {
     }
 }
 
+function bindSaveConfigurationOnChange() {
+    for (const item of [".board_settings", ".options", ".game-options"]) {
+        $(item).change(function () {
+            saveLocalConfiguration();
+        });
+    }
+}
+
 function fetchLayouts() {
     return fetch("/endgame/layouts")
         .then(response => response.json())
@@ -601,7 +668,10 @@ document.addEventListener("DOMContentLoaded", function() {
     });
     fetchLayouts().then(firstAvailable => {
         updateStudyLayout(firstAvailable);
+        loadLocalConfiguration();
+        bindSaveConfigurationOnChange();
     });
+
     const distanceToMateOrZeroing = document.getElementById("distance_to_mate_or_zeroing");
     updateDistanceToMateOrZeroing(distanceToMateOrZeroing.checked);
     setMateCounter();
