@@ -525,9 +525,6 @@ function fetchLayouts() {
             } else if (firstAvailable) {
                 studyLayoutSelect.value = firstAvailable;
                 studyLayoutSelect.dispatchEvent(new Event("change"));
-                if (document.getElementById("keep_playing").checked) {
-                    requestNewGame();
-                }
             }
 
             return firstAvailable;
@@ -670,6 +667,10 @@ document.addEventListener("DOMContentLoaded", function() {
         updateStudyLayout(firstAvailable);
         loadLocalConfiguration();
         bindSaveConfigurationOnChange();
+
+        if (document.getElementById("keep_playing").checked) {
+            requestNewGame();
+        }
     });
 
     const distanceToMateOrZeroing = document.getElementById("distance_to_mate_or_zeroing");
